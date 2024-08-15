@@ -1,0 +1,27 @@
+{
+  "name": "js13kgames-2024",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "measure": "sh scripts/measure.sh dist/index.zip"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.6",
+    "clean-css": "^5.3.3",
+    "ect-bin": "^1.4.1",
+    "html-minifier": "^4.0.0",
+    "roadroller": "^2.1.0",
+    "rollup": "^4.20.0",
+    "rollup-plugin-kontra": "^1.0.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1"
+  },
+  "dependencies": {
+    "kontra": "^10.0.0"
+  }
+}
