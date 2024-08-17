@@ -1,6 +1,7 @@
 import { GameObjectClass, Sprite } from "kontra";
 import { GRID_SIZE, Grid } from "./grid";
 import { COLOR } from "../../constants/color";
+import { Templar } from "../sprites/templar";
 
 const GAP = 4;
 const PADDING = 8;
@@ -34,5 +35,9 @@ export class Board extends GameObjectClass {
         this.addChild(grid);
       }
     }
+
+    // test
+    const a = new Templar();
+    this.addChild(a);
   }
 }

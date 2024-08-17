@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "measure": "sh scripts/measure.sh dist/index.zip"
+    "measure": "sh scripts/measure.sh dist/index.zip",
+    "round": "sh scripts/round_numbers.sh"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
