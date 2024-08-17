@@ -1,4 +1,8 @@
-import { init } from "kontra";
+import { GameLoop, init } from "kontra";
+import {
+  INFO_PANEL_HEIGHT,
+  InfoPanel,
+} from "./components/info-section/info-panel";
 
 const { canvas } = init();
 
@@ -11,3 +15,15 @@ function resize() {
   if (ctx) ctx.imageSmoothingEnabled = false;
 }
 (onresize = resize)();
+
+const infoPanel = new InfoPanel(0, canvas.height - INFO_PANEL_HEIGHT);
+
+const loop = GameLoop({
+  update: () => {
+    infoPanel.update();
+  },
+  render: () => {
+    infoPanel.render();
+  },
+});
+loop.start();
