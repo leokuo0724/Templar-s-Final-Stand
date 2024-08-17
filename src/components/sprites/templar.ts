@@ -10,43 +10,53 @@ export class Templar extends GameObjectClass {
   draw() {
     drawPolygon(
       this.context,
-      "64 61 72 61 71 70 65 73 55 73 64 61",
-      COLOR.RED_7
+      "9 0 17 0 16 9 10 12 0 12 9 0",
+      COLOR.RED_7,
+      55,
+      61
     );
     drawPolygon(
       this.context,
-      "54 77 56 75 64 62 52 34 19 34 0 67 16 75 16 108 26 108 27 105 43 96 55 108 66 108 54 77",
-      COLOR.GRAY_7
+      "54 43 56 41 64 28 52 0 19 0 0 33 16 41 16 74 26 74 27 71 43 62 55 74 66 74 54 43",
+      COLOR.GRAY_7,
+      0,
+      34
+    );
+    drawPolygon(this.context, "0 12 7 12 10 0 0 0 0 12", COLOR.RED_7, 16, 108);
+    drawPolygon(
+      this.context,
+      "0 0 5 6 5 12 12 12 12 1 11 0 0 0",
+      COLOR.RED_7,
+      55,
+      108
     );
     drawPolygon(
       this.context,
-      "16 120 23 120 26 108 16 108 16 120",
-      COLOR.RED_7
+      "42 49 41 12 39 0 33 0 36 12 9 12 9 0 3 0 1 49 0 64 47 64 42 49",
+      COLOR.YELLOW_7,
+      15,
+      34
     );
     drawPolygon(
       this.context,
-      "55 108 60 114 60 120 67 120 67 109 66 108 55 108",
-      COLOR.RED_7
+      "42 7 33 0 7 0 0 8 0 36 14 42 38 42 42 38 42 7",
+      COLOR.GRAY_6,
+      18,
+      0
     );
     drawPolygon(
       this.context,
-      "57 83 56 46 54 34 48 34 51 46 24 46 24 34 18 34 16 83 15 98 62 98 57 83",
-      COLOR.YELLOW_7
+      "0 0 13 0 19 0 23 0 23 5 19 5 19 22 13 22 13 5 0 5 0 0",
+      COLOR.BROWN_8,
+      37,
+      14
     );
     drawPolygon(
       this.context,
-      "60 7 51 0 25 0 18 8 18 36 32 42 56 42 60 38 60 7",
-      COLOR.GRAY_6
-    );
-    drawPolygon(
-      this.context,
-      "37 14 50 14 56 14 60 14 60 19 56 19 56 36 50 36 50 19 37 19 37 14",
-      COLOR.BROWN_8
-    );
-    drawPolygon(
-      this.context,
-      "50 55 46 55 46 51 42 51 42 55 38 55 38 58 42 58 42 68 46 68 46 58 50 58 50 55",
-      COLOR.RED_7
+      "12 4 8 4 8 0 4 0 4 4 0 4 0 7 4 7 4 17 8 17 8 7 12 7 12 4",
+      COLOR.RED_7,
+      38,
+      51
     );
     drawRect(this.context, 16, 75, 40, 7, "#ae5d40");
 
