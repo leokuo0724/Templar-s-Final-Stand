@@ -2,9 +2,16 @@ import { GameObjectClass } from "kontra";
 import { drawPolygon, drawRect } from "./draw-utils";
 import { COLOR } from "../../constants/color";
 
+type TemplarProps = {
+  x: number;
+  y: number;
+  scaleX: number;
+  scaleY: number;
+};
+
 export class Templar extends GameObjectClass {
-  constructor() {
-    super({ scaleX: 2, scaleY: 2 });
+  constructor({ x, y, scaleX, scaleY }: TemplarProps) {
+    super({ x, y, scaleX, scaleY });
   }
 
   draw() {

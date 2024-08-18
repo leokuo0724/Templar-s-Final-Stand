@@ -1,13 +1,12 @@
 import { SpriteClass } from "kontra";
 import { COLOR } from "../../constants/color";
+import { GRID_SIZE } from "../../constants/size";
 
 type GridProps = {
   x: number;
   y: number;
   coord: [number, number];
 };
-
-export const GRID_SIZE = 100;
 
 export class Grid extends SpriteClass {
   public coord: [number, number];

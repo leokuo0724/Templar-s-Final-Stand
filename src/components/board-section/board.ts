@@ -1,7 +1,9 @@
 import { GameObjectClass, Sprite } from "kontra";
-import { GRID_SIZE, Grid } from "./grid";
+import { Grid } from "./grid";
 import { COLOR } from "../../constants/color";
-import { Templar } from "../sprites/templar";
+import { GRID_SIZE } from "../../constants/size";
+import { CardFactory } from "../sprites/card/card-factory";
+import { CardType } from "../sprites/card/type";
 
 const GAP = 4;
 const PADDING = 8;
@@ -36,8 +38,6 @@ export class Board extends GameObjectClass {
       }
     }
 
-    // test
-    const a = new Templar();
-    this.addChild(a);
+    this.addChild(CardFactory.createCard(CardType.TEMPLAR));
   }
 }

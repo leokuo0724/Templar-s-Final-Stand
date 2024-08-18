@@ -50,15 +50,12 @@ export default defineConfig(({ command, mode }) => {
       closurePlugin(),
       kontra({
         gameObject: {
-          anchor: true,
+          anchor: true, // TODO: consider to not use anchor
           group: true,
           opacity: true,
           rotation: true,
           scale: true,
           ttl: true,
-        },
-        sprite: {
-          image: true,
         },
         text: {
           align: true,
