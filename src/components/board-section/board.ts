@@ -8,6 +8,8 @@ import { BaseCard } from "../sprites/card/base-card";
 import { EVENT } from "../../constants/event";
 import { Direction } from "../../types/direction";
 import { delay } from "../../utils/time-utils";
+import { CharacterCard } from "../sprites/card/character-card";
+import { ItemCard } from "../sprites/card/item-card";
 
 const GAP = 4;
 const PADDING = 8;
@@ -112,9 +114,21 @@ export class Board extends GameObjectClass {
             nextI < 0 ||
             nextI >= GRIDS_IN_LINE ||
             nextJ < 0 ||
-            nextJ >= GRIDS_IN_LINE ||
-            this.occupiedInfo[nextJ][nextI]
-          ) {
+            nextJ >= GRIDS_IN_LINE
+          )
+            break;
+          const occupiedCard = this.occupiedInfo[nextJ][nextI];
+          if (occupiedCard) {
+            if (
+              card instanceof CharacterCard &&
+              occupiedCard instanceof ItemCard
+            ) {
+              card.applyBuff(occupiedCard.buff);
+              occupiedCard.equip(card);
+              this.occupiedInfo[nextJ][nextI] = null;
+              // TODO: move the card (templar)
+              continue;
+            }
             break;
           }
 

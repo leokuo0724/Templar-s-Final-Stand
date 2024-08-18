@@ -6,8 +6,12 @@ import { HeartIcon } from "../icons/heart-icon";
 import { ShieldIcon } from "../icons/shield-icon";
 import { tween } from "../../../utils/tween-utils";
 import { Direction } from "../../../types/direction";
-import { AttackDirection } from "../../../types/character";
+import {
+  AttackDirection,
+  OptionalCharacterProps,
+} from "../../../types/character";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
+import { COLOR } from "../../../constants/color";
 
 type CharacterCardProps = {
   type: CardType;
@@ -29,6 +33,17 @@ export abstract class CharacterCard extends BaseCard {
   protected attackText: Text;
   protected healthText: Text;
   protected shieldText: Text;
+
+  public belongs: Belongs;
+  public maxHealth: number;
+  public health: number;
+  public shield: number;
+  public dodgeRate: number;
+  public attack: number;
+  public hitRate: number;
+  public criticalRate: number;
+  public attackDirection: AttackDirection;
+  public hitBackAttack: number;
 
   constructor({
     type,
@@ -56,6 +71,8 @@ export abstract class CharacterCard extends BaseCard {
     this.criticalRate = criticalRate;
     this.attackDirection = attackDirection;
     this.hitBackAttack = hitBackAttack;
+
+    this.color = COLOR.DARK_6;
 
     this.attackText = Text({
       text: `${this.attack}`,
@@ -88,17 +105,52 @@ export abstract class CharacterCard extends BaseCard {
   public async playAttack(direction: Direction) {
     const origX = this.x;
     const origY = this.y;
-    await tween(this.main, -5, -10, 100, 700);
+    await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
     if ([Direction.RIGHT, Direction.LEFT].includes(direction)) {
       const xFactor = direction === Direction.RIGHT ? -1 : 1;
-      await tween(this, this.x + 10 * xFactor, this.y, 50);
-      await tween(this, this.x - 30 * xFactor, this.y, 40);
+      await tween(
+        this,
+        { targetX: this.x + 10 * xFactor, targetY: this.y },
+        50
+      );
+      await tween(
+        this,
+        { targetX: this.x - 30 * xFactor, targetY: this.y },
+        40
+      );
     } else {
       const yFactor = direction === Direction.DOWN ? -1 : 1;
-      await tween(this, this.x, this.y + 10 * yFactor, 50);
-      await tween(this, this.x, this.y - 30 * yFactor, 40);
+      await tween(
+        this,
+        { targetX: this.x, targetY: this.y + 10 * yFactor },
+        50
+      );
+      await tween(
+        this,
+        { targetX: this.x, targetY: this.y - 30 * yFactor },
+        40
+      );
     }
-    await tween(this, origX, origY, 50, 400);
-    tween(this.main, 0, 0, 200);
+    await tween(this, { targetX: origX, targetY: origY }, 50, 400);
+    tween(this.main, { targetX: 0, targetY: 0 }, 200);
+  }
+
+  public applyBuff(buff: OptionalCharacterProps) {
+    this.maxHealth += buff.maxHealth || 0;
+    this.health += buff.health || 0;
+    this.health = Math.min(this.health, this.maxHealth);
+    this.shield += buff.shield || 0;
+    this.dodgeRate += buff.dodgeRate || 0;
+    this.attack += buff.attack || 0;
+    this.hitRate += buff.hitRate || 0;
+    this.criticalRate += buff.criticalRate || 0;
+    this.attackDirection = buff.attackDirection || this.attackDirection;
+    this.hitBackAttack += buff.hitBackAttack || 0;
+
+    this.attackText.text = `${this.attack}`;
+    this.healthText.text = `${this.health}`;
+    this.shieldText.text = `${this.shield}`;
+
+    // TODO: show buff effect
   }
 }

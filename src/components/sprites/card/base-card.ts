@@ -19,6 +19,7 @@ enum CardPart {
 export abstract class BaseCard extends SpriteClass {
   public type: CardType;
   protected main: Sprite;
+  public isActive: boolean = true;
 
   constructor({ type, x, y }: CardProps) {
     super({
@@ -26,7 +27,6 @@ export abstract class BaseCard extends SpriteClass {
       y,
       width: GRID_SIZE,
       height: GRID_SIZE,
-      color: COLOR.DARK_6, // shadow
       anchor: { x: 0.5, y: 0.5 },
     });
     this.type = type;
@@ -53,20 +53,24 @@ export abstract class BaseCard extends SpriteClass {
   protected abstract getMainIcon(): GameObject;
 
   public moveTo(x: number, y: number) {
-    tween(this, x, y, 200);
+    tween(this, { targetX: x, targetY: y }, 200);
   }
 
-  public destroy() {
-    this.ttl = 0;
+  public setInactive() {
+    this.setChildrenOpacity(0, 200);
+    this.isActive = false;
   }
   public reset() {
-    // TODO: reset props
-    this.ttl = Infinity;
+    this.setChildrenOpacity(1, 0);
+    this.setScale(0);
+    this.isActive = true;
+    // TODO: Props update
   }
 
-  private setChildrenOpacity(opacity: number) {
-    this.children.forEach((child) => (child.opacity = opacity));
-    this.main.children.forEach((child) => (child.opacity = opacity));
+  protected setChildrenOpacity(opacity: number, duration: number) {
+    tween(this, { opacity }, duration);
+    this.children.forEach((child) => tween(child, { opacity }, duration));
+    this.main.children.forEach((child) => tween(child, { opacity }, duration));
   }
 
   public update(): void {
@@ -75,16 +79,6 @@ export abstract class BaseCard extends SpriteClass {
       this.scaleX += 0.1;
       this.scaleY += 0.1;
       if (this.scaleX > 1) this.setScale(1);
-    }
-    // When destroying the card
-    if (!this.isAlive() && this.opacity > 0) {
-      this.opacity -= 0.1;
-      this.setChildrenOpacity(this.opacity);
-    }
-    // When reactivating the card
-    if (this.isAlive() && this.opacity < 1) {
-      this.opacity += 0.1;
-      this.setChildrenOpacity(this.opacity);
     }
   }
 
