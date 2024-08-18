@@ -5,16 +5,27 @@ import { COLOR } from "../../constants/color";
 type TemplarProps = {
   x: number;
   y: number;
-  scaleX: number;
-  scaleY: number;
+  scale?: number;
+  withWeapon?: boolean;
 };
 
 export class Templar extends GameObjectClass {
-  constructor({ x, y, scaleX, scaleY }: TemplarProps) {
-    super({ x, y, scaleX, scaleY });
+  constructor({ x, y, scale = 1, withWeapon = false }: TemplarProps) {
+    super({ x, y });
+    this.setScale(scale);
+    this.withWeapon = withWeapon;
   }
 
   draw() {
+    if (this.withWeapon) {
+      drawPolygon(
+        this.context,
+        "30 0 0 9 0 45 6 57 30 69 54 57 57 45 57 9 30 0",
+        COLOR.BROWN_7,
+        36,
+        30
+      );
+    }
     drawPolygon(
       this.context,
       "9 0 17 0 16 9 10 12 0 12 9 0",
@@ -67,7 +78,15 @@ export class Templar extends GameObjectClass {
     );
     drawRect(this.context, 16, 75, 40, 7, "#ae5d40");
 
-    // TODO: weapon if needed
+    if (this.withWeapon) {
+      drawPolygon(
+        this.context,
+        "5 0 0 15 1 74 5 74 8 74 10 15 5 0",
+        COLOR.WHITE_6,
+        16,
+        -16
+      );
+    }
     drawPolygon(
       this.context,
       "2 3 0 11 14 13 20 8 18 1 10 0 2 3",

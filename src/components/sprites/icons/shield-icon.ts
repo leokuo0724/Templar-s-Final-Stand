@@ -3,8 +3,9 @@ import { drawPolygon } from "../../../utils/draw-utils";
 import { COLOR } from "../../../constants/color";
 
 export class ShieldIcon extends GameObjectClass {
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, scale?: number) {
     super({ x, y });
+    this.setScale(scale ?? 1);
   }
 
   draw() {
