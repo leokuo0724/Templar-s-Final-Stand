@@ -3,6 +3,7 @@ import { GRID_SIZE } from "../../../constants/size";
 
 import { COLOR } from "../../../constants/color";
 import { CardType } from "./type";
+import { tween } from "../../../utils/tween-utils";
 
 type CardProps = {
   type: CardType;
@@ -50,6 +51,10 @@ export abstract class BaseCard extends SpriteClass {
   }
 
   protected abstract getMainIcon(): GameObject;
+
+  public moveTo(x: number, y: number) {
+    tween(this, x, y, 200);
+  }
 
   public destroy() {
     this.ttl = 0;

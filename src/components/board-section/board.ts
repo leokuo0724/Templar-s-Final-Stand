@@ -1,9 +1,13 @@
-import { GameObjectClass, Sprite } from "kontra";
+import { emit, GameObjectClass, on, Sprite } from "kontra";
 import { Grid } from "./grid";
 import { COLOR } from "../../constants/color";
 import { GRID_SIZE } from "../../constants/size";
 import { CardFactory } from "../sprites/card/card-factory";
 import { CardType } from "../sprites/card/type";
+import { BaseCard } from "../sprites/card/base-card";
+import { EVENT } from "../../constants/event";
+import { Direction } from "../../types/direction";
+import { delay } from "../../utils/time-utils";
 
 const GAP = 4;
 const PADDING = 8;
@@ -13,9 +17,13 @@ export const BOARD_SIZE =
 
 export class Board extends GameObjectClass {
   private grids: Grid[] = [];
+  private occupiedInfo: (BaseCard | null)[][] = Array.from({ length: 5 }, () =>
+    Array.from({ length: 5 }, () => null)
+  );
 
   constructor(x: number, y: number) {
     super({ x, y });
+    on(EVENT.SWIPE, this.onSwipe.bind(this));
 
     const bg = Sprite({
       x: 0,
@@ -45,19 +53,82 @@ export class Board extends GameObjectClass {
       y: centerGrid.y,
     });
     this.addChild(templarCard);
+    this.occupiedInfo[2][2] = templarCard;
 
-    const tGrid = this.getGridByCoord([3, 3]);
+    const tGrid = this.getGridByCoord([2, 3]);
     const weaponCard = CardFactory.createCard({
       type: CardType.WEAPON,
       x: tGrid.x,
       y: tGrid.y,
     });
     this.addChild(weaponCard);
+    this.occupiedInfo[2][3] = weaponCard;
+
+    const sGrid = this.getGridByCoord([3, 4]);
+    const aeaponCard = CardFactory.createCard({
+      type: CardType.WEAPON,
+      x: sGrid.x,
+      y: sGrid.y,
+    });
+    this.addChild(aeaponCard);
+    this.occupiedInfo[3][4] = aeaponCard;
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
-    const grid = this.grids[coord[0] * GRIDS_IN_LINE + coord[1]];
+    const grid = this.grids[coord[0] + coord[1] * GRIDS_IN_LINE];
     if (!grid) throw new Error(`Grid not found by coord: ${coord}`);
     return grid;
+  }
+
+  private onSwipe(direction: Direction) {
+    this.moveCards(direction);
+  }
+  private async moveCards(direction: Direction) {
+    const moveRight = direction === Direction.RIGHT;
+    const moveLeft = direction === Direction.LEFT;
+    const moveUp = direction === Direction.UP;
+    const moveDown = direction === Direction.DOWN;
+
+    const startI = moveRight ? GRIDS_IN_LINE - 2 : 1;
+    const startJ = moveDown ? GRIDS_IN_LINE - 2 : 1;
+    const endI = moveRight ? -1 : GRIDS_IN_LINE;
+    const endJ = moveDown ? -1 : GRIDS_IN_LINE;
+    const stepI = moveRight ? -1 : 1;
+    const stepJ = moveDown ? -1 : 1;
+
+    for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
+      for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
+        const card = this.occupiedInfo[j][i];
+        if (!card) continue;
+
+        let currI = i,
+          currJ = j;
+
+        while (true) {
+          const nextI = currI + (moveRight ? 1 : moveLeft ? -1 : 0);
+          const nextJ = currJ + (moveDown ? 1 : moveUp ? -1 : 0);
+
+          if (
+            nextI < 0 ||
+            nextI >= GRIDS_IN_LINE ||
+            nextJ < 0 ||
+            nextJ >= GRIDS_IN_LINE ||
+            this.occupiedInfo[nextJ][nextI]
+          ) {
+            break;
+          }
+
+          currI = nextI;
+          currJ = nextJ;
+        }
+
+        const targetGrid = this.getGridByCoord([currJ, currI]);
+        await card.moveTo(targetGrid.x, targetGrid.y);
+        this.occupiedInfo[j][i] = null;
+        this.occupiedInfo[currJ][currI] = card;
+      }
+    }
+    await delay(100);
+    emit(EVENT.SWIPE_FINISH);
   }
 }

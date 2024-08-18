@@ -1,11 +1,16 @@
-import { GameLoop, init } from "kontra";
+import { GameLoop, init, initGesture, initKeys } from "kontra";
 import {
   INFO_PANEL_HEIGHT,
   InfoPanel,
 } from "./components/info-section/info-panel";
 import { BOARD_SIZE, Board } from "./components/board-section/board";
+import { GameManager } from "./managers/game-manager";
 
 const { canvas } = init();
+
+initKeys();
+initGesture();
+GameManager.getInstance();
 
 function resize() {
   const ctx = canvas.getContext("2d");
