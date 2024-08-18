@@ -8,12 +8,14 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "measure": "sh scripts/measure.sh dist/index.zip",
-    "round": "sh scripts/round_numbers.sh"
+    "round": "sh scripts/round_numbers.sh",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
     "clean-css": "^5.3.3",
     "ect-bin": "^1.4.1",
+    "gh-pages": "^6.1.1",
     "html-minifier": "^4.0.0",
     "roadroller": "^2.1.0",
     "rollup": "^4.20.0",
