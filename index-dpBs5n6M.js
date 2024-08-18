@@ -2841,7 +2841,7 @@ GameManager.getInstance();
 function resize() {
     let ctx = canvas.getContext("2d");
     let { width: w, height: h } = canvas;
-    let scale = Math.min(innerWidth / w, innerHeight / h, 1);
+    let scale = Math.min(innerWidth / w, innerHeight / h, devicePixelRatio);
     canvas.style.width = canvas.width * scale + "px";
     canvas.style.height = canvas.height * scale + "px";
     if (ctx)
