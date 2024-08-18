@@ -1,12 +1,13 @@
 import { Text } from "kontra";
 import { SwordIcon } from "../icons/sword-icon";
 import { BaseCard } from "./base-card";
-import { AttackDirection, Belongs, CardType } from "./type";
-import { COLOR } from "../../../constants/color";
+import { Belongs, CardType } from "./type";
 import { HeartIcon } from "../icons/heart-icon";
 import { ShieldIcon } from "../icons/shield-icon";
 import { tween } from "../../../utils/tween-utils";
 import { Direction } from "../../../types/direction";
+import { AttackDirection } from "../../../types/character";
+import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 
 type CharacterCardProps = {
   type: CardType;
@@ -56,32 +57,26 @@ export abstract class CharacterCard extends BaseCard {
     this.attackDirection = attackDirection;
     this.hitBackAttack = hitBackAttack;
 
-    const commonTextConfig = {
-      color: COLOR.WHITE_6,
-      font: "12px Trebuchet MS",
-      anchor: { x: 0.5, y: 0.5 },
-    };
-
     this.attackText = Text({
       text: `${this.attack}`,
       x: 42,
       y: 39,
-      ...commonTextConfig,
+      ...COMMON_TEXT_CONFIG,
     });
     this.healthText = Text({
       text: `${this.health}`,
       x: -33,
       y: -34,
-      ...commonTextConfig,
+      ...COMMON_TEXT_CONFIG,
     });
     this.shieldText = Text({
       text: `${this.shield}`,
       x: 37,
       y: -34,
-      ...commonTextConfig,
+      ...COMMON_TEXT_CONFIG,
     });
     this.main.addChild([
-      new SwordIcon(18, 30),
+      new SwordIcon(20, 30),
       this.attackText,
       new HeartIcon(-46, -46),
       this.healthText,

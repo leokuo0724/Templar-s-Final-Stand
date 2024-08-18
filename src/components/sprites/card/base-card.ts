@@ -43,6 +43,7 @@ export abstract class BaseCard extends SpriteClass {
       radius: 24,
       color: getCardColor(type, CardPart.CIRCLE),
       anchor: { x: 0.5, y: 0.5 },
+      y: this.type === CardType.TEMPLAR ? 0 : -20,
     });
     const mainIcon = this.getMainIcon();
     this.main.addChild([circle, mainIcon]);

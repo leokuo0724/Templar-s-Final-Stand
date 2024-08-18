@@ -1,4 +1,5 @@
 import { BaseCard } from "./base-card";
+import { ItemCard } from "./item-card";
 import { TemplarCard } from "./templar-card";
 
 import { CardType } from "./type";
@@ -15,7 +16,19 @@ export class CardFactory {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
       case CardType.WEAPON:
-        throw new Error("Not implemented");
+        return new ItemCard({
+          type,
+          x,
+          y,
+          buff: {
+            attack: 1,
+            hitRate: -1,
+          },
+          duration: 3,
+          weight: 1,
+        });
+      default:
+        throw new Error(`Invalid card type: ${type}`);
     }
   }
 }

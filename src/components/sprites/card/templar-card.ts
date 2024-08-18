@@ -1,7 +1,8 @@
-import { AttackDirection, Belongs, CardType } from "./type";
+import { Belongs, CardType } from "./type";
 
 import { Templar } from "../templar";
 import { CharacterCard } from "./character-card";
+import { AttackDirection } from "../../../types/character";
 
 export class TemplarCard extends CharacterCard {
   constructor({ x, y }: { x: number; y: number }) {

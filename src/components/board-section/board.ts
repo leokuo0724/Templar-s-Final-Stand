@@ -39,12 +39,20 @@ export class Board extends GameObjectClass {
     }
 
     const centerGrid = this.getGridByCoord([2, 2]);
-    const a = CardFactory.createCard({
+    const templarCard = CardFactory.createCard({
       type: CardType.TEMPLAR,
       x: centerGrid.x,
       y: centerGrid.y,
     });
-    this.addChild(a);
+    this.addChild(templarCard);
+
+    const tGrid = this.getGridByCoord([3, 3]);
+    const weaponCard = CardFactory.createCard({
+      type: CardType.WEAPON,
+      x: tGrid.x,
+      y: tGrid.y,
+    });
+    this.addChild(weaponCard);
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
