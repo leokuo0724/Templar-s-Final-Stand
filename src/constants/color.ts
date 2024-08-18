@@ -9,4 +9,5 @@ export const COLOR = {
   GRAY_6: "#B4A18F",
   GRAY_7: "#796E63",
   DARK_6: "#0F2C2E",
+  WHITE_6: "#ECDDBA",
 };

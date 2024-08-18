@@ -1,5 +1,5 @@
 import { GameObjectClass } from "kontra";
-import { drawPolygon, drawRect } from "./draw-utils";
+import { drawPolygon, drawRect } from "../../utils/draw-utils";
 import { COLOR } from "../../constants/color";
 
 type TemplarProps = {
