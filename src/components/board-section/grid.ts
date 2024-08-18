@@ -18,6 +18,7 @@ export class Grid extends SpriteClass {
       width: GRID_SIZE,
       height: GRID_SIZE,
       color: COLOR.GRAY_6,
+      anchor: { x: 0.5, y: 0.5 },
     });
     this.coord = coord;
   }

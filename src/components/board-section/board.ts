@@ -29,8 +29,8 @@ export class Board extends GameObjectClass {
     for (let i = 0; i < GRIDS_IN_LINE; i++) {
       for (let j = 0; j < GRIDS_IN_LINE; j++) {
         const grid = new Grid({
-          x: PADDING + i * (GRID_SIZE + GAP),
-          y: PADDING + j * (GRID_SIZE + GAP),
+          x: PADDING + i * (GRID_SIZE + GAP) + GRID_SIZE / 2,
+          y: PADDING + j * (GRID_SIZE + GAP) + GRID_SIZE / 2,
           coord: [j, i],
         });
         this.grids.push(grid);
@@ -38,6 +38,18 @@ export class Board extends GameObjectClass {
       }
     }
 
-    this.addChild(CardFactory.createCard(CardType.TEMPLAR));
+    const centerGrid = this.getGridByCoord([2, 2]);
+    const a = CardFactory.createCard({
+      type: CardType.TEMPLAR,
+      x: centerGrid.x,
+      y: centerGrid.y,
+    });
+    this.addChild(a);
+  }
+
+  public getGridByCoord(coord: [number, number]): Grid {
+    const grid = this.grids[coord[0] * GRIDS_IN_LINE + coord[1]];
+    if (!grid) throw new Error(`Grid not found by coord: ${coord}`);
+    return grid;
   }
 }
