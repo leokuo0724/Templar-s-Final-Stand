@@ -7,7 +7,6 @@ import { CardType } from "../sprites/card/type";
 import { BaseCard } from "../sprites/card/base-card";
 import { EVENT } from "../../constants/event";
 import { Direction } from "../../types/direction";
-import { delay } from "../../utils/time-utils";
 import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
@@ -100,6 +99,8 @@ export class Board extends GameObjectClass {
     const stepI = moveRight ? -1 : 1;
     const stepJ = moveDown ? -1 : 1;
 
+    // move cards
+    const moveInfos: { card: BaseCard; x: number; y: number }[] = [];
     for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
       for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
         const card = this.occupiedInfo[j][i];
@@ -112,6 +113,40 @@ export class Board extends GameObjectClass {
           const nextI = currI + (moveRight ? 1 : moveLeft ? -1 : 0);
           const nextJ = currJ + (moveDown ? 1 : moveUp ? -1 : 0);
 
+          const occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
+          if (
+            nextI < 0 ||
+            nextI >= GRIDS_IN_LINE ||
+            nextJ < 0 ||
+            nextJ >= GRIDS_IN_LINE ||
+            occupiedCard
+          )
+            break;
+          currI = nextI;
+          currJ = nextJ;
+        }
+
+        const targetGrid = this.getGridByCoord([currJ, currI]);
+        moveInfos.push({ card, x: targetGrid.x, y: targetGrid.y });
+        this.occupiedInfo[j][i] = null;
+        this.occupiedInfo[currJ][currI] = card;
+      }
+    }
+    await Promise.all(moveInfos.map(({ card, x, y }) => card.moveTo(x, y)));
+
+    // Equip cards
+    const equippedItems: ItemCard[] = [];
+    for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
+      for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
+        const card = this.occupiedInfo[j][i];
+        if (!card) continue;
+
+        let currI = i,
+          currJ = j;
+
+        while (true) {
+          const nextI = currI + (moveRight ? 1 : moveLeft ? -1 : 0);
+          const nextJ = currJ + (moveDown ? 1 : moveUp ? -1 : 0);
           if (
             nextI < 0 ||
             nextI >= GRIDS_IN_LINE ||
@@ -119,39 +154,43 @@ export class Board extends GameObjectClass {
             nextJ >= GRIDS_IN_LINE
           )
             break;
-          const occupiedCard = this.occupiedInfo[nextJ][nextI];
+          const occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
           if (occupiedCard) {
             if (
               card instanceof CharacterCard &&
               occupiedCard instanceof ItemCard
             ) {
               card.applyBuff(occupiedCard.buff);
-              occupiedCard.equip();
+              await occupiedCard.equip();
               this.occupiedInfo[nextJ][nextI] = null;
               // anim effect
               if (card instanceof TemplarCard) {
-                const gm = GameManager.getInstance();
-                gm.addItems([occupiedCard]);
+                equippedItems.push(occupiedCard);
                 this.removeChild(occupiedCard);
               } else {
                 card.setInactive();
               }
+              const targetGrid = this.getGridByCoord([nextJ, nextI]);
+              await card.moveTo(targetGrid.x, targetGrid.y);
               continue;
+            } else {
+              break;
             }
-            break;
           }
-
           currI = nextI;
           currJ = nextJ;
         }
-
         const targetGrid = this.getGridByCoord([currJ, currI]);
         await card.moveTo(targetGrid.x, targetGrid.y);
         this.occupiedInfo[j][i] = null;
         this.occupiedInfo[currJ][currI] = card;
       }
     }
-    // await delay(100);
+    if (equippedItems.length) {
+      const gm = GameManager.getInstance();
+      gm.addItems(equippedItems);
+    }
+
     emit(EVENT.SWIPE_FINISH);
   }
 }

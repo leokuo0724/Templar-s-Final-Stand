@@ -40,6 +40,8 @@ export class ItemPanel extends SpriteClass {
     // show first 4 items
     gm.currentItems
       .slice(0, ITEM_PER_PAGE)
-      .forEach((item, index) => item.setActive(0 + index * (GRID_SIZE + 4), 0));
+      .forEach((item, index) =>
+        item.setActive(60 + index * (GRID_SIZE + 4), 76)
+      );
   }
 }
