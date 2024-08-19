@@ -10,6 +10,8 @@ import { Direction } from "../../types/direction";
 import { delay } from "../../utils/time-utils";
 import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
+import { TemplarCard } from "../sprites/card/templar-card";
+import { GameManager } from "../../managers/game-manager";
 
 const GAP = 4;
 const PADDING = 8;
@@ -124,9 +126,16 @@ export class Board extends GameObjectClass {
               occupiedCard instanceof ItemCard
             ) {
               card.applyBuff(occupiedCard.buff);
-              occupiedCard.equip(card);
+              occupiedCard.equip();
               this.occupiedInfo[nextJ][nextI] = null;
-              // TODO: move the card (templar)
+              // anim effect
+              if (card instanceof TemplarCard) {
+                const gm = GameManager.getInstance();
+                gm.addItems([occupiedCard]);
+                this.removeChild(occupiedCard);
+              } else {
+                card.setInactive();
+              }
               continue;
             }
             break;
@@ -142,7 +151,7 @@ export class Board extends GameObjectClass {
         this.occupiedInfo[currJ][currI] = card;
       }
     }
-    await delay(100);
+    // await delay(100);
     emit(EVENT.SWIPE_FINISH);
   }
 }

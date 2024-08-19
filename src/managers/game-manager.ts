@@ -1,6 +1,7 @@
 import { emit, on, onInput } from "kontra";
 import { EVENT } from "../constants/event";
 import { Direction } from "../types/direction";
+import { ItemCard } from "../components/sprites/card/item-card";
 
 enum GAME_STATE {
   IDLE,
@@ -10,6 +11,8 @@ enum GAME_STATE {
 export class GameManager {
   private static instance: GameManager;
   private state: GAME_STATE = GAME_STATE.IDLE;
+
+  public currentItems: ItemCard[] = [];
 
   private constructor() {
     onInput(
@@ -41,5 +44,10 @@ export class GameManager {
     if (this.state !== GAME_STATE.IDLE) return;
     this.state = GAME_STATE.SWIPING;
     emit(EVENT.SWIPE, direction);
+  }
+
+  public addItems(itemCards: ItemCard[]) {
+    itemCards.forEach((item) => this.currentItems.push(item));
+    emit(EVENT.ITEMS_UPDATED, itemCards);
   }
 }

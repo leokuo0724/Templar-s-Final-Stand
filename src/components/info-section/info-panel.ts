@@ -1,6 +1,7 @@
 import { GameObjectClass, Sprite } from "kontra";
 import { COLOR } from "../../constants/color";
 import { Templar } from "../sprites/templar";
+import { ItemPanel } from "./item-panel";
 
 export const INFO_PANEL_HEIGHT = 184;
 
@@ -16,6 +17,10 @@ export class InfoPanel extends GameObjectClass {
       height: INFO_PANEL_HEIGHT,
     });
 
-    this.addChild([bg, new Templar({ x: 8, y: 42, withWeapon: true })]);
+    this.addChild([
+      bg,
+      new Templar({ x: 8, y: 42, withWeapon: true }),
+      new ItemPanel(120, 30),
+    ]);
   }
 }

@@ -52,15 +52,22 @@ export abstract class BaseCard extends SpriteClass {
 
   protected abstract getMainIcon(): GameObject;
 
-  public moveTo(x: number, y: number) {
-    tween(this, { targetX: x, targetY: y }, 200);
+  public async moveTo(x: number, y: number) {
+    await tween(this, { targetX: x, targetY: y }, 100);
   }
 
-  public setInactive() {
-    this.setChildrenOpacity(0, 200);
+  public setInactive(ms: number = 200) {
+    this.setChildrenOpacity(0, ms);
     this.isActive = false;
   }
+  public setActive(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.setChildrenOpacity(1, 200);
+    this.isActive = true;
+  }
   public reset() {
+    // for reusing
     this.setChildrenOpacity(1, 0);
     this.setScale(0);
     this.isActive = true;

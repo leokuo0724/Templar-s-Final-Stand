@@ -7,8 +7,6 @@ import { Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { tween } from "../../../utils/tween-utils";
-import { CharacterCard } from "./character-card";
-import { TemplarCard } from "./templar-card";
 
 type ItemCardProps = {
   type: CardType;
@@ -69,13 +67,8 @@ export class ItemCard extends BaseCard {
     }
   }
 
-  public equip(by: CharacterCard) {
-    tween(this.main, { targetY: -24 }, 200);
-    if (by instanceof TemplarCard) {
-      this.setChildrenOpacity(0, 200);
-    } else {
-      this.setInactive();
-    }
+  public async equip() {
+    await tween(this.main, { targetY: -24 }, 200);
   }
 }
 
