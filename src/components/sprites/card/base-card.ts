@@ -81,6 +81,7 @@ export abstract class BaseCard extends SpriteClass {
 
   protected async setChildrenOpacity(opacity: number, duration: number) {
     await Promise.all([
+      tween(this, { opacity }, duration),
       tween(this.main, { opacity }, duration),
       ...this.children.map((child) => tween(child, { opacity }, duration)),
       ...this.main.children.map((child) => tween(child, { opacity }, duration)),

@@ -91,6 +91,15 @@ export class Board extends GameObjectClass {
     });
     this.addChild(enemyCard);
     this.occupiedInfo[1][1] = enemyCard;
+
+    const gGrid = this.getGridByCoord([1, 2]);
+    const enemyCard1 = CardFactory.createCard({
+      type: CardType.ENEMY,
+      x: gGrid.x,
+      y: gGrid.y,
+    });
+    this.addChild(enemyCard1);
+    this.occupiedInfo[1][2] = enemyCard1;
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
@@ -244,7 +253,8 @@ export class Board extends GameObjectClass {
             targetJ < 0 ||
             targetJ >= GRIDS_IN_LINE ||
             !targetCard ||
-            !(targetCard instanceof CharacterCard)
+            !(targetCard instanceof CharacterCard) ||
+            targetCard.belongs === card.belongs
           )
             continue;
           battleInfos.push({ attacker: card, target: targetCard, direction });
@@ -260,7 +270,10 @@ export class Board extends GameObjectClass {
             const targetJ = j + di;
             const targetI = i + dj;
             const targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
-            if (targetCard && targetCard instanceof CharacterCard) {
+            if (
+              targetCard instanceof CharacterCard &&
+              targetCard.belongs !== card.belongs
+            ) {
               const direction =
                 di === 0 && dj === 1
                   ? Direction.RIGHT
@@ -289,7 +302,10 @@ export class Board extends GameObjectClass {
               ? this.occupiedInfo[k][fixedIndex]
               : this.occupiedInfo[fixedIndex][k];
 
-            if (targetCard instanceof CharacterCard) {
+            if (
+              targetCard instanceof CharacterCard &&
+              targetCard.belongs !== card.belongs
+            ) {
               battleInfos.push({
                 attacker: card,
                 target: targetCard,

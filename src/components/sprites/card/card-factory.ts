@@ -25,7 +25,7 @@ export class CardFactory {
           y,
           buff: {
             attack: 1,
-            hitRate: -1,
+            hitRate: -0.1,
           },
           duration: 3,
           weight: 1,

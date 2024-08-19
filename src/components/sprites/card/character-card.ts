@@ -102,7 +102,11 @@ export abstract class CharacterCard extends BaseCard {
     ]);
   }
 
-  public async execAttack(direction: Direction, target: CharacterCard) {
+  public async execAttack(
+    direction: Direction,
+    target: CharacterCard,
+    isHitBack: boolean = false
+  ) {
     const origX = this.x;
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
@@ -132,8 +136,61 @@ export abstract class CharacterCard extends BaseCard {
       );
     }
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
-    tween(this.main, { targetX: 0, targetY: 0 }, 200);
+    await tween(this.main, { targetX: 0, targetY: 0 }, 200);
+    const counterDirection = () => {
+      switch (direction) {
+        case Direction.RIGHT:
+          return Direction.LEFT;
+        case Direction.LEFT:
+          return Direction.RIGHT;
+        case Direction.UP:
+          return Direction.DOWN;
+        case Direction.DOWN:
+          return Direction.UP;
+      }
+    };
+    await target.applyDamage(this, counterDirection(), isHitBack);
   }
+
+  public async applyDamage(
+    attacker: CharacterCard,
+    counterDirection: Direction,
+    isHitBack: boolean = false
+  ) {
+    const { attack, hitBackAttack, hitRate, criticalRate } = attacker;
+    const isHit = Math.random() <= hitRate;
+    if (!isHit) {
+      // TODO: show miss effect
+      console.log("miss");
+      return;
+    }
+    const isCritical = Math.random() <= criticalRate;
+    if (isCritical) {
+      // TODO: show critical effect
+      console.log("critical");
+    }
+    const damage = isHitBack ? hitBackAttack : attack;
+    const calculatedDamage = isCritical ? damage * 2 : damage;
+    const isDead = this.updateHealth(-calculatedDamage);
+    if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
+      await this.execAttack(counterDirection, attacker, true);
+    }
+  }
+
+  // return true if the card is dead
+  private updateHealth(value: number): boolean | undefined {
+    this.health += value;
+    if (this.health <= 0) {
+      this.setInactive();
+      this.deathCallback();
+      return true;
+    }
+    if (this.health > this.maxHealth) {
+      this.health = this.maxHealth;
+    }
+    this.healthText.text = `${this.health}`;
+  }
+  protected abstract deathCallback(): void;
 
   public applyBuff(buff: OptionalCharacterProps) {
     this.maxHealth += buff.maxHealth || 0;

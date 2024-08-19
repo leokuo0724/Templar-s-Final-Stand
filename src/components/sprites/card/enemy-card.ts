@@ -26,4 +26,6 @@ export class EnemyCard extends CharacterCard {
   protected getMainIcon() {
     return new Sword(-3, -40, 0.45);
   }
+
+  protected deathCallback(): void {}
 }

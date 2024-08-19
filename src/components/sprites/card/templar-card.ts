@@ -15,11 +15,11 @@ export class TemplarCard extends CharacterCard {
       health: 10,
       shield: 0,
       dodgeRate: 0,
-      attack: 1,
+      attack: 5,
       hitRate: 0.8,
       criticalRate: 0.2,
       attackDirection: AttackDirection.LINE,
-      hitBackAttack: 0,
+      hitBackAttack: 1,
     });
   }
 
@@ -31,4 +31,6 @@ export class TemplarCard extends CharacterCard {
     });
     return templar;
   }
+
+  protected deathCallback() {}
 }
