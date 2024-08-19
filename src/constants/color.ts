@@ -1,4 +1,5 @@
 export const COLOR = {
+  RED_6: "#AD5F52",
   RED_7: "#913636",
   YELLOW_6: "#E1C584",
   YELLOW_7: "#C89660",

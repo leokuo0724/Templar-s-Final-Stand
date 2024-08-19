@@ -1,16 +1,16 @@
 import { Belongs, CardType } from "./type";
 
-import { Templar } from "../templar";
 import { CharacterCard } from "./character-card";
 import { AttackDirection } from "../../../types/character";
+import { Sword } from "../assets/sword";
 
-export class TemplarCard extends CharacterCard {
+export class EnemyCard extends CharacterCard {
   constructor({ x, y }: { x: number; y: number }) {
     super({
-      type: CardType.TEMPLAR,
+      type: CardType.ENEMY,
       x,
       y,
-      belongs: Belongs.PLAYER,
+      belongs: Belongs.ENEMY,
       maxHealth: 10,
       health: 10,
       shield: 0,
@@ -18,17 +18,12 @@ export class TemplarCard extends CharacterCard {
       attack: 1,
       hitRate: 0.8,
       criticalRate: 0.2,
-      attackDirection: AttackDirection.LINE,
+      attackDirection: AttackDirection.FRONT,
       hitBackAttack: 0,
     });
   }
 
   protected getMainIcon() {
-    const templar = new Templar({
-      x: -12,
-      y: -20,
-      scale: 0.33,
-    });
-    return templar;
+    return new Sword(-3, -40, 0.45);
   }
 }

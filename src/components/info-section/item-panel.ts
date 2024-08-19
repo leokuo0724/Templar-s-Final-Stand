@@ -9,7 +9,7 @@ import { GRID_SIZE } from "../../constants/size";
 const ITEM_PER_PAGE = 4;
 
 export class ItemPanel extends SpriteClass {
-  private pageIdx = 0;
+  // private pageIdx = 0;
 
   constructor(x: number, y: number) {
     super({

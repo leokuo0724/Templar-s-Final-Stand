@@ -11,6 +11,13 @@ import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
+import { AttackDirection } from "../../types/character";
+
+type BattleInfo = {
+  attacker: CharacterCard;
+  target: CharacterCard;
+  direction: Direction;
+};
 
 const GAP = 4;
 const PADDING = 8;
@@ -75,6 +82,15 @@ export class Board extends GameObjectClass {
     });
     this.addChild(aeaponCard);
     this.occupiedInfo[3][4] = aeaponCard;
+
+    const eGrid = this.getGridByCoord([1, 1]);
+    const enemyCard = CardFactory.createCard({
+      type: CardType.ENEMY,
+      x: eGrid.x,
+      y: eGrid.y,
+    });
+    this.addChild(enemyCard);
+    this.occupiedInfo[1][1] = enemyCard;
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
@@ -83,9 +99,12 @@ export class Board extends GameObjectClass {
     return grid;
   }
 
-  private onSwipe(direction: Direction) {
-    this.moveCards(direction);
+  private async onSwipe(direction: Direction) {
+    await this.moveCards(direction);
+    await this.checkAttack(direction);
+    emit(EVENT.SWIPE_FINISH);
   }
+
   private async moveCards(direction: Direction) {
     const moveRight = direction === Direction.RIGHT;
     const moveLeft = direction === Direction.LEFT;
@@ -99,7 +118,7 @@ export class Board extends GameObjectClass {
     const stepI = moveRight ? -1 : 1;
     const stepJ = moveDown ? -1 : 1;
 
-    // move cards
+    // Move cards
     const moveInfos: { card: BaseCard; x: number; y: number }[] = [];
     for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
       for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
@@ -168,7 +187,7 @@ export class Board extends GameObjectClass {
                 equippedItems.push(occupiedCard);
                 this.removeChild(occupiedCard);
               } else {
-                card.setInactive();
+                occupiedCard.setInactive();
               }
               const targetGrid = this.getGridByCoord([nextJ, nextI]);
               await card.moveTo(targetGrid.x, targetGrid.y);
@@ -190,7 +209,107 @@ export class Board extends GameObjectClass {
       const gm = GameManager.getInstance();
       gm.addItems(equippedItems);
     }
+  }
 
-    emit(EVENT.SWIPE_FINISH);
+  private async checkAttack(direction: Direction) {
+    const battleInfos: BattleInfo[] = [];
+    for (let i = 0; i < GRIDS_IN_LINE; i++) {
+      for (let j = 0; j < GRIDS_IN_LINE; j++) {
+        const card = this.occupiedInfo[j][i];
+        if (!(card instanceof CharacterCard)) continue;
+        const { attackDirection } = card;
+        const isNormalCase = attackDirection === AttackDirection.FRONT;
+        const isAroundCase = attackDirection === AttackDirection.AROUND;
+        const isLineCase = attackDirection === AttackDirection.LINE;
+
+        if (isNormalCase) {
+          const targetJ =
+            j +
+            (direction === Direction.UP
+              ? -1
+              : direction === Direction.DOWN
+              ? 1
+              : 0);
+          const targetI =
+            i +
+            (direction === Direction.LEFT
+              ? -1
+              : direction === Direction.RIGHT
+              ? 1
+              : 0);
+          const targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
+          if (
+            targetI < 0 ||
+            targetI >= GRIDS_IN_LINE ||
+            targetJ < 0 ||
+            targetJ >= GRIDS_IN_LINE ||
+            !targetCard ||
+            !(targetCard instanceof CharacterCard)
+          )
+            continue;
+          battleInfos.push({ attacker: card, target: targetCard, direction });
+        } else if (isAroundCase) {
+          // check 4 directions
+          const directions = [
+            [0, 1],
+            [1, 0],
+            [0, -1],
+            [-1, 0],
+          ];
+          for (const [di, dj] of directions) {
+            const targetJ = j + di;
+            const targetI = i + dj;
+            const targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
+            if (targetCard && targetCard instanceof CharacterCard) {
+              const direction =
+                di === 0 && dj === 1
+                  ? Direction.RIGHT
+                  : di === 1 && dj === 0
+                  ? Direction.DOWN
+                  : di === 0 && dj === -1
+                  ? Direction.LEFT
+                  : Direction.UP;
+              battleInfos.push({
+                attacker: card,
+                target: targetCard,
+                direction,
+              });
+            }
+          }
+        } else if (isLineCase) {
+          // check the same direction of the card
+          const isVertical =
+            direction === Direction.UP || direction === Direction.DOWN;
+          const fixedIndex = isVertical ? i : j;
+          const variableIndex = isVertical ? j : i;
+
+          for (let k = 0; k < GRIDS_IN_LINE; k++) {
+            if (k === variableIndex) continue;
+            const targetCard = isVertical
+              ? this.occupiedInfo[k][fixedIndex]
+              : this.occupiedInfo[fixedIndex][k];
+
+            if (targetCard instanceof CharacterCard) {
+              battleInfos.push({
+                attacker: card,
+                target: targetCard,
+                direction:
+                  k < variableIndex && isVertical
+                    ? Direction.UP
+                    : k < variableIndex && !isVertical
+                    ? Direction.LEFT
+                    : k > variableIndex && isVertical
+                    ? Direction.DOWN
+                    : Direction.RIGHT,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    for (const { attacker, target, direction } of battleInfos) {
+      await attacker.execAttack(direction, target);
+    }
   }
 }

@@ -102,7 +102,7 @@ export abstract class CharacterCard extends BaseCard {
     ]);
   }
 
-  public async playAttack(direction: Direction) {
+  public async execAttack(direction: Direction, target: CharacterCard) {
     const origX = this.x;
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);

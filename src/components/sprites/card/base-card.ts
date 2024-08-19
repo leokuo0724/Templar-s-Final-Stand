@@ -44,7 +44,12 @@ export abstract class BaseCard extends SpriteClass {
       radius: 24,
       color: getCardColor(type, CardPart.CIRCLE),
       anchor: { x: 0.5, y: 0.5 },
-      y: this.type === CardType.TEMPLAR ? 0 : -20,
+      y:
+        this.type === CardType.TEMPLAR
+          ? 0
+          : this.type === CardType.ENEMY
+          ? -12
+          : -20,
     });
     const mainIcon = this.getMainIcon();
     this.main.addChild([circle, mainIcon]);
@@ -74,10 +79,12 @@ export abstract class BaseCard extends SpriteClass {
     // TODO: Props update
   }
 
-  protected setChildrenOpacity(opacity: number, duration: number) {
-    tween(this, { opacity }, duration);
-    this.children.forEach((child) => tween(child, { opacity }, duration));
-    this.main.children.forEach((child) => tween(child, { opacity }, duration));
+  protected async setChildrenOpacity(opacity: number, duration: number) {
+    await Promise.all([
+      tween(this.main, { opacity }, duration),
+      ...this.children.map((child) => tween(child, { opacity }, duration)),
+      ...this.main.children.map((child) => tween(child, { opacity }, duration)),
+    ]);
   }
 
   public update(): void {
@@ -111,6 +118,13 @@ function getCardColor(type: CardType, part: CardPart) {
           return COLOR.BLUE_7;
         case CardPart.CIRCLE:
           return COLOR.BLUE_6;
+      }
+    case CardType.ENEMY:
+      switch (part) {
+        case CardPart.BACKGROUND:
+          return COLOR.RED_7;
+        case CardPart.CIRCLE:
+          return COLOR.RED_6;
       }
   }
 }

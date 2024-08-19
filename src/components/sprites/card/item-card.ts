@@ -68,8 +68,11 @@ export class ItemCard extends BaseCard {
   }
 
   public async equip() {
-    await tween(this.main, { targetY: -24 }, 200, 50);
-    this.main.y = 0;
+    await Promise.all([
+      tween(this.main, { targetY: -24 }, 300, 50),
+      this.setChildrenOpacity(0, 300),
+    ]);
+    this.main.y = 0; // reset
   }
 }
 

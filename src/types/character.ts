@@ -1,8 +1,7 @@
 export enum AttackDirection {
   FRONT = "front", // 1 grid
-  FORWARD = "forward", // 2 grid
-  AROUND = "around", // 4 grid
   LINE = "line", // 4 grid
+  AROUND = "around", // 4 grid
 }
 
 export type CharacterProps = {

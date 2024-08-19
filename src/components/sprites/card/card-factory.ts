@@ -1,4 +1,5 @@
 import { BaseCard } from "./base-card";
+import { EnemyCard } from "./enemy-card";
 import { ItemCard } from "./item-card";
 import { TemplarCard } from "./templar-card";
 
@@ -15,6 +16,8 @@ export class CardFactory {
     switch (type) {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
+      case CardType.ENEMY:
+        return new EnemyCard({ x, y });
       case CardType.WEAPON:
         return new ItemCard({
           type,
