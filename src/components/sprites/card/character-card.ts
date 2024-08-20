@@ -1,4 +1,4 @@
-import { Text } from "kontra";
+import { Text, TextClass } from "kontra";
 import { SwordIcon } from "../icons/sword-icon";
 import { BaseCard } from "./base-card";
 import { Belongs, CardType } from "./type";
@@ -33,6 +33,7 @@ export abstract class CharacterCard extends BaseCard {
   protected attackText: Text;
   protected healthText: Text;
   protected shieldText: Text;
+  protected impactText: ImpactText;
 
   public belongs: Belongs;
   public maxHealth: number;
@@ -92,6 +93,7 @@ export abstract class CharacterCard extends BaseCard {
       y: -34,
       ...COMMON_TEXT_CONFIG,
     });
+    this.impactText = new ImpactText(0);
     this.main.addChild([
       new SwordIcon(20, 30),
       this.attackText,
@@ -99,6 +101,7 @@ export abstract class CharacterCard extends BaseCard {
       this.healthText,
       new ShieldIcon(28, -46),
       this.shieldText,
+      this.impactText,
     ]);
   }
 
@@ -107,6 +110,7 @@ export abstract class CharacterCard extends BaseCard {
     target: CharacterCard,
     isHitBack: boolean = false
   ) {
+    if (target.health <= 0) return;
     const origX = this.x;
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
@@ -136,7 +140,7 @@ export abstract class CharacterCard extends BaseCard {
       );
     }
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
-    await tween(this.main, { targetX: 0, targetY: 0 }, 200);
+
     const counterDirection = () => {
       switch (direction) {
         case Direction.RIGHT:
@@ -149,7 +153,10 @@ export abstract class CharacterCard extends BaseCard {
           return Direction.UP;
       }
     };
-    await target.applyDamage(this, counterDirection(), isHitBack);
+    await Promise.all([
+      tween(this.main, { targetX: 0, targetY: 0 }, 200),
+      target.applyDamage(this, counterDirection(), isHitBack),
+    ]);
   }
 
   public async applyDamage(
@@ -160,17 +167,18 @@ export abstract class CharacterCard extends BaseCard {
     const { attack, hitBackAttack, hitRate, criticalRate } = attacker;
     const isHit = Math.random() <= hitRate;
     if (!isHit) {
-      // TODO: show miss effect
-      console.log("miss");
+      await this.impactText.show("Miss");
       return;
     }
     const isCritical = Math.random() <= criticalRate;
-    if (isCritical) {
-      // TODO: show critical effect
-      console.log("critical");
-    }
     const damage = isHitBack ? hitBackAttack : attack;
     const calculatedDamage = isCritical ? damage * 2 : damage;
+    if (isCritical) {
+      await this.impactText.show(`Critical -${calculatedDamage}`);
+    } else {
+      await this.impactText.show(`-${calculatedDamage}`);
+    }
+
     const isDead = this.updateHealth(-calculatedDamage);
     if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
       await this.execAttack(counterDirection, attacker, true);
@@ -209,5 +217,29 @@ export abstract class CharacterCard extends BaseCard {
     this.shieldText.text = `${this.shield}`;
 
     // TODO: show buff effect
+  }
+}
+
+class ImpactText extends TextClass {
+  constructor(y: number) {
+    super({
+      text: "",
+      x: 0,
+      y,
+      color: COLOR.DARK_6,
+      font: "24px Trebuchet MS",
+      anchor: { x: 0.5, y: 0.5 },
+      opacity: 0,
+    });
+  }
+
+  public async show(text: string) {
+    this.text = text;
+    await Promise.all([
+      tween(this, { opacity: 1 }, 500),
+      tween(this, { targetY: this.y - 10 }, 500),
+    ]);
+    await tween(this, { opacity: 0 }, 300);
+    this.y += 10;
   }
 }

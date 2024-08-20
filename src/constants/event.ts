@@ -1,5 +1,7 @@
 export const EVENT = {
-  SWIPE: "swipe",
-  SWIPE_FINISH: "swipe_finish",
-  ITEMS_UPDATED: "items_updated",
+  SWIPE: "s",
+  SWIPE_FINISH: "s_f",
+  ITEMS_UPDATED: "i_u",
+  ENEMY_DEAD: "e_d",
+  REMOVE_ENEMY_DEAD: "r_e_d",
 };

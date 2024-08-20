@@ -12,6 +12,7 @@ import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
 import { AttackDirection } from "../../types/character";
+import { EnemyCard } from "../sprites/card/enemy-card";
 
 type BattleInfo = {
   attacker: CharacterCard;
@@ -100,12 +101,30 @@ export class Board extends GameObjectClass {
     });
     this.addChild(enemyCard1);
     this.occupiedInfo[1][2] = enemyCard1;
+
+    on(EVENT.REMOVE_ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
     const grid = this.grids[coord[0] + coord[1] * GRIDS_IN_LINE];
     if (!grid) throw new Error(`Grid not found by coord: ${coord}`);
     return grid;
+  }
+
+  private onRemoveEnemyDead(card: EnemyCard) {
+    for (let i = 0; i < GRIDS_IN_LINE; i++) {
+      let found = false;
+      for (let j = 0; j < GRIDS_IN_LINE; j++) {
+        const c = this.occupiedInfo[j][i];
+        if (c === card) {
+          this.occupiedInfo[j][i] = null;
+          found = true;
+          break;
+        }
+      }
+      if (found) break;
+    }
+    this.removeChild(card);
   }
 
   private async onSwipe(direction: Direction) {

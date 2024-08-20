@@ -2,6 +2,7 @@ import { emit, on, onInput } from "kontra";
 import { EVENT } from "../constants/event";
 import { Direction } from "../types/direction";
 import { ItemCard } from "../components/sprites/card/item-card";
+import { EnemyCard } from "../components/sprites/card/enemy-card";
 
 enum GAME_STATE {
   IDLE,
@@ -13,6 +14,7 @@ export class GameManager {
   private state: GAME_STATE = GAME_STATE.IDLE;
 
   public currentItems: ItemCard[] = [];
+  public deprecatedEnemyCards: EnemyCard[] = [];
 
   private constructor() {
     onInput(
@@ -32,6 +34,7 @@ export class GameManager {
     on(EVENT.SWIPE_FINISH, () => {
       this.state = GAME_STATE.IDLE;
     });
+    on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
   }
   static getInstance() {
     if (!GameManager.instance) {
@@ -49,5 +52,10 @@ export class GameManager {
   public addItems(itemCards: ItemCard[]) {
     itemCards.forEach((item) => this.currentItems.push(item));
     emit(EVENT.ITEMS_UPDATED, itemCards);
+  }
+
+  public onEnemyDead(card: EnemyCard) {
+    this.deprecatedEnemyCards.push(card);
+    emit(EVENT.REMOVE_ENEMY_DEAD, card);
   }
 }

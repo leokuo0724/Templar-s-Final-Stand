@@ -16,7 +16,7 @@ export class TemplarCard extends CharacterCard {
       shield: 0,
       dodgeRate: 0,
       attack: 5,
-      hitRate: 0.8,
+      hitRate: 1,
       criticalRate: 0.2,
       attackDirection: AttackDirection.LINE,
       hitBackAttack: 1,
