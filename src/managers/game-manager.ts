@@ -11,7 +11,9 @@ enum GAME_STATE {
 
 export class GameManager {
   private static instance: GameManager;
+
   private state: GAME_STATE = GAME_STATE.IDLE;
+  public moveCount = 0;
 
   public currentItems: ItemCard[] = [];
   public deprecatedEnemyCards: EnemyCard[] = [];
@@ -45,6 +47,7 @@ export class GameManager {
 
   private swipe(direction: Direction) {
     if (this.state !== GAME_STATE.IDLE) return;
+    this.moveCount++;
     this.state = GAME_STATE.SWIPING;
     emit(EVENT.SWIPE, direction);
   }
