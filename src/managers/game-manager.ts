@@ -3,6 +3,8 @@ import { EVENT } from "../constants/event";
 import { Direction } from "../types/direction";
 import { ItemCard } from "../components/sprites/card/item-card";
 import { EnemyCard } from "../components/sprites/card/enemy-card";
+import { zzfx, zzfxM, zzfxP } from "../audios/zzfx";
+import { bgm } from "../audios/bgm";
 
 enum GAME_STATE {
   IDLE,
@@ -37,6 +39,9 @@ export class GameManager {
       this.state = GAME_STATE.IDLE;
     });
     on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
+    // @ts-ignore
+    const music = zzfxP(...zzfxM(...bgm));
+    music.loop = true;
   }
   static getInstance() {
     if (!GameManager.instance) {
@@ -49,6 +54,7 @@ export class GameManager {
     if (this.state !== GAME_STATE.IDLE) return;
     this.moveCount++;
     this.state = GAME_STATE.SWIPING;
+    zzfx(...[3, , 576, , , 0.007, 1, 0.6, , , -273, , , , , , , 0.64]);
     emit(EVENT.SWIPE, direction);
   }
 

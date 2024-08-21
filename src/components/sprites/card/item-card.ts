@@ -7,6 +7,7 @@ import { Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { tween } from "../../../utils/tween-utils";
+import { zzfx } from "../../../audios/zzfx";
 
 type ItemCardProps = {
   type: CardType;
@@ -72,6 +73,7 @@ export class ItemCard extends BaseCard {
       tween(this.main, { targetY: -24 }, 300, 50),
       this.setChildrenOpacity(0, 300),
     ]);
+    zzfx(...[0.4, , 100, , 0.3, 0.4, 1, 0.1, , , 50, , 0.09, , , , , 0.5, 0.2]);
     this.main.y = 0; // reset
   }
 }

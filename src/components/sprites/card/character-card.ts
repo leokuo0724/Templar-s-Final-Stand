@@ -12,6 +12,7 @@ import {
 } from "../../../types/character";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { COLOR } from "../../../constants/color";
+import { zzfx } from "../../../audios/zzfx";
 
 type CharacterCardProps = {
   type: CardType;
@@ -139,6 +140,7 @@ export abstract class CharacterCard extends BaseCard {
         40
       );
     }
+    zzfx(...[3, , 179, , 0.03, 0.06, , 2.8, , , , , , 0.5, 25, , , 0.46, 0.05]);
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
 
     const counterDirection = () => {
