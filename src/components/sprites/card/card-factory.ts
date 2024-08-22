@@ -19,7 +19,7 @@ type ItemSetProps = Pick<ItemCardProps, "buff" | "duration" | "weight">;
 export class CardFactory {
   static createCard(x: number, y: number): BaseCard {
     const { moveCount } = GameManager.getInstance();
-    const isSpawnEnemy = moveCount % 13 === 0 || moveCount % 2 === 0;
+    const isSpawnEnemy = moveCount % 13 === 0 || moveCount % 3 === 0;
     if (isSpawnEnemy) {
       return CardFactory.factory({
         type: CardType.ENEMY,
@@ -27,7 +27,11 @@ export class CardFactory {
         y,
       });
     } else {
-      const picked = randomPick([CardType.SHIELD]);
+      const picked = randomPick([
+        CardType.SHIELD,
+        CardType.WEAPON,
+        CardType.POTION,
+      ]);
       return CardFactory.factory({
         type: picked,
         x,
@@ -36,10 +40,10 @@ export class CardFactory {
     }
   }
 
-  static factory({ type, x, y }: CreateCardProps): BaseCard {
+  static factory(props: CreateCardProps): BaseCard {
+    const { type, x, y } = props;
     const gm = GameManager.getInstance();
     const factor = gm.level + 1;
-    console.log("factor", factor);
     switch (type) {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
@@ -54,21 +58,26 @@ export class CardFactory {
         return new EnemyCard({ x, y });
       case CardType.WEAPON:
         return new ItemCard({
-          type,
-          x,
-          y,
+          ...props,
           ...CardFactory.randomPickWeapon(),
         });
       case CardType.SHIELD:
         return new ItemCard({
-          type,
-          x,
-          y,
+          ...props,
           buff: {
             shield: 1 * factor,
           },
           duration: 2,
           weight: 1,
+        });
+      case CardType.POTION:
+        return new ItemCard({
+          ...props,
+          buff: {
+            health: 1 * factor * (Math.random() > 0.99 ? 1 : -1),
+          },
+          duration: 3,
+          weight: 0,
         });
       default:
         throw new Error(`Invalid card type: ${type}`);

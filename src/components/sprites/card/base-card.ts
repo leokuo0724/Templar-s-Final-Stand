@@ -61,8 +61,8 @@ export abstract class BaseCard extends SpriteClass {
     await tween(this, { targetX: x, targetY: y }, 100);
   }
 
-  public setInactive(ms: number = 200) {
-    this.setChildrenOpacity(0, ms);
+  public async setInactive(ms: number = 200) {
+    await this.setChildrenOpacity(0, ms);
     this.isActive = false;
   }
   public setActive(x: number, y: number) {
@@ -134,6 +134,13 @@ function getCardColor(type: CardType, part: CardPart) {
           return COLOR.BROWN_7;
         case CardPart.CIRCLE:
           return COLOR.BROWN_6;
+      }
+    case CardType.POTION:
+      switch (part) {
+        case CardPart.BACKGROUND:
+          return COLOR.GREEN_6;
+        case CardPart.CIRCLE:
+          return COLOR.GREEN_5;
       }
   }
 }

@@ -177,11 +177,14 @@ export class Board extends GameObjectClass {
               await occupiedCard.equip();
               this.occupiedInfo[nextJ][nextI] = null;
               // anim effect
-              if (card instanceof TemplarCard) {
+              if (
+                card instanceof TemplarCard &&
+                occupiedCard.type !== CardType.POTION
+              ) {
                 equippedItems.push(occupiedCard);
                 this.removeChild(occupiedCard);
               } else {
-                occupiedCard.setInactive();
+                occupiedCard.deprecate(() => this.removeChild(occupiedCard));
               }
               const targetGrid = this.getGridByCoord([nextJ, nextI]);
               await card.moveTo(targetGrid.x, targetGrid.y);
@@ -196,6 +199,7 @@ export class Board extends GameObjectClass {
         const targetGrid = this.getGridByCoord([currJ, currI]);
         await card.moveTo(targetGrid.x, targetGrid.y);
         this.occupiedInfo[j][i] = null;
+        if (card instanceof CharacterCard && card.health <= 0) continue;
         this.occupiedInfo[currJ][currI] = card;
       }
     }

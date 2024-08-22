@@ -29,7 +29,7 @@ export class TemplarCard extends CharacterCard {
   protected resetProps(): void {
     this.health = 10;
     this.shield = 0;
-    this.attack = 5;
+    this.attack = 4;
     this.hitRate = 1;
     this.criticalRate = 0.2;
     this.attackDirection = AttackDirection.FRONT;

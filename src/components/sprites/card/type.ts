@@ -3,6 +3,7 @@ export enum CardType {
   ENEMY,
   WEAPON,
   SHIELD,
+  POTION,
 }
 
 export enum Belongs {

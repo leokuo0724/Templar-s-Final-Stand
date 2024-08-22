@@ -189,16 +189,12 @@ export abstract class CharacterCard extends BaseCard {
 
   public applyBuff(buff: OptionalCharacterProps) {
     this.updateHealth(buff.health || 0);
-    this.shield += buff.shield || 0;
-    this.attack += buff.attack || 0;
+    this.updateShield(buff.shield || 0);
+    this.updateAttack(buff.attack || 0);
     this.hitRate += buff.hitRate || 0;
     this.criticalRate += buff.criticalRate || 0;
     this.attackDirection = buff.attackDirection || this.attackDirection;
     this.hitBackAttack += buff.hitBackAttack || 0;
-
-    this.attackText.text = `${this.attack}`;
-    this.healthText.text = `${this.health}`;
-    this.shieldText.text = `${this.shield}`;
 
     // TODO: show buff effect
   }

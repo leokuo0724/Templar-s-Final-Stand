@@ -22,7 +22,6 @@ export class GameManager {
 
   public currentItems: ItemCard[] = [];
   public reusableEnemyCards: EnemyCard[] = [];
-  public reusableWeaponCards: ItemCard[] = [];
 
   private constructor() {
     onInput(
