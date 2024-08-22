@@ -76,6 +76,8 @@ export class ItemCard extends BaseCard {
     zzfx(...[0.4, , 100, , 0.3, 0.4, 1, 0.1, , , 50, , 0.09, , , , , 0.5, 0.2]);
     this.main.y = 0; // reset
   }
+
+  protected resetProps(): void {}
 }
 
 // Utils

@@ -73,11 +73,12 @@ export abstract class BaseCard extends SpriteClass {
   }
   public reset() {
     // for reusing
+    this.isActive = true;
     this.setChildrenOpacity(1, 0);
     this.setScale(0);
-    this.isActive = true;
-    // TODO: Props update
+    this.resetProps();
   }
+  protected abstract resetProps(): void;
 
   protected async setChildrenOpacity(opacity: number, duration: number) {
     await Promise.all([

@@ -11,16 +11,8 @@ export class TemplarCard extends CharacterCard {
       x,
       y,
       belongs: Belongs.PLAYER,
-      maxHealth: 10,
-      health: 10,
-      shield: 0,
-      dodgeRate: 0,
-      attack: 5,
-      hitRate: 1,
-      criticalRate: 0.2,
-      attackDirection: AttackDirection.LINE,
-      hitBackAttack: 1,
     });
+    this.resetProps();
   }
 
   protected getMainIcon() {
@@ -33,4 +25,15 @@ export class TemplarCard extends CharacterCard {
   }
 
   protected deathCallback() {}
+
+  protected resetProps(): void {
+    this.health = 10;
+    this.shield = 0;
+    this.attack = 2;
+    this.hitRate = 1;
+    this.criticalRate = 0.2;
+    this.attackDirection = AttackDirection.LINE;
+    this.hitBackAttack = 0;
+    this.refreshText();
+  }
 }

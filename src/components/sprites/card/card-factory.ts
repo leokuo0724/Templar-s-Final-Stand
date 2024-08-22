@@ -1,3 +1,4 @@
+import { GameManager } from "../../../managers/game-manager";
 import { BaseCard } from "./base-card";
 import { EnemyCard } from "./enemy-card";
 import { ItemCard } from "./item-card";
@@ -13,10 +14,20 @@ type CreateCardProps = {
 
 export class CardFactory {
   static createCard({ type, x, y }: CreateCardProps): BaseCard {
+    // TODO: control values
+    // TODO: reuse cards
+    const gm = GameManager.getInstance();
     switch (type) {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
       case CardType.ENEMY:
+        if (gm.deprecatedEnemyCards.length > 3) {
+          const card = gm.deprecatedEnemyCards.pop()!;
+          card.reset();
+          card.x = x;
+          card.y = y;
+          return card;
+        }
         return new EnemyCard({ x, y });
       case CardType.WEAPON:
         return new ItemCard({

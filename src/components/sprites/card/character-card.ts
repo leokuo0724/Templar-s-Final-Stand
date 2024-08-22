@@ -19,15 +19,6 @@ type CharacterCardProps = {
   x: number;
   y: number;
   belongs: Belongs;
-  maxHealth: number;
-  health: number;
-  shield: number;
-  dodgeRate: number;
-  attack: number;
-  hitRate: number;
-  criticalRate: number;
-  attackDirection: AttackDirection;
-  hitBackAttack: number;
 };
 
 export abstract class CharacterCard extends BaseCard {
@@ -37,42 +28,17 @@ export abstract class CharacterCard extends BaseCard {
   protected impactText: ImpactText;
 
   public belongs: Belongs;
-  public maxHealth: number;
-  public health: number;
-  public shield: number;
-  public dodgeRate: number;
-  public attack: number;
-  public hitRate: number;
-  public criticalRate: number;
-  public attackDirection: AttackDirection;
-  public hitBackAttack: number;
+  public health: number = 0;
+  public shield: number = 0;
+  public attack: number = 0;
+  public hitRate: number = 0;
+  public criticalRate: number = 0;
+  public attackDirection: AttackDirection = AttackDirection.FRONT;
+  public hitBackAttack: number = 0;
 
-  constructor({
-    type,
-    x,
-    y,
-    belongs,
-    maxHealth,
-    health,
-    shield,
-    dodgeRate,
-    attack,
-    hitRate,
-    criticalRate,
-    attackDirection,
-    hitBackAttack,
-  }: CharacterCardProps) {
+  constructor({ type, x, y, belongs }: CharacterCardProps) {
     super({ type, x, y });
     this.belongs = belongs;
-    this.maxHealth = maxHealth;
-    this.health = health;
-    this.shield = shield;
-    this.dodgeRate = dodgeRate; // TODO: consider to delete
-    this.attack = attack;
-    this.hitRate = hitRate;
-    this.criticalRate = criticalRate;
-    this.attackDirection = attackDirection;
-    this.hitBackAttack = hitBackAttack;
 
     this.color = COLOR.DARK_6;
 
@@ -188,26 +154,35 @@ export abstract class CharacterCard extends BaseCard {
   }
 
   // return true if the card is dead
-  private updateHealth(value: number): boolean | undefined {
+  protected updateHealth(value: number): boolean | undefined {
     this.health += value;
     if (this.health <= 0) {
       this.setInactive();
       this.deathCallback();
       return true;
     }
-    if (this.health > this.maxHealth) {
-      this.health = this.maxHealth;
-    }
     this.healthText.text = `${this.health}`;
   }
   protected abstract deathCallback(): void;
 
+  protected updateShield(value: number) {
+    this.shield += value;
+    if (this.shield <= 0) this.shield = 0;
+    this.shieldText.text = `${this.shield}`;
+  }
+  protected updateAttack(value: number) {
+    this.attack += value;
+    this.attackText.text = `${this.attack}`;
+  }
+  protected refreshText() {
+    this.attackText.text = `${this.attack}`;
+    this.healthText.text = `${this.health}`;
+    this.shieldText.text = `${this.shield}`;
+  }
+
   public applyBuff(buff: OptionalCharacterProps) {
-    this.maxHealth += buff.maxHealth || 0;
-    this.health += buff.health || 0;
-    this.health = Math.min(this.health, this.maxHealth);
+    this.updateHealth(buff.health || 0);
     this.shield += buff.shield || 0;
-    this.dodgeRate += buff.dodgeRate || 0;
     this.attack += buff.attack || 0;
     this.hitRate += buff.hitRate || 0;
     this.criticalRate += buff.criticalRate || 0;

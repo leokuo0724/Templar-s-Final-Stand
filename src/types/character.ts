@@ -5,10 +5,8 @@ export enum AttackDirection {
 }
 
 export type CharacterProps = {
-  maxHealth: number;
   health: number;
   shield: number;
-  dodgeRate: number;
   attack: number;
   hitRate: number;
   criticalRate: number;

@@ -130,6 +130,7 @@ export class Board extends GameObjectClass {
   private async onSwipe(direction: Direction) {
     await this.moveCards(direction);
     await this.checkAttack(direction);
+    this.spawnCards();
     emit(EVENT.SWIPE_FINISH);
   }
 
@@ -237,6 +238,28 @@ export class Board extends GameObjectClass {
       const gm = GameManager.getInstance();
       gm.addItems(equippedItems);
     }
+  }
+
+  private spawnCards() {
+    const emptyIndices = [];
+    for (let i = 0; i < GRIDS_IN_LINE; i++) {
+      for (let j = 0; j < GRIDS_IN_LINE; j++) {
+        if (!this.occupiedInfo[j][i]) {
+          emptyIndices.push([j, i]);
+        }
+      }
+    }
+    const randomIndex = Math.floor(Math.random() * emptyIndices.length);
+    const [j, i] = emptyIndices[randomIndex];
+    const grid = this.getGridByCoord([j, i]);
+    // TODO: determine the type of the card
+    const card = CardFactory.createCard({
+      type: CardType.ENEMY,
+      x: grid.x,
+      y: grid.y,
+    });
+    this.addChild(card);
+    this.occupiedInfo[j][i] = card;
   }
 
   private async checkAttack(direction: Direction) {
