@@ -114,6 +114,13 @@ function getCardColor(type: CardType, part: CardPart) {
         case CardPart.CIRCLE:
           return COLOR.YELLOW_6;
       }
+    case CardType.ENEMY:
+      switch (part) {
+        case CardPart.BACKGROUND:
+          return COLOR.RED_7;
+        case CardPart.CIRCLE:
+          return COLOR.RED_6;
+      }
     case CardType.WEAPON:
       switch (part) {
         case CardPart.BACKGROUND:
@@ -121,12 +128,12 @@ function getCardColor(type: CardType, part: CardPart) {
         case CardPart.CIRCLE:
           return COLOR.BLUE_6;
       }
-    case CardType.ENEMY:
+    case CardType.SHIELD:
       switch (part) {
         case CardPart.BACKGROUND:
-          return COLOR.RED_7;
+          return COLOR.BROWN_7;
         case CardPart.CIRCLE:
-          return COLOR.RED_6;
+          return COLOR.BROWN_6;
       }
   }
 }

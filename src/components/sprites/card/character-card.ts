@@ -147,7 +147,8 @@ export abstract class CharacterCard extends BaseCard {
       await this.impactText.show(`-${calculatedDamage}`);
     }
 
-    const isDead = this.updateHealth(-calculatedDamage);
+    const remainingDamage = this.updateShield(-calculatedDamage);
+    const isDead = this.updateHealth(-remainingDamage);
     if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
       await this.execAttack(counterDirection, attacker, true);
     }
@@ -165,10 +166,15 @@ export abstract class CharacterCard extends BaseCard {
   }
   protected abstract deathCallback(): void;
 
-  protected updateShield(value: number) {
+  protected updateShield(value: number): number {
+    let remainingDamage: number = 0;
     this.shield += value;
-    if (this.shield <= 0) this.shield = 0;
+    if (this.shield <= 0) {
+      remainingDamage = -this.shield;
+      this.shield = 0;
+    }
     this.shieldText.text = `${this.shield}`;
+    return remainingDamage;
   }
   protected updateAttack(value: number) {
     this.attack += value;

@@ -16,10 +16,13 @@ export class GameManager {
 
   private state: GAME_STATE = GAME_STATE.IDLE;
   public moveCount = 0;
-  public level = Math.floor(this.moveCount / 5); // from 0
+  public get level() {
+    return Math.floor(this.moveCount / 5);
+  }
 
   public currentItems: ItemCard[] = [];
-  public deprecatedEnemyCards: EnemyCard[] = [];
+  public reusableEnemyCards: EnemyCard[] = [];
+  public reusableWeaponCards: ItemCard[] = [];
 
   private constructor() {
     onInput(
@@ -65,7 +68,7 @@ export class GameManager {
   }
 
   public onEnemyDead(card: EnemyCard) {
-    this.deprecatedEnemyCards.push(card);
+    this.reusableEnemyCards.push(card);
     emit(EVENT.REMOVE_ENEMY_DEAD, card);
   }
 }

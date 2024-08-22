@@ -27,7 +27,7 @@ export class CardFactory {
         y,
       });
     } else {
-      const picked = randomPick([CardType.WEAPON]);
+      const picked = randomPick([CardType.SHIELD]);
       return CardFactory.factory({
         type: picked,
         x,
@@ -39,12 +39,13 @@ export class CardFactory {
   static factory({ type, x, y }: CreateCardProps): BaseCard {
     const gm = GameManager.getInstance();
     const factor = gm.level + 1;
+    console.log("factor", factor);
     switch (type) {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
       case CardType.ENEMY:
-        if (gm.deprecatedEnemyCards.length > 2) {
-          const card = gm.deprecatedEnemyCards.shift()!;
+        if (gm.reusableEnemyCards.length > 2) {
+          const card = gm.reusableEnemyCards.shift()!;
           card.reset();
           card.x = x;
           card.y = y;
@@ -66,7 +67,7 @@ export class CardFactory {
           buff: {
             shield: 1 * factor,
           },
-          duration: Math.random(),
+          duration: 2,
           weight: 1,
         });
       default:

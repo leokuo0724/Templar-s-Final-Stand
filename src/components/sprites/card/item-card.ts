@@ -63,6 +63,8 @@ export class ItemCard extends BaseCard {
     switch (this.type) {
       case CardType.WEAPON:
         return new Sword(-3, -40, 0.45);
+      case CardType.SHIELD:
+        return new Sword(-3, -40, 0.45);
       default:
         throw new Error(`Invalid card type: ${this.type}`);
     }
@@ -77,7 +79,10 @@ export class ItemCard extends BaseCard {
     this.main.y = 0; // reset
   }
 
-  protected resetProps(): void {}
+  protected resetProps(): void {
+    this.durationText.text = `${this.duration}`;
+    this.weightText.text = `${this.weight}`;
+  }
 }
 
 // Utils

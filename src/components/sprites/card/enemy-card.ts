@@ -153,8 +153,8 @@ const getDescText = (buff: OptionalCharacterProps) => {
   const buffTexts = Object.entries(buff).map(([key, value]) => {
     if (!value) return "";
     if (key === "attackDirection") return `attack: ${value}`;
-    if ((value as number) > 0) return `${key}+`;
-    return `${key}-`;
+    if ((value as number) > 0) return `high ${key}`;
+    return `low ${key}`;
   });
   return buffTexts.join("\n");
 };
