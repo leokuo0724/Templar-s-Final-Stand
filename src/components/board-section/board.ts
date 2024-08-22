@@ -58,49 +58,14 @@ export class Board extends GameObjectClass {
     }
 
     const centerGrid = this.getGridByCoord([2, 2]);
-    const templarCard = CardFactory.createCard({
+    const templarCard = CardFactory.factory({
       type: CardType.TEMPLAR,
       x: centerGrid.x,
       y: centerGrid.y,
     });
     this.addChild(templarCard);
     this.occupiedInfo[2][2] = templarCard;
-
-    const tGrid = this.getGridByCoord([2, 3]);
-    const weaponCard = CardFactory.createCard({
-      type: CardType.WEAPON,
-      x: tGrid.x,
-      y: tGrid.y,
-    });
-    this.addChild(weaponCard);
-    this.occupiedInfo[2][3] = weaponCard;
-
-    const sGrid = this.getGridByCoord([3, 4]);
-    const aeaponCard = CardFactory.createCard({
-      type: CardType.WEAPON,
-      x: sGrid.x,
-      y: sGrid.y,
-    });
-    this.addChild(aeaponCard);
-    this.occupiedInfo[3][4] = aeaponCard;
-
-    const eGrid = this.getGridByCoord([1, 1]);
-    const enemyCard = CardFactory.createCard({
-      type: CardType.ENEMY,
-      x: eGrid.x,
-      y: eGrid.y,
-    });
-    this.addChild(enemyCard);
-    this.occupiedInfo[1][1] = enemyCard;
-
-    const gGrid = this.getGridByCoord([1, 2]);
-    const enemyCard1 = CardFactory.createCard({
-      type: CardType.ENEMY,
-      x: gGrid.x,
-      y: gGrid.y,
-    });
-    this.addChild(enemyCard1);
-    this.occupiedInfo[1][2] = enemyCard1;
+    this.spawnCards();
 
     on(EVENT.REMOVE_ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
   }
@@ -252,12 +217,7 @@ export class Board extends GameObjectClass {
     const randomIndex = Math.floor(Math.random() * emptyIndices.length);
     const [j, i] = emptyIndices[randomIndex];
     const grid = this.getGridByCoord([j, i]);
-    // TODO: determine the type of the card
-    const card = CardFactory.createCard({
-      type: CardType.ENEMY,
-      x: grid.x,
-      y: grid.y,
-    });
+    const card = CardFactory.createCard(grid.x, grid.y);
     this.addChild(card);
     this.occupiedInfo[j][i] = card;
   }

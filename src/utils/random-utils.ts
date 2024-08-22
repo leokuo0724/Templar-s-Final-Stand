@@ -6,3 +6,7 @@ export function getRandomPropertyKeys<T extends object>(
   const shuffled = [...keys].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, Math.min(count, keys.length));
 }
+
+export function randomPick<T>(array: T[]): T {
+  return array[Math.floor(Math.random() * array.length)];
+}

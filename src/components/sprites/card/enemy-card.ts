@@ -56,17 +56,16 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const gm = GameManager.getInstance();
-    const level = Math.floor(gm.moveCount / 5);
+    const { moveCount, level } = GameManager.getInstance();
     const props = {
       ...BASIC_ENEMY_PROPS,
       health: BASIC_ENEMY_PROPS.health + 2 * level,
       attack: BASIC_ENEMY_PROPS.attack + 2 * level,
     };
     const keys = getRandomPropertyKeys(props, 2);
-    const isElite = gm.moveCount > 0 && gm.moveCount % 13 === 0;
+    const isElite = moveCount > 0 && moveCount % 13 === 0;
     const buff = keys.reduce((acc, key, index) => {
-      const factor = isElite ? 2 : 1;
+      const factor = level + 1;
       const isBuff = isElite || index === 0;
       return { ...acc, ...processBuff(key, props, factor, isBuff) };
     }, {});

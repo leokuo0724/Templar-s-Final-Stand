@@ -32,7 +32,7 @@ export class TemplarCard extends CharacterCard {
     this.attack = 5;
     this.hitRate = 1;
     this.criticalRate = 0.2;
-    this.attackDirection = AttackDirection.LINE;
+    this.attackDirection = AttackDirection.FRONT;
     this.hitBackAttack = 0;
     this.refreshText();
   }

@@ -9,7 +9,7 @@ import { WeightIcon } from "../icons/weight-icon";
 import { tween } from "../../../utils/tween-utils";
 import { zzfx } from "../../../audios/zzfx";
 
-type ItemCardProps = {
+export type ItemCardProps = {
   type: CardType;
   x: number;
   y: number;

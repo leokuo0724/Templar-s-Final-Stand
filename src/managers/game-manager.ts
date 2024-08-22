@@ -16,6 +16,7 @@ export class GameManager {
 
   private state: GAME_STATE = GAME_STATE.IDLE;
   public moveCount = 0;
+  public level = Math.floor(this.moveCount / 5); // from 0
 
   public currentItems: ItemCard[] = [];
   public deprecatedEnemyCards: EnemyCard[] = [];
