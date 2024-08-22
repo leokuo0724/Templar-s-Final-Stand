@@ -21,8 +21,9 @@ export class CardFactory {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
       case CardType.ENEMY:
-        if (gm.deprecatedEnemyCards.length > 3) {
-          const card = gm.deprecatedEnemyCards.pop()!;
+        if (gm.deprecatedEnemyCards.length > 2) {
+          console.log("reused");
+          const card = gm.deprecatedEnemyCards.shift()!;
           card.reset();
           card.x = x;
           card.y = y;

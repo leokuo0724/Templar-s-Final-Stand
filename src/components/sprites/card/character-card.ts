@@ -178,6 +178,7 @@ export abstract class CharacterCard extends BaseCard {
     this.attackText.text = `${this.attack}`;
     this.healthText.text = `${this.health}`;
     this.shieldText.text = `${this.shield}`;
+    this.impactText.text = "";
   }
 
   public applyBuff(buff: OptionalCharacterProps) {
