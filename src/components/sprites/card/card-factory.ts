@@ -68,8 +68,8 @@ export class CardFactory {
           buff: {
             shield: 1 * factor,
           },
-          duration: 5,
-          weight: 1,
+          duration: 8,
+          weight: 3,
         });
       case CardType.POTION:
         return new ItemCard({
@@ -91,28 +91,28 @@ export class CardFactory {
     const weaponSet: ItemSetProps[] = [
       {
         buff: { attack: 2 * factor, criticalRate: -0.1 },
-        duration: 5,
-        weight: 2,
+        duration: 6,
+        weight: 4,
       }, // Sword
       {
         buff: { attack: 1 * factor, criticalRate: 0.2 },
-        duration: 5,
-        weight: 1,
+        duration: 6,
+        weight: 2,
       }, // Dagger
       {
         buff: { hitRate: 0.1, criticalRate: -0.1 },
-        duration: 5,
-        weight: 2,
+        duration: 6,
+        weight: 4,
       },
-      { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 5, weight: 3 }, // Axe
+      { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 6, weight: 4 }, // Axe
       {
         buff: {
           attack: 1 * factor,
           attackDirection:
             Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE,
         },
-        duration: 5,
-        weight: 4,
+        duration: 6,
+        weight: 6,
       }, // Bow
     ];
     return randomPick(weaponSet);

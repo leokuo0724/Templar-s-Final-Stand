@@ -183,6 +183,7 @@ export class Board extends GameObjectClass {
                 card instanceof TemplarCard &&
                 occupiedCard.type !== CardType.POTION
               ) {
+                card.updateWeight(occupiedCard.weight);
                 equippedItems.push(occupiedCard);
               } else {
                 await occupiedCard.setInactive();
@@ -370,6 +371,7 @@ export class Board extends GameObjectClass {
           }
         });
         this.templarCard.applyBuff(debuff);
+        this.templarCard.updateWeight(-item.weight);
       }
     }
     if (removed.length) gm.removeItems(removed);
