@@ -31,8 +31,8 @@ export class ItemPanel extends SpriteClass {
     on(EVENT.ITEMS_UPDATED, this.onItemsUpdated.bind(this));
   }
 
-  private onItemsUpdated(itemCards: ItemCard[]) {
-    this.addChild(itemCards);
+  private onItemsUpdated(added: ItemCard[], removed: ItemCard[]) {
+    this.addChild(added);
     this.pageIdx = 0;
     const gm = GameManager.getInstance();
     // mark all items as invisible

@@ -63,7 +63,15 @@ export class GameManager {
 
   public addItems(itemCards: ItemCard[]) {
     itemCards.forEach((item) => this.currentItems.push(item));
-    emit(EVENT.ITEMS_UPDATED, itemCards);
+    emit(EVENT.ITEMS_UPDATED, itemCards, []);
+  }
+  public removeItems(itemCards: ItemCard[]) {
+    // remove from current items
+    const newCurrentItem = this.currentItems.filter(
+      (item) => !itemCards.includes(item)
+    );
+    this.currentItems = newCurrentItem;
+    emit(EVENT.ITEMS_UPDATED, [], itemCards);
   }
 
   public onEnemyDead(card: EnemyCard) {

@@ -23,6 +23,9 @@ export class ItemCard extends BaseCard {
   protected descriptionText: Text;
   protected durationText: Text;
   protected weightText: Text;
+  public buff: OptionalCharacterProps;
+  public duration: number;
+  public weight: number;
 
   constructor({ type, x, y, buff, duration, weight }: ItemCardProps) {
     super({ type, x, y });
@@ -73,6 +76,7 @@ export class ItemCard extends BaseCard {
   }
 
   public async equip() {
+    this.duration = Math.max(this.duration, 2);
     await Promise.all([
       tween(this.main, { targetY: -24 }, 300, 50),
       this.setChildrenOpacity(0, 300),
@@ -86,10 +90,11 @@ export class ItemCard extends BaseCard {
     this.weightText.text = `${this.weight}`;
   }
 
-  public async deprecate(callback: () => void) {
-    await this.setInactive();
-    if (this.type === CardType.POTION) return;
-    callback();
+  public updateDuration(value: number): boolean {
+    this.duration += value;
+    if (this.duration <= 0) return false;
+    this.durationText.text = `${this.duration}`;
+    return true;
   }
 }
 

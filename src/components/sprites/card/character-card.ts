@@ -77,7 +77,7 @@ export abstract class CharacterCard extends BaseCard {
     target: CharacterCard,
     isHitBack: boolean = false
   ) {
-    if (target.health <= 0) return;
+    if (target.health <= 0 || this.health <= 0) return;
     const origX = this.x;
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);

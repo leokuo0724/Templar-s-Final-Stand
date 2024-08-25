@@ -60,7 +60,7 @@ export class EnemyCard extends CharacterCard {
     const props = {
       ...BASIC_ENEMY_PROPS,
       health: BASIC_ENEMY_PROPS.health + 2 * level,
-      attack: BASIC_ENEMY_PROPS.attack + 2 * level,
+      attack: BASIC_ENEMY_PROPS.attack + 1 * level,
     };
     const keys = getRandomPropertyKeys(props, 2);
     const isElite = moveCount > 0 && moveCount % 13 === 0;

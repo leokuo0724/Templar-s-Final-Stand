@@ -19,7 +19,7 @@ type ItemSetProps = Pick<ItemCardProps, "buff" | "duration" | "weight">;
 export class CardFactory {
   static createCard(x: number, y: number): BaseCard {
     const { moveCount } = GameManager.getInstance();
-    const isSpawnEnemy = moveCount % 13 === 0 || moveCount % 3 === 0;
+    const isSpawnEnemy = moveCount % 13 === 0 || moveCount % 4 === 0;
     if (isSpawnEnemy) {
       return CardFactory.factory({
         type: CardType.ENEMY,
@@ -29,6 +29,7 @@ export class CardFactory {
     } else {
       const picked = randomPick([
         CardType.SHIELD,
+        CardType.WEAPON,
         CardType.WEAPON,
         CardType.POTION,
       ]);
@@ -56,7 +57,7 @@ export class CardFactory {
           return card;
         }
         return new EnemyCard({ x, y });
-      case CardType.WEAPON:
+      case CardType.WEAPON: // TODO: combine card to upgrade
         return new ItemCard({
           ...props,
           ...CardFactory.randomPickWeapon(),
@@ -67,16 +68,16 @@ export class CardFactory {
           buff: {
             shield: 1 * factor,
           },
-          duration: 2,
+          duration: 5,
           weight: 1,
         });
       case CardType.POTION:
         return new ItemCard({
           ...props,
           buff: {
-            health: 1 * factor * (Math.random() > 0.99 ? 1 : -1),
+            health: 1 * factor * (Math.random() > 0.5 ? 1 : -1),
           },
-          duration: 3,
+          duration: 4,
           weight: 0,
         });
       default:
@@ -90,27 +91,27 @@ export class CardFactory {
     const weaponSet: ItemSetProps[] = [
       {
         buff: { attack: 2 * factor, criticalRate: -0.1 },
-        duration: 2,
+        duration: 5,
         weight: 2,
       }, // Sword
       {
         buff: { attack: 1 * factor, criticalRate: 0.2 },
-        duration: 2,
+        duration: 5,
         weight: 1,
       }, // Dagger
       {
         buff: { hitRate: 0.1, criticalRate: -0.1 },
-        duration: 4,
+        duration: 5,
         weight: 2,
       },
-      { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 3, weight: 3 }, // Axe
+      { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 5, weight: 3 }, // Axe
       {
         buff: {
           attack: 1 * factor,
           attackDirection:
             Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE,
         },
-        duration: 3,
+        duration: 5,
         weight: 4,
       }, // Bow
     ];

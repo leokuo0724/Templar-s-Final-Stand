@@ -11,7 +11,7 @@ import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
-import { AttackDirection } from "../../types/character";
+import { AttackDirection, OptionalCharacterProps } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 
 type BattleInfo = {
@@ -31,6 +31,7 @@ export class Board extends GameObjectClass {
   private occupiedInfo: (BaseCard | null)[][] = Array.from({ length: 5 }, () =>
     Array.from({ length: 5 }, () => null)
   );
+  private templarCard: TemplarCard;
 
   constructor(x: number, y: number) {
     super({ x, y });
@@ -58,13 +59,13 @@ export class Board extends GameObjectClass {
     }
 
     const centerGrid = this.getGridByCoord([2, 2]);
-    const templarCard = CardFactory.factory({
+    this.templarCard = CardFactory.factory({
       type: CardType.TEMPLAR,
       x: centerGrid.x,
       y: centerGrid.y,
-    });
-    this.addChild(templarCard);
-    this.occupiedInfo[2][2] = templarCard;
+    }) as TemplarCard;
+    this.addChild(this.templarCard);
+    this.occupiedInfo[2][2] = this.templarCard;
     this.spawnCards();
 
     on(EVENT.REMOVE_ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
@@ -95,6 +96,7 @@ export class Board extends GameObjectClass {
   private async onSwipe(direction: Direction) {
     await this.moveCards(direction);
     await this.checkAttack(direction);
+    await this.checkDuration();
     this.spawnCards();
     emit(EVENT.SWIPE_FINISH);
   }
@@ -182,10 +184,10 @@ export class Board extends GameObjectClass {
                 occupiedCard.type !== CardType.POTION
               ) {
                 equippedItems.push(occupiedCard);
-                this.removeChild(occupiedCard);
               } else {
-                occupiedCard.deprecate(() => this.removeChild(occupiedCard));
+                await occupiedCard.setInactive();
               }
+              this.removeChild(occupiedCard);
               const targetGrid = this.getGridByCoord([nextJ, nextI]);
               await card.moveTo(targetGrid.x, targetGrid.y);
               continue;
@@ -333,5 +335,44 @@ export class Board extends GameObjectClass {
     for (const { attacker, target, direction } of battleInfos) {
       await attacker.execAttack(direction, target);
     }
+  }
+
+  private async checkDuration() {
+    const gm = GameManager.getInstance();
+
+    const deprecated = [];
+    // items on board
+    for (let i = 0; i < GRIDS_IN_LINE; i++) {
+      for (let j = 0; j < GRIDS_IN_LINE; j++) {
+        const card = this.occupiedInfo[j][i];
+        if (card instanceof ItemCard) {
+          const isAlive = card.updateDuration(-1);
+          if (!isAlive) {
+            deprecated.push(card);
+            this.occupiedInfo[j][i] = null;
+          }
+        }
+      }
+    }
+    // items equipped on the templar
+    const removed = []; // any item that should be removed from templar
+    for (const item of gm.currentItems) {
+      const isAlive = item.updateDuration(-1);
+      if (!isAlive) {
+        removed.push(item);
+        deprecated.push(item);
+        const debuff: any = {};
+        Object.entries(item.buff).forEach(([key, value]) => {
+          if (key === "attackDirection") {
+            debuff[key] = AttackDirection.FRONT;
+          } else if (key !== "shield") {
+            debuff[key] = (value as number) * -1;
+          }
+        });
+        this.templarCard.applyBuff(debuff);
+      }
+    }
+    if (removed.length) gm.removeItems(removed);
+    await Promise.all(deprecated.map((item) => item.setInactive()));
   }
 }
