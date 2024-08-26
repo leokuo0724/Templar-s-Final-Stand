@@ -1,5 +1,8 @@
 import { GameManager } from "../../../managers/game-manager";
-import { AttackDirection } from "../../../types/character";
+import {
+  AttackDirection,
+  OptionalCharacterProps,
+} from "../../../types/character";
 import { randomPick } from "../../../utils/random-utils";
 import { BaseCard } from "./base-card";
 import { EnemyCard } from "./enemy-card";
@@ -74,9 +77,7 @@ export class CardFactory {
       case CardType.POTION:
         return new ItemCard({
           ...props,
-          buff: {
-            health: 1 * factor * (Math.random() > 0.5 ? 1 : -1),
-          },
+          buff: this.randomPickPotionBuff(factor),
           duration: 4,
           weight: 0,
         });
@@ -111,5 +112,13 @@ export class CardFactory {
       }, // Bow
     ];
     return randomPick(weaponSet);
+  }
+  private static randomPickPotionBuff(factor: number): OptionalCharacterProps {
+    const buffs: OptionalCharacterProps[] = [
+      { health: 1 * factor * (Math.random() > 0.5 ? 1 : -1) },
+      { criticalRate: Math.random() > 0.3 ? -0.1 : 0.1 },
+      { hitRate: Math.random() > 0.3 ? -0.1 : 0.1 },
+    ];
+    return randomPick(buffs);
   }
 }

@@ -40,7 +40,6 @@ export class EnemyCard extends CharacterCard {
       y: 18,
       text: "",
       ...COMMON_TEXT_CONFIG,
-      font: "10px Trebuchet MS",
       textAlign: "center",
     });
     this.main.addChild(this.descriptionText);

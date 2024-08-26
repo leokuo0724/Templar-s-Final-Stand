@@ -1,4 +1,4 @@
-import { Text, TextClass } from "kontra";
+import { SpriteClass, Text } from "kontra";
 import { SwordIcon } from "../icons/sword-icon";
 import { BaseCard } from "./base-card";
 import { Belongs, CardType } from "./type";
@@ -13,6 +13,7 @@ import {
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { COLOR } from "../../../constants/color";
 import { zzfx } from "../../../audios/zzfx";
+import { delay } from "../../../utils/time-utils";
 
 type CharacterCardProps = {
   type: CardType;
@@ -189,7 +190,7 @@ export abstract class CharacterCard extends BaseCard {
     this.attackText.text = `${this.attack}`;
     this.healthText.text = `${this.health}`;
     this.shieldText.text = `${this.shield}`;
-    this.impactText.text = "";
+    this.impactText.reset();
   }
 
   public applyBuff(buff: OptionalCharacterProps) {
@@ -205,26 +206,47 @@ export abstract class CharacterCard extends BaseCard {
   }
 }
 
-class ImpactText extends TextClass {
+class ImpactText extends SpriteClass {
+  private _text: Text;
+  public set text(text: string) {
+    this._text.text = text;
+  }
+
   constructor(y: number) {
     super({
-      text: "",
       x: 0,
       y,
-      color: COLOR.DARK_6,
-      font: "24px Trebuchet MS",
+      width: 100,
+      height: 20,
+      color: COLOR.BROWN_8,
       anchor: { x: 0.5, y: 0.5 },
       opacity: 0,
     });
+    this._text = Text({
+      text: "",
+      font: "16px Trebuchet MS",
+      color: COLOR.WHITE_6,
+      anchor: { x: 0.5, y: 0.5 },
+    });
+    this.addChild(this._text);
   }
 
   public async show(text: string) {
-    this.text = text;
+    this._text.text = text;
     await Promise.all([
+      tween(this._text, { opacity: 1 }, 500),
       tween(this, { opacity: 1 }, 500),
       tween(this, { targetY: this.y - 10 }, 500),
     ]);
-    await tween(this, { opacity: 0 }, 300);
+    await delay(100);
+    await Promise.all([
+      tween(this._text, { opacity: 0 }, 300),
+      tween(this, { opacity: 0 }, 300),
+    ]);
     this.y += 10;
+  }
+  public reset() {
+    this.opacity = 0;
+    this._text.opacity = 0;
   }
 }

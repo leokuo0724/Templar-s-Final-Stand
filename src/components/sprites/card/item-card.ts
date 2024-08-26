@@ -38,7 +38,6 @@ export class ItemCard extends BaseCard {
       y: 18,
       text: getDescText(buff),
       ...COMMON_TEXT_CONFIG,
-      font: "10px Trebuchet MS",
       textAlign: "center",
     });
     this.durationText = Text({
