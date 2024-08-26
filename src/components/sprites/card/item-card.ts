@@ -1,13 +1,16 @@
 import { BaseCard } from "./base-card";
 import { CardType } from "./type";
 import { OptionalCharacterProps } from "../../../types/character";
-import { Sword } from "../assets/sword";
 import { ClockIcon } from "../icons/clock-icon";
 import { Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { tween } from "../../../utils/tween-utils";
 import { zzfx } from "../../../audios/zzfx";
+import { SwordIcon } from "../icons/sword-icon";
+import { COLOR } from "../../../constants/color";
+import { ShieldIcon } from "../icons/shield-icon";
+import { PotionIcon } from "../icons/potion-icon";
 
 export type ItemCardProps = {
   type: CardType;
@@ -64,11 +67,11 @@ export class ItemCard extends BaseCard {
   protected getMainIcon() {
     switch (this.type) {
       case CardType.WEAPON:
-        return new Sword(-3, -40, 0.45);
+        return new SwordIcon(-11, -32, 1);
       case CardType.SHIELD:
-        return new Sword(-3, -40, 0.45);
+        return new ShieldIcon(-10, -31, 1, COLOR.WHITE_6);
       case CardType.POTION:
-        return new Sword(-3, -40, 0.45);
+        return new PotionIcon(-9, -36);
       default:
         throw new Error(`Invalid card type: ${this.type}`);
     }

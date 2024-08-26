@@ -71,7 +71,7 @@ export class CardFactory {
           buff: {
             shield: 1 * factor,
           },
-          duration: 8,
+          duration: 6,
           weight: 5,
         });
       case CardType.POTION:
@@ -108,7 +108,7 @@ export class CardFactory {
             Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE,
         },
         duration: 6,
-        weight: 8,
+        weight: 6,
       }, // Bow
     ];
     return randomPick(weaponSet);

@@ -6,12 +6,12 @@ import {
   CharacterProps,
   OptionalCharacterProps,
 } from "../../../types/character";
-import { Sword } from "../assets/sword";
 import { EVENT } from "../../../constants/event";
 import { emit, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { GameManager } from "../../../managers/game-manager";
 import { getRandomPropertyKeys } from "../../../utils/random-utils";
+import { EnemyIcon } from "../icons/enemy-icon";
 
 const BASIC_ENEMY_PROPS: CharacterProps = {
   health: 5,
@@ -47,7 +47,7 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected getMainIcon() {
-    return new Sword(-3, -40, 0.45);
+    return new EnemyIcon(-8, -29);
   }
 
   protected deathCallback(): void {

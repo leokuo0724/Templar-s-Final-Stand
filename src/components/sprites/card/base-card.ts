@@ -20,6 +20,7 @@ export abstract class BaseCard extends SpriteClass {
   public type: CardType;
   protected main: Sprite;
   public isActive: boolean = true;
+  protected mainIcon: GameObject;
 
   constructor({ type, x, y }: CardProps) {
     super({
@@ -48,11 +49,11 @@ export abstract class BaseCard extends SpriteClass {
         this.type === CardType.TEMPLAR
           ? 0
           : this.type === CardType.ENEMY
-          ? -12
+          ? -14
           : -20,
     });
-    const mainIcon = this.getMainIcon();
-    this.main.addChild([circle, mainIcon]);
+    this.mainIcon = this.getMainIcon();
+    this.main.addChild([circle, this.mainIcon]);
   }
 
   protected abstract getMainIcon(): GameObject;
