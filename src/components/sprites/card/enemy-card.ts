@@ -3,26 +3,14 @@ import { Belongs, CardType } from "./type";
 import { CharacterCard } from "./character-card";
 import {
   AttackDirection,
-  CharacterProps,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { EVENT } from "../../../constants/event";
 import { emit, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { GameManager } from "../../../managers/game-manager";
-import { getRandomPropertyKeys } from "../../../utils/random-utils";
+import { randomPick } from "../../../utils/random-utils";
 import { EnemyIcon } from "../icons/enemy-icon";
-
-const BASIC_ENEMY_PROPS: CharacterProps = {
-  health: 5,
-  attack: 2,
-  // advanced
-  shield: 0,
-  hitRate: 0.8,
-  criticalRate: 0.2,
-  attackDirection: AttackDirection.FRONT,
-  hitBackAttack: 0,
-};
 
 export class EnemyCard extends CharacterCard {
   protected descriptionText: Text;
@@ -55,97 +43,62 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const { moveCount, level } = GameManager.getInstance();
-    const props = {
-      ...BASIC_ENEMY_PROPS,
-      health: BASIC_ENEMY_PROPS.health + 2 * level,
-      attack: BASIC_ENEMY_PROPS.attack + 1 * level,
-    };
-    const keys = getRandomPropertyKeys(props, 2);
-    const isElite = moveCount > 0 && moveCount % 13 === 0;
-    const buff = keys.reduce((acc, key, index) => {
-      const factor = level + 1;
-      const isBuff = isElite || index === 0;
-      return { ...acc, ...processBuff(key, props, factor, isBuff) };
-    }, {});
+    const { level, moveCount } = GameManager.getInstance();
+    this.health = 5 + 2 * level;
+    this.attack = 2 + 1 * level;
+    this.shield = 0;
+    this.hitRate = 0.8;
+    this.criticalRate = 0.1;
+    this.attackDirection = AttackDirection.FRONT;
+    this.hitBackAttack = 0;
 
-    const {
-      health,
-      shield,
-      attack,
-      hitRate,
-      criticalRate,
-      attackDirection,
-      hitBackAttack,
-    } = props;
-    this.health = health;
-    this.shield = shield;
-    this.attack = attack;
-    this.hitRate = hitRate;
-    this.criticalRate = criticalRate;
-    this.attackDirection = attackDirection;
-    this.hitBackAttack = hitBackAttack;
-    this.descriptionText.text = getDescText(buff);
+    const isElite = moveCount > 0 && moveCount % 13 === 0;
+
+    // Add extra buff
+    const { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));
+    this.applyBuff(buff);
+    this.descriptionText.text = desc;
     this.refreshText();
   }
 }
 
-// Utils
-const processBuff = (
-  key: keyof CharacterProps,
-  obj: CharacterProps,
+const getEnemyBuffsAndDesc = (
   factor: number,
-  isBuff: boolean
-): OptionalCharacterProps => {
-  switch (key) {
-    case "health":
-      const hValue = (isBuff ? 1 : -1) * factor;
-      obj.health += hValue;
-      return {
-        health: hValue,
-      };
-    case "shield":
-      if (!isBuff) return {};
-      const sValue = 2 * factor;
-      obj.shield += sValue;
-      return {
-        shield: sValue,
-      };
-    case "attack":
-      const atValue = (isBuff ? 1 : -1) * factor;
-      obj.attack += atValue;
-      return {
-        attack: atValue,
-      };
-    case "hitRate":
-      const hitValue = isBuff ? 0.1 * factor : -0.1;
-      obj.hitRate += hitValue;
-      return {
-        hitRate: hitValue,
-      };
-    case "criticalRate":
-      const criticalValue = isBuff ? 0.1 * factor : -0.1;
-      obj.criticalRate += criticalValue;
-      return {
-        criticalRate: criticalValue,
-      };
-    case "attackDirection":
-      if (!isBuff) return {};
-      const dirValue =
-        Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE;
-      obj.attackDirection = dirValue;
-      return {
-        attackDirection: dirValue,
-      };
-    case "hitBackAttack":
-      if (!isBuff) return {};
-      const hbValue = 1 * factor;
-      obj.hitBackAttack += hbValue;
-      return {
-        hitBackAttack: hbValue,
-      };
-    default:
-      return {};
+  isElite: boolean
+): { buff: OptionalCharacterProps; desc: string }[] => {
+  if (isElite) {
+    return [
+      {
+        buff: {
+          attackDirection: AttackDirection.AROUND,
+          health: 2 * factor,
+        },
+        desc: `"Whirlstriker"\nAttack: around`,
+      },
+      {
+        buff: {
+          attackDirection: AttackDirection.LINE,
+          attack: 2 * factor,
+          health: 1 * factor,
+        },
+        desc: `"Spearman"\nAttack: line`,
+      },
+      {
+        buff: {
+          hitBackAttack: 3 * factor,
+          health: 2 * factor,
+        },
+        desc: `"Counterstriker"\nHit back: ${3 * factor}`,
+      },
+    ];
+  } else {
+    const buffs = [
+      { shield: 2 * factor, health: -2 * factor },
+      { health: 1 * factor, attack: -1 * factor },
+      { criticalRate: 0.1 * factor, health: -2 * factor },
+      { attack: 1 * factor, hitRate: -0.2 },
+    ];
+    return buffs.map((buff) => ({ buff, desc: getDescText(buff) }));
   }
 };
 
