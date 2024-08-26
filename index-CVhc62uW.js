@@ -47,53 +47,6 @@ function clamp(min, max, value) {
   return Math.min(Math.max(min, value), max);
 }
 
-/**
- * Return the world rect of an object. The rect is the world position of the top-left corner of the object and its size. Takes into account the objects anchor and scale.
- * @function getWorldRect
- *
- * @param {{x: Number, y: Number, width: Number, height: Number}|{world: {x: Number, y: Number, width: Number, height: Number}}|{mapwidth: Number, mapheight: Number}} obj - Object to get world rect of.
- *
- * @returns {{x: Number, y: Number, width: Number, height: Number}} The world `x`, `y`, `width`, and `height` of the object.
- */
-function getWorldRect(obj) {
-  let { x = 0, y = 0, width, height, radius } = obj.world || obj;
-
-  // take into account tileEngine
-  if (obj.mapwidth) {
-    width = obj.mapwidth;
-    height = obj.mapheight;
-  }
-
-  // account for circle
-  if (radius) {
-    width = radius.x * 2;
-    height = radius.y * 2;
-  }
-
-  // account for anchor
-  if (obj.anchor) {
-    x -= width * obj.anchor.x;
-    y -= height * obj.anchor.y;
-  }
-
-  // account for negative scales
-  if (width < 0) {
-    x += width;
-    width *= -1;
-  }
-  if (height < 0) {
-    y += height;
-    height *= -1;
-  }
-
-  return {
-    x,
-    y,
-    width,
-    height
-  };
-}
-
 let noop = () => {};
 
 /**
@@ -110,29 +63,6 @@ function removeFromArray(array, item) {
     array.splice(index, 1);
     return true;
   }
-}
-
-/**
- * Detection collision between a rectangle and a circle.
- * @see https://yal.cc/rectangle-circle-intersection-test/
- *
- * @param {Object} rect - Rectangular object to check collision against.
- * @param {Object} circle - Circular object to check collision against.
- *
- * @returns {Boolean} True if objects collide.
- */
-function circleRectCollision(circle, rect) {
-  let { x, y, width, height } = getWorldRect(rect);
-
-  // account for camera
-  do {
-    x -= rect.sx || 0;
-    y -= rect.sy || 0;
-  } while ((rect = rect.parent));
-
-  let dx = circle.x - Math.max(x, Math.min(circle.x, x + width));
-  let dy = circle.y - Math.max(y, Math.min(circle.y, y + height));
-  return dx * dx + dy * dy < circle.radius * circle.radius;
 }
 
 /**
@@ -215,16 +145,6 @@ let handler$1 = {
     return noop;
   }
 };
-
-/**
- * Return the canvas element.
- * @function getCanvas
- *
- * @returns {HTMLCanvasElement} The canvas element for the game.
- */
-function getCanvas() {
-  return canvasEl;
-}
 
 /**
  * Return the context object.
@@ -1400,395 +1320,6 @@ function factory$7() {
 }
 
 /**
- * A simple pointer API. You can use it move the main sprite or respond to a pointer event. Works with both mouse and touch events.
- *
- * Pointer events can be added on a global level or on individual sprites or objects. Before an object can receive pointer events, you must tell the pointer which objects to track and the object must haven been rendered to the canvas using `object.render()`.
- *
- * After an object is tracked and rendered, you can assign it an `onDown()`, `onUp()`, `onOver()`, or `onOut()` functions which will be called whenever a pointer down, up, over, or out event happens on the object.
- *
- * ```js
- * import { initPointer, track, Sprite } from 'kontra';
- *
- * // this function must be called first before pointer
- * // functions will work
- * initPointer();
- *
- * let sprite = Sprite({
- *   onDown: function() {
- *     // handle on down events on the sprite
- *   },
- *   onUp: function() {
- *     // handle on up events on the sprite
- *   },
- *   onOver: function() {
- *     // handle on over events on the sprite
- *   },
- *   onOut: function() {
- *     // handle on out events on the sprite
- *   }
- * });
- *
- * track(sprite);
- * sprite.render();
- * ```
- *
- * By default, the pointer is treated as a circle and will check for collisions against objects assuming they are rectangular (have a width and height property).
- *
- * If you need to perform a different type of collision detection, assign the object a `collidesWithPointer()` function and it will be called instead. The function is passed the pointer object. Use this function to determine how the pointer circle should collide with the object.
- *
- * ```js
- * import { Sprite } from 'kontra';
- *
- * let sprite = Srite({
- *   x: 10,
- *   y: 10,
- *   radius: 10
- *   collidesWithPointer: function(pointer) {
- *     // perform a circle v circle collision test
- *     let dx = pointer.x - this.x;
- *     let dy = pointer.y - this.y;
- *     return Math.sqrt(dx * dx + dy * dy) < this.radius;
- *   }
- * });
- * ```
- * @sectionName Pointer
- */
-
-/**
- * Below is a list of buttons that you can use. If you need to extend or modify this list, you can use the [pointerMap](api/gamepad#pointerMap) property.
- *
- * - left, middle, right
- * @sectionName Available Buttons
- */
-
-// save each object as they are rendered to determine which object
-// is on top when multiple objects are the target of an event.
-// we'll always use the last frame's object order so we know
-// the finalized order of all objects, otherwise an object could ask
-// if it's being hovered when it's rendered first even if other
-// objects would block it later in the render order
-let pointers = new WeakMap();
-let callbacks$1 = {};
-let pressedButtons = {};
-
-/**
- * A map of pointer button indices to button names. Modify this object to expand the list of [available buttons](api/pointer#available-buttons).
- *
- * ```js
- * import { pointerMap, pointerPressed } from 'kontra';
- *
- * pointerMap[2] = 'buttonWest';
- *
- * if (pointerPressed('buttonWest')) {
- *   // handle west face button
- * }
- * ```
- * @property {{[key: Number]: String}} pointerMap
- */
-let pointerMap = {
-  0: 'left',
-  1: 'middle',
-  2: 'right'
-};
-
-/**
- * Get the first on top object that the pointer collides with.
- *
- * @param {Object} pointer - The pointer object
- *
- * @returns {Object} First object to collide with the pointer.
- */
-function getCurrentObject(pointer) {
-  // if pointer events are required on the very first frame or
-  // without a game loop, use the current frame
-  let renderedObjects = pointer._lf.length
-    ? pointer._lf
-    : pointer._cf;
-
-  for (let i = renderedObjects.length - 1; i >= 0; i--) {
-    let object = renderedObjects[i];
-    let collides = object.collidesWithPointer
-      ? object.collidesWithPointer(pointer)
-      : circleRectCollision(pointer, object);
-
-    if (collides) {
-      return object;
-    }
-  }
-}
-
-/**
- * Get the style property value.
- */
-function getPropValue(style, value) {
-  return parseFloat(style.getPropertyValue(value)) || 0;
-}
-
-/**
- * Calculate the canvas size, scale, and offset.
- *
- * @param {Object} The pointer object
- *
- * @returns {Object} The scale and offset of the canvas
- */
-function getCanvasOffset(pointer) {
-  // we need to account for CSS scale, transform, border, padding,
-  // and margin in order to get the correct scale and offset of the
-  // canvas
-  let { canvas, _s } = pointer;
-  let rect = canvas.getBoundingClientRect();
-
-  // @see https://stackoverflow.com/a/53405390/2124254
-  let transform =
-    _s.transform != 'none'
-      ? _s.transform.replace('matrix(', '').split(',')
-      : [1, 1, 1, 1];
-  let transformScaleX = parseFloat(transform[0]);
-  let transformScaleY = parseFloat(transform[3]);
-
-  // scale transform applies to the border and padding of the element
-  let borderWidth =
-    (getPropValue(_s, 'border-left-width') +
-      getPropValue(_s, 'border-right-width')) *
-    transformScaleX;
-  let borderHeight =
-    (getPropValue(_s, 'border-top-width') +
-      getPropValue(_s, 'border-bottom-width')) *
-    transformScaleY;
-
-  let paddingWidth =
-    (getPropValue(_s, 'padding-left') +
-      getPropValue(_s, 'padding-right')) *
-    transformScaleX;
-  let paddingHeight =
-    (getPropValue(_s, 'padding-top') +
-      getPropValue(_s, 'padding-bottom')) *
-    transformScaleY;
-
-  return {
-    scaleX: (rect.width - borderWidth - paddingWidth) / canvas.width,
-    scaleY:
-      (rect.height - borderHeight - paddingHeight) / canvas.height,
-    offsetX:
-      rect.left +
-      (getPropValue(_s, 'border-left-width') +
-        getPropValue(_s, 'padding-left')) *
-        transformScaleX,
-    offsetY:
-      rect.top +
-      (getPropValue(_s, 'border-top-width') +
-        getPropValue(_s, 'padding-top')) *
-        transformScaleY
-  };
-}
-
-/**
- * Execute the onDown callback for an object.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function pointerDownHandler(evt) {
-  // touchstart should be treated like a left mouse button
-  let button = evt.button != null ? pointerMap[evt.button] : 'left';
-  pressedButtons[button] = true;
-  pointerHandler(evt, 'onDown');
-}
-
-/**
- * Execute the onUp callback for an object.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function pointerUpHandler(evt) {
-  let button = evt.button != null ? pointerMap[evt.button] : 'left';
-  pressedButtons[button] = false;
-  pointerHandler(evt, 'onUp');
-}
-
-/**
- * Track the position of the mousevt.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function mouseMoveHandler(evt) {
-  pointerHandler(evt, 'onOver');
-}
-
-/**
- * Reset pressed buttons.
- *
- * @param {MouseEvent|TouchEvent} evt
- */
-function blurEventHandler$2(evt) {
-  let pointer = pointers.get(evt.target);
-  pointer._oo = null;
-  pressedButtons = {};
-}
-
-/**
- * Call a pointer callback function
- *
- * @param {Object} pointer
- * @param {String} eventName
- * @param {MouseEvent|TouchEvent} evt
- */
-function callCallback(pointer, eventName, evt) {
-  // Trigger events
-  let object = getCurrentObject(pointer);
-  if (object && object[eventName]) {
-    object[eventName](evt);
-  }
-
-  if (callbacks$1[eventName]) {
-    callbacks$1[eventName](evt, object);
-  }
-
-  // handle onOut events
-  if (eventName == 'onOver') {
-    if (object != pointer._oo && pointer._oo && pointer._oo.onOut) {
-      pointer._oo.onOut(evt);
-    }
-
-    pointer._oo = object;
-  }
-}
-
-/**
- * Find the first object for the event and execute it's callback function
- *
- * @param {MouseEvent|TouchEvent} evt
- * @param {string} eventName - Which event was called.
- */
-function pointerHandler(evt, eventName) {
-  evt.preventDefault();
-
-  let canvas = evt.target;
-  let pointer = pointers.get(canvas);
-  let { scaleX, scaleY, offsetX, offsetY } = getCanvasOffset(pointer);
-  let isTouchEvent = evt.type.includes('touch');
-
-  if (isTouchEvent) {
-    // track new touches
-    Array.from(evt.touches).map(
-      ({ clientX, clientY, identifier }) => {
-        let touch = pointer.touches[identifier];
-        if (!touch) {
-          touch = pointer.touches[identifier] = {
-            start: {
-              x: (clientX - offsetX) / scaleX,
-              y: (clientY - offsetY) / scaleY
-            }
-          };
-          pointer.touches.length++;
-        }
-
-        touch.changed = false;
-      }
-    );
-
-    // handle only changed touches
-    Array.from(evt.changedTouches).map(
-      ({ clientX, clientY, identifier }) => {
-        let touch = pointer.touches[identifier];
-        touch.changed = true;
-        touch.x = pointer.x = (clientX - offsetX) / scaleX;
-        touch.y = pointer.y = (clientY - offsetY) / scaleY;
-
-        callCallback(pointer, eventName, evt);
-        emit('touchChanged', evt, pointer.touches);
-
-        // remove touches
-        if (eventName == 'onUp') {
-          delete pointer.touches[identifier];
-          pointer.touches.length--;
-
-          if (!pointer.touches.length) {
-            emit('touchEnd');
-          }
-        }
-      }
-    );
-  } else {
-    // translate the scaled size back as if the canvas was at a
-    // 1:1 scale
-    pointer.x = (evt.clientX - offsetX) / scaleX;
-    pointer.y = (evt.clientY - offsetY) / scaleY;
-
-    callCallback(pointer, eventName, evt);
-  }
-}
-
-/**
- * Initialize pointer event listeners. This function must be called before using other pointer functions.
- *
- * If you need to use multiple canvas, you'll have to initialize the pointer for each one individually as each canvas maintains its own pointer object.
- * @function initPointer
- *
- * @param {Object} [options] - Pointer options.
- * @param {Number} [options.radius=5] - Radius of the pointer.
- * @param {HTMLCanvasElement} [options.canvas] - The canvas that event listeners will be attached to. Defaults to [core.getCanvas()](api/core#getCanvas).
- *
- * @returns {{x: Number, y: Number, radius: Number, canvas: HTMLCanvasElement, touches: Object}} The pointer object for the canvas.
- */
-function initPointer({
-  radius = 5,
-  canvas = getCanvas()
-} = {}) {
-  let pointer = pointers.get(canvas);
-  if (!pointer) {
-    let style = window.getComputedStyle(canvas);
-
-    pointer = {
-      x: 0,
-      y: 0,
-      radius,
-      touches: { length: 0 },
-      canvas,
-
-      // cf = current frame, lf = last frame, o = objects,
-      // oo = over object, _s = style
-      _cf: [],
-      _lf: [],
-      _o: [],
-      _oo: null,
-      _s: style
-    };
-    pointers.set(canvas, pointer);
-  }
-
-  // if this function is called multiple times, the same event
-  // won't be added multiple times
-  // @see https://stackoverflow.com/questions/28056716/check-if-an-element-has-event-listener-on-it-no-jquery/41137585#41137585
-  canvas.addEventListener('mousedown', pointerDownHandler);
-  canvas.addEventListener('touchstart', pointerDownHandler);
-  canvas.addEventListener('mouseup', pointerUpHandler);
-  canvas.addEventListener('touchend', pointerUpHandler);
-  canvas.addEventListener('touchcancel', pointerUpHandler);
-  canvas.addEventListener('blur', blurEventHandler$2);
-  canvas.addEventListener('mousemove', mouseMoveHandler);
-  canvas.addEventListener('touchmove', mouseMoveHandler);
-
-  // however, the tick event should only be registered once
-  // otherwise it completely destroys pointer events
-  if (!pointer._t) {
-    pointer._t = true;
-
-    // reset object render order on every new frame
-    on('tick', () => {
-      pointer._lf.length = 0;
-
-      pointer._cf.map(object => {
-        pointer._lf.push(object);
-      });
-
-      pointer._cf.length = 0;
-    });
-  }
-
-  return pointer;
-}
-
-/**
  * Register a function to be called on pointer events. Is passed the original Event and the target object (if there is one).
  *
  * ```js
@@ -1806,8 +1337,7 @@ function initPointer({
  * @param {(evt: MouseEvent|TouchEvent, object?: Object) => void} callback - Function to call on pointer event.
  */
 function onPointer(direction, callback) {
-  let eventName = direction[0].toUpperCase() + direction.substr(1);
-  callbacks$1['on' + eventName] = callback;
+  direction[0].toUpperCase() + direction.substr(1);
 }
 
 /**
@@ -2093,37 +1623,6 @@ function onGamepad(
 }
 
 /**
- * A simple gesture API. You can use it to move the main sprite or respond to gesture events.
- *
- * ```js
- * import { initPointer, initGesture, onGesture } from 'kontra';
- *
- * // these functions must be called first before gesture
- * // functions will work
- * initPointer();
- * initGesture();
- *
- * onGesture('swipeleft', function() {
- *   // handle swipeleft event
- * })
- * ```
- * @sectionName Gesture
- */
-
-/**
- * Below is a list of gestures that are provided by default. If you need to extend this list, you can use the [gestureMap](api/gesture#gestureMap) property.
- *
- * - swipeleft, swipeup, swiperight, swipedown
- * - pinchin, pinchout
- * @sectionName Available Gestures
- */
-
-// expose for tests
-let callbacks = {};
-let currGesture;
-let init = false;
-
-/**
  * A map of gesture objects to gesture names. Add to this object to expand the list of [available gestures](api/gesture#available-gestures).
  *
  * The gesture name should be the overall name of the gesture (e.g. swipe, pinch) and not include any directional information (e.g. left, in).
@@ -2203,74 +1702,6 @@ let gestureMap = {
     }
   }
 };
-
-/**
- * Initialize gesture event listeners. This function must be called before using other gesture functions. Gestures depend on pointer events, so [initPointer](api/pointer#initPointer) must be called as well.
- * @function initGesture
- */
-function initGesture() {
-  // don't add the on call multiple times otherwise it will mess up
-  // gesture events
-  if (!init) {
-    init = true;
-
-    on('touchChanged', (evt, touches) => {
-      Object.keys(gestureMap).map(name => {
-        let gesture = gestureMap[name];
-        let type;
-
-        if (
-          // don't call swipe if at the end of a pinch and there's 1
-          // finger left touching
-          (!currGesture || currGesture == name) &&
-          touches.length == gesture.touches &&
-          // ensure that the indices of touches goes from 0..N.
-          // otherwise a length 1 touch could have an index of 2
-          // which means there were two other touches that started
-          // a gesture
-          // @see https://stackoverflow.com/a/33352604/2124254
-          [...Array(touches.length).keys()].every(
-            key => touches[key]
-          ) &&
-          (type = gesture[evt.type]?.(touches) ?? '') &&
-          callbacks[name + type]
-        ) {
-          currGesture = name;
-          callbacks[name + type](evt, touches);
-        }
-      });
-    });
-
-    on('touchEnd', () => {
-      // 0 is the shortest falsy value
-      currGesture = 0;
-    });
-  }
-}
-
-/**
- * Register a function to be called on a gesture event. Is passed the original Event and the touch object, an array-like object of touches.
- *
- * ```js
- * import { initPointer, initGesture, onGesture } from 'kontra';
- *
- * initPointer();
- * initGesture();
- *
- * onGesture('swipeleft', function(e, touches) {
- *   // handle swipeleft gesture
- * });
- * ```
- * @function onGesture
- *
- * @param {String|String[]} gestures - Gesture or gestures to register callback for.
- * @param {(evt: TouchEvent, touches: Object) => void} callback - Function to call on gesture events.
- */
-function onGesture(gestures, callback) {
-  [].concat(gestures).map(gesture => {
-    callbacks[gesture] = callback;
-  });
-}
 
 /**
  * A simple keyboard API. You can use it move the main sprite or respond to a key press.
@@ -2502,12 +1933,10 @@ function onInput(inputs, callback, { gamepad, key } = {}) {
   [].concat(inputs).map(input => {
     if (contains(input, gamepadMap)) {
       onGamepad(input, callback, gamepad);
-    } else if (isGesture(input)) {
-      onGesture(input, callback);
-    } else if (contains(input, keyMap)) {
+    } else if (isGesture(input)) ; else if (contains(input, keyMap)) {
       onKey(input, callback, key);
     } else if (['down', 'up'].includes(input)) {
-      onPointer(input, callback);
+      onPointer(input);
     }
   });
 }
@@ -2969,10 +2398,17 @@ class GameManager {
             writable: true,
             value: []
         });
-        onInput(["arrowleft", "a", "swipeleft"], this.swipe.bind(this, Direction.LEFT));
-        onInput(["arrowright", "d", "swiperight"], this.swipe.bind(this, Direction.RIGHT));
+        new SwipeDetector({
+            onSwipeLeft: this.swipe.bind(this, Direction.LEFT),
+            onSwipeRight: this.swipe.bind(this, Direction.RIGHT),
+            onSwipeUp: this.swipe.bind(this, Direction.UP),
+            onSwipeDown: this.swipe.bind(this, Direction.DOWN),
+            threshold: 75, // Optional: Adjust the threshold as needed
+        });
+        onInput(["arrowleft", "a"], this.swipe.bind(this, Direction.LEFT));
+        onInput(["arrowright", "d"], this.swipe.bind(this, Direction.RIGHT));
         onInput(["arrowup", "w", "swipeup"], this.swipe.bind(this, Direction.UP));
-        onInput(["arrowdown", "s", "swipedown"], this.swipe.bind(this, Direction.DOWN));
+        onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
         on(EVENT.SWIPE_FINISH, () => {
             this.state = GAME_STATE.IDLE;
         });
@@ -3008,6 +2444,69 @@ class GameManager {
     onEnemyDead(card) {
         this.reusableEnemyCards.push(card);
         emit(EVENT.REMOVE_ENEMY_DEAD, card);
+    }
+}
+class SwipeDetector {
+    constructor(options) {
+        Object.defineProperty(this, "options", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: options
+        });
+        Object.defineProperty(this, "startX", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "startY", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "threshold", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.threshold = options.threshold || 50; // Default threshold of 50px
+        this.addEventListeners();
+    }
+    addEventListeners() {
+        ["touchstart"].forEach((evt) => 
+        // @ts-ignore
+        window.addEventListener(evt, this.onStart.bind(this)));
+        ["touchend"].forEach((evt) => 
+        // @ts-ignore
+        window.addEventListener(evt, this.onEnd.bind(this)));
+        ["touchmove"].forEach((evt) => 
+        // @ts-ignore
+        window.addEventListener(evt, this.preventDefault.bind(this)));
+    }
+    onStart(event) {
+        let point = this.getPoint(event);
+        this.startX = point.clientX;
+        this.startY = point.clientY;
+    }
+    onEnd(event) {
+        let point = this.getPoint(event);
+        let diffX = point.clientX - this.startX;
+        let diffY = point.clientY - this.startY;
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > this.threshold) {
+            diffX > 0 ? this.options.onSwipeRight?.() : this.options.onSwipeLeft?.();
+        }
+        else if (Math.abs(diffY) > this.threshold) {
+            diffY > 0 ? this.options.onSwipeDown?.() : this.options.onSwipeUp?.();
+        }
+    }
+    getPoint(event) {
+        return event instanceof TouchEvent ? event.changedTouches[0] : event;
+    }
+    preventDefault(event) {
+        event.preventDefault();
     }
 }
 
@@ -4351,8 +3850,8 @@ class Header extends Text {
 
 let { canvas } = init$1();
 initKeys();
-initPointer();
-initGesture();
+// initPointer();
+// initGesture();
 GameManager.getInstance();
 function resize() {
     let ctx = canvas.getContext("2d");
