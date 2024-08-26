@@ -133,6 +133,7 @@ const processBuff = (
       if (!isBuff) return {};
       const dirValue =
         Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE;
+      obj.attackDirection = dirValue;
       return {
         attackDirection: dirValue,
       };
