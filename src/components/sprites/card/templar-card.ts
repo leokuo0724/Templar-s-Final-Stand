@@ -6,6 +6,7 @@ import { AttackDirection } from "../../../types/character";
 import { Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
+import { COLOR } from "../../../constants/color";
 
 export class TemplarCard extends CharacterCard {
   public weight = 0;
@@ -53,5 +54,6 @@ export class TemplarCard extends CharacterCard {
   public updateWeight(value: number): void {
     this.weight += value;
     this.weightText.text = `${this.weight}`;
+    this.weightText.color = this.weight >= 13 ? COLOR.BROWN_8 : COLOR.WHITE_6;
   }
 }

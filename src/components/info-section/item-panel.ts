@@ -32,13 +32,16 @@ export class ItemPanel extends SpriteClass {
   }
 
   private onItemsUpdated(added: ItemCard[], removed: ItemCard[]) {
-    this.addChild(added);
-    this.pageIdx = 0;
+    if (added.length > 0) this.addChild(added);
+    if (removed.length > 0) this.removeChild(removed);
+
+    // this.pageIdx = 0;
     const gm = GameManager.getInstance();
     // mark all items as invisible
     gm.currentItems.forEach((item) => item.setInactive(0));
     // show first 4 items
     gm.currentItems
+      .sort((a, b) => a.duration - b.duration)
       .slice(0, ITEM_PER_PAGE)
       .forEach((item, index) =>
         item.setActive(60 + index * (GRID_SIZE + 4), 76)

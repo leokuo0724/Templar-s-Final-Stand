@@ -69,7 +69,7 @@ export class CardFactory {
             shield: 1 * factor,
           },
           duration: 8,
-          weight: 3,
+          weight: 5,
         });
       case CardType.POTION:
         return new ItemCard({
@@ -99,11 +99,6 @@ export class CardFactory {
         duration: 6,
         weight: 2,
       }, // Dagger
-      {
-        buff: { hitRate: 0.1, criticalRate: -0.1 },
-        duration: 6,
-        weight: 4,
-      },
       { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 6, weight: 4 }, // Axe
       {
         buff: {
@@ -112,7 +107,7 @@ export class CardFactory {
             Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE,
         },
         duration: 6,
-        weight: 6,
+        weight: 8,
       }, // Bow
     ];
     return randomPick(weaponSet);

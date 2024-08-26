@@ -11,7 +11,7 @@ import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
-import { AttackDirection, OptionalCharacterProps } from "../../types/character";
+import { AttackDirection } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 
 type BattleInfo = {
@@ -94,11 +94,17 @@ export class Board extends GameObjectClass {
   }
 
   private async onSwipe(direction: Direction) {
+    await this.checkOverweight();
     await this.moveCards(direction);
     await this.checkAttack(direction);
     await this.checkDuration();
     this.spawnCards();
     emit(EVENT.SWIPE_FINISH);
+  }
+
+  private async checkOverweight() {
+    if (this.templarCard.weight < 13) return;
+    this.templarCard.applyOverweightDamage();
   }
 
   private async moveCards(direction: Direction) {
@@ -172,7 +178,7 @@ export class Board extends GameObjectClass {
           const occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
           if (occupiedCard) {
             if (
-              card instanceof CharacterCard &&
+              card instanceof TemplarCard &&
               occupiedCard instanceof ItemCard
             ) {
               card.applyBuff(occupiedCard.buff);

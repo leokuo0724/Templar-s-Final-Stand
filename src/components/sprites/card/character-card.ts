@@ -154,6 +154,11 @@ export abstract class CharacterCard extends BaseCard {
     }
   }
 
+  public async applyOverweightDamage() {
+    await this.impactText.show(`Overweight -1`);
+    this.updateHealth(-1);
+  }
+
   // return true if the card is dead
   protected updateHealth(value: number): boolean | undefined {
     this.health += value;
