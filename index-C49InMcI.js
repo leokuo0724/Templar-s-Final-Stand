@@ -47,6 +47,53 @@ function clamp(min, max, value) {
   return Math.min(Math.max(min, value), max);
 }
 
+/**
+ * Return the world rect of an object. The rect is the world position of the top-left corner of the object and its size. Takes into account the objects anchor and scale.
+ * @function getWorldRect
+ *
+ * @param {{x: Number, y: Number, width: Number, height: Number}|{world: {x: Number, y: Number, width: Number, height: Number}}|{mapwidth: Number, mapheight: Number}} obj - Object to get world rect of.
+ *
+ * @returns {{x: Number, y: Number, width: Number, height: Number}} The world `x`, `y`, `width`, and `height` of the object.
+ */
+function getWorldRect(obj) {
+  let { x = 0, y = 0, width, height, radius } = obj.world || obj;
+
+  // take into account tileEngine
+  if (obj.mapwidth) {
+    width = obj.mapwidth;
+    height = obj.mapheight;
+  }
+
+  // account for circle
+  if (radius) {
+    width = radius.x * 2;
+    height = radius.y * 2;
+  }
+
+  // account for anchor
+  if (obj.anchor) {
+    x -= width * obj.anchor.x;
+    y -= height * obj.anchor.y;
+  }
+
+  // account for negative scales
+  if (width < 0) {
+    x += width;
+    width *= -1;
+  }
+  if (height < 0) {
+    y += height;
+    height *= -1;
+  }
+
+  return {
+    x,
+    y,
+    width,
+    height
+  };
+}
+
 let noop = () => {};
 
 /**
@@ -63,6 +110,29 @@ function removeFromArray(array, item) {
     array.splice(index, 1);
     return true;
   }
+}
+
+/**
+ * Detection collision between a rectangle and a circle.
+ * @see https://yal.cc/rectangle-circle-intersection-test/
+ *
+ * @param {Object} rect - Rectangular object to check collision against.
+ * @param {Object} circle - Circular object to check collision against.
+ *
+ * @returns {Boolean} True if objects collide.
+ */
+function circleRectCollision(circle, rect) {
+  let { x, y, width, height } = getWorldRect(rect);
+
+  // account for camera
+  do {
+    x -= rect.sx || 0;
+    y -= rect.sy || 0;
+  } while ((rect = rect.parent));
+
+  let dx = circle.x - Math.max(x, Math.min(circle.x, x + width));
+  let dy = circle.y - Math.max(y, Math.min(circle.y, y + height));
+  return dx * dx + dy * dy < circle.radius * circle.radius;
 }
 
 /**
@@ -145,6 +215,16 @@ let handler$1 = {
     return noop;
   }
 };
+
+/**
+ * Return the canvas element.
+ * @function getCanvas
+ *
+ * @returns {HTMLCanvasElement} The canvas element for the game.
+ */
+function getCanvas() {
+  return canvasEl;
+}
 
 /**
  * Return the context object.
@@ -1320,6 +1400,395 @@ function factory$7() {
 }
 
 /**
+ * A simple pointer API. You can use it move the main sprite or respond to a pointer event. Works with both mouse and touch events.
+ *
+ * Pointer events can be added on a global level or on individual sprites or objects. Before an object can receive pointer events, you must tell the pointer which objects to track and the object must haven been rendered to the canvas using `object.render()`.
+ *
+ * After an object is tracked and rendered, you can assign it an `onDown()`, `onUp()`, `onOver()`, or `onOut()` functions which will be called whenever a pointer down, up, over, or out event happens on the object.
+ *
+ * ```js
+ * import { initPointer, track, Sprite } from 'kontra';
+ *
+ * // this function must be called first before pointer
+ * // functions will work
+ * initPointer();
+ *
+ * let sprite = Sprite({
+ *   onDown: function() {
+ *     // handle on down events on the sprite
+ *   },
+ *   onUp: function() {
+ *     // handle on up events on the sprite
+ *   },
+ *   onOver: function() {
+ *     // handle on over events on the sprite
+ *   },
+ *   onOut: function() {
+ *     // handle on out events on the sprite
+ *   }
+ * });
+ *
+ * track(sprite);
+ * sprite.render();
+ * ```
+ *
+ * By default, the pointer is treated as a circle and will check for collisions against objects assuming they are rectangular (have a width and height property).
+ *
+ * If you need to perform a different type of collision detection, assign the object a `collidesWithPointer()` function and it will be called instead. The function is passed the pointer object. Use this function to determine how the pointer circle should collide with the object.
+ *
+ * ```js
+ * import { Sprite } from 'kontra';
+ *
+ * let sprite = Srite({
+ *   x: 10,
+ *   y: 10,
+ *   radius: 10
+ *   collidesWithPointer: function(pointer) {
+ *     // perform a circle v circle collision test
+ *     let dx = pointer.x - this.x;
+ *     let dy = pointer.y - this.y;
+ *     return Math.sqrt(dx * dx + dy * dy) < this.radius;
+ *   }
+ * });
+ * ```
+ * @sectionName Pointer
+ */
+
+/**
+ * Below is a list of buttons that you can use. If you need to extend or modify this list, you can use the [pointerMap](api/gamepad#pointerMap) property.
+ *
+ * - left, middle, right
+ * @sectionName Available Buttons
+ */
+
+// save each object as they are rendered to determine which object
+// is on top when multiple objects are the target of an event.
+// we'll always use the last frame's object order so we know
+// the finalized order of all objects, otherwise an object could ask
+// if it's being hovered when it's rendered first even if other
+// objects would block it later in the render order
+let pointers = new WeakMap();
+let callbacks$1 = {};
+let pressedButtons = {};
+
+/**
+ * A map of pointer button indices to button names. Modify this object to expand the list of [available buttons](api/pointer#available-buttons).
+ *
+ * ```js
+ * import { pointerMap, pointerPressed } from 'kontra';
+ *
+ * pointerMap[2] = 'buttonWest';
+ *
+ * if (pointerPressed('buttonWest')) {
+ *   // handle west face button
+ * }
+ * ```
+ * @property {{[key: Number]: String}} pointerMap
+ */
+let pointerMap = {
+  0: 'left',
+  1: 'middle',
+  2: 'right'
+};
+
+/**
+ * Get the first on top object that the pointer collides with.
+ *
+ * @param {Object} pointer - The pointer object
+ *
+ * @returns {Object} First object to collide with the pointer.
+ */
+function getCurrentObject(pointer) {
+  // if pointer events are required on the very first frame or
+  // without a game loop, use the current frame
+  let renderedObjects = pointer._lf.length
+    ? pointer._lf
+    : pointer._cf;
+
+  for (let i = renderedObjects.length - 1; i >= 0; i--) {
+    let object = renderedObjects[i];
+    let collides = object.collidesWithPointer
+      ? object.collidesWithPointer(pointer)
+      : circleRectCollision(pointer, object);
+
+    if (collides) {
+      return object;
+    }
+  }
+}
+
+/**
+ * Get the style property value.
+ */
+function getPropValue(style, value) {
+  return parseFloat(style.getPropertyValue(value)) || 0;
+}
+
+/**
+ * Calculate the canvas size, scale, and offset.
+ *
+ * @param {Object} The pointer object
+ *
+ * @returns {Object} The scale and offset of the canvas
+ */
+function getCanvasOffset(pointer) {
+  // we need to account for CSS scale, transform, border, padding,
+  // and margin in order to get the correct scale and offset of the
+  // canvas
+  let { canvas, _s } = pointer;
+  let rect = canvas.getBoundingClientRect();
+
+  // @see https://stackoverflow.com/a/53405390/2124254
+  let transform =
+    _s.transform != 'none'
+      ? _s.transform.replace('matrix(', '').split(',')
+      : [1, 1, 1, 1];
+  let transformScaleX = parseFloat(transform[0]);
+  let transformScaleY = parseFloat(transform[3]);
+
+  // scale transform applies to the border and padding of the element
+  let borderWidth =
+    (getPropValue(_s, 'border-left-width') +
+      getPropValue(_s, 'border-right-width')) *
+    transformScaleX;
+  let borderHeight =
+    (getPropValue(_s, 'border-top-width') +
+      getPropValue(_s, 'border-bottom-width')) *
+    transformScaleY;
+
+  let paddingWidth =
+    (getPropValue(_s, 'padding-left') +
+      getPropValue(_s, 'padding-right')) *
+    transformScaleX;
+  let paddingHeight =
+    (getPropValue(_s, 'padding-top') +
+      getPropValue(_s, 'padding-bottom')) *
+    transformScaleY;
+
+  return {
+    scaleX: (rect.width - borderWidth - paddingWidth) / canvas.width,
+    scaleY:
+      (rect.height - borderHeight - paddingHeight) / canvas.height,
+    offsetX:
+      rect.left +
+      (getPropValue(_s, 'border-left-width') +
+        getPropValue(_s, 'padding-left')) *
+        transformScaleX,
+    offsetY:
+      rect.top +
+      (getPropValue(_s, 'border-top-width') +
+        getPropValue(_s, 'padding-top')) *
+        transformScaleY
+  };
+}
+
+/**
+ * Execute the onDown callback for an object.
+ *
+ * @param {MouseEvent|TouchEvent} evt
+ */
+function pointerDownHandler(evt) {
+  // touchstart should be treated like a left mouse button
+  let button = evt.button != null ? pointerMap[evt.button] : 'left';
+  pressedButtons[button] = true;
+  pointerHandler(evt, 'onDown');
+}
+
+/**
+ * Execute the onUp callback for an object.
+ *
+ * @param {MouseEvent|TouchEvent} evt
+ */
+function pointerUpHandler(evt) {
+  let button = evt.button != null ? pointerMap[evt.button] : 'left';
+  pressedButtons[button] = false;
+  pointerHandler(evt, 'onUp');
+}
+
+/**
+ * Track the position of the mousevt.
+ *
+ * @param {MouseEvent|TouchEvent} evt
+ */
+function mouseMoveHandler(evt) {
+  pointerHandler(evt, 'onOver');
+}
+
+/**
+ * Reset pressed buttons.
+ *
+ * @param {MouseEvent|TouchEvent} evt
+ */
+function blurEventHandler$2(evt) {
+  let pointer = pointers.get(evt.target);
+  pointer._oo = null;
+  pressedButtons = {};
+}
+
+/**
+ * Call a pointer callback function
+ *
+ * @param {Object} pointer
+ * @param {String} eventName
+ * @param {MouseEvent|TouchEvent} evt
+ */
+function callCallback(pointer, eventName, evt) {
+  // Trigger events
+  let object = getCurrentObject(pointer);
+  if (object && object[eventName]) {
+    object[eventName](evt);
+  }
+
+  if (callbacks$1[eventName]) {
+    callbacks$1[eventName](evt, object);
+  }
+
+  // handle onOut events
+  if (eventName == 'onOver') {
+    if (object != pointer._oo && pointer._oo && pointer._oo.onOut) {
+      pointer._oo.onOut(evt);
+    }
+
+    pointer._oo = object;
+  }
+}
+
+/**
+ * Find the first object for the event and execute it's callback function
+ *
+ * @param {MouseEvent|TouchEvent} evt
+ * @param {string} eventName - Which event was called.
+ */
+function pointerHandler(evt, eventName) {
+  evt.preventDefault();
+
+  let canvas = evt.target;
+  let pointer = pointers.get(canvas);
+  let { scaleX, scaleY, offsetX, offsetY } = getCanvasOffset(pointer);
+  let isTouchEvent = evt.type.includes('touch');
+
+  if (isTouchEvent) {
+    // track new touches
+    Array.from(evt.touches).map(
+      ({ clientX, clientY, identifier }) => {
+        let touch = pointer.touches[identifier];
+        if (!touch) {
+          touch = pointer.touches[identifier] = {
+            start: {
+              x: (clientX - offsetX) / scaleX,
+              y: (clientY - offsetY) / scaleY
+            }
+          };
+          pointer.touches.length++;
+        }
+
+        touch.changed = false;
+      }
+    );
+
+    // handle only changed touches
+    Array.from(evt.changedTouches).map(
+      ({ clientX, clientY, identifier }) => {
+        let touch = pointer.touches[identifier];
+        touch.changed = true;
+        touch.x = pointer.x = (clientX - offsetX) / scaleX;
+        touch.y = pointer.y = (clientY - offsetY) / scaleY;
+
+        callCallback(pointer, eventName, evt);
+        emit('touchChanged', evt, pointer.touches);
+
+        // remove touches
+        if (eventName == 'onUp') {
+          delete pointer.touches[identifier];
+          pointer.touches.length--;
+
+          if (!pointer.touches.length) {
+            emit('touchEnd');
+          }
+        }
+      }
+    );
+  } else {
+    // translate the scaled size back as if the canvas was at a
+    // 1:1 scale
+    pointer.x = (evt.clientX - offsetX) / scaleX;
+    pointer.y = (evt.clientY - offsetY) / scaleY;
+
+    callCallback(pointer, eventName, evt);
+  }
+}
+
+/**
+ * Initialize pointer event listeners. This function must be called before using other pointer functions.
+ *
+ * If you need to use multiple canvas, you'll have to initialize the pointer for each one individually as each canvas maintains its own pointer object.
+ * @function initPointer
+ *
+ * @param {Object} [options] - Pointer options.
+ * @param {Number} [options.radius=5] - Radius of the pointer.
+ * @param {HTMLCanvasElement} [options.canvas] - The canvas that event listeners will be attached to. Defaults to [core.getCanvas()](api/core#getCanvas).
+ *
+ * @returns {{x: Number, y: Number, radius: Number, canvas: HTMLCanvasElement, touches: Object}} The pointer object for the canvas.
+ */
+function initPointer({
+  radius = 5,
+  canvas = getCanvas()
+} = {}) {
+  let pointer = pointers.get(canvas);
+  if (!pointer) {
+    let style = window.getComputedStyle(canvas);
+
+    pointer = {
+      x: 0,
+      y: 0,
+      radius,
+      touches: { length: 0 },
+      canvas,
+
+      // cf = current frame, lf = last frame, o = objects,
+      // oo = over object, _s = style
+      _cf: [],
+      _lf: [],
+      _o: [],
+      _oo: null,
+      _s: style
+    };
+    pointers.set(canvas, pointer);
+  }
+
+  // if this function is called multiple times, the same event
+  // won't be added multiple times
+  // @see https://stackoverflow.com/questions/28056716/check-if-an-element-has-event-listener-on-it-no-jquery/41137585#41137585
+  canvas.addEventListener('mousedown', pointerDownHandler);
+  canvas.addEventListener('touchstart', pointerDownHandler);
+  canvas.addEventListener('mouseup', pointerUpHandler);
+  canvas.addEventListener('touchend', pointerUpHandler);
+  canvas.addEventListener('touchcancel', pointerUpHandler);
+  canvas.addEventListener('blur', blurEventHandler$2);
+  canvas.addEventListener('mousemove', mouseMoveHandler);
+  canvas.addEventListener('touchmove', mouseMoveHandler);
+
+  // however, the tick event should only be registered once
+  // otherwise it completely destroys pointer events
+  if (!pointer._t) {
+    pointer._t = true;
+
+    // reset object render order on every new frame
+    on('tick', () => {
+      pointer._lf.length = 0;
+
+      pointer._cf.map(object => {
+        pointer._lf.push(object);
+      });
+
+      pointer._cf.length = 0;
+    });
+  }
+
+  return pointer;
+}
+
+/**
  * Register a function to be called on pointer events. Is passed the original Event and the target object (if there is one).
  *
  * ```js
@@ -1337,7 +1806,8 @@ function factory$7() {
  * @param {(evt: MouseEvent|TouchEvent, object?: Object) => void} callback - Function to call on pointer event.
  */
 function onPointer(direction, callback) {
-  direction[0].toUpperCase() + direction.substr(1);
+  let eventName = direction[0].toUpperCase() + direction.substr(1);
+  callbacks$1['on' + eventName] = callback;
 }
 
 /**
@@ -2037,15 +2507,19 @@ function onInput(inputs, callback, { gamepad, key } = {}) {
     } else if (contains(input, keyMap)) {
       onKey(input, callback, key);
     } else if (['down', 'up'].includes(input)) {
-      onPointer(input);
+      onPointer(input, callback);
     }
   });
 }
 
 let COLOR = {
+    RED_6: "#AD5F52",
     RED_7: "#913636",
     YELLOW_6: "#E1C584",
     YELLOW_7: "#C89660",
+    GREEN_5: "#B0B17C",
+    GREEN_6: "#6B7F5C",
+    BROWN_6: "#A17D5E",
     BROWN_7: "#89542F",
     BROWN_8: "#692F11",
     BLUE_6: "#64988e",
@@ -2110,6 +2584,472 @@ class Templar extends GameObject {
     }
 }
 
+let COMMON_TEXT_CONFIG = {
+    color: COLOR.WHITE_6,
+    font: "12px Trebuchet MS",
+    anchor: { x: 0.5, y: 0.5 },
+};
+let INFO_TEXT_CONFIG = {
+    color: COLOR.BROWN_7,
+    font: "12px Trebuchet MS",
+};
+
+let EVENT = {
+    SWIPE: "s",
+    SWIPE_FINISH: "s_f",
+    ITEMS_UPDATED: "i_u",
+    ENEMY_DEAD: "e_d",
+    REMOVE_ENEMY_DEAD: "r_e_d",
+};
+
+var Direction;
+(function (Direction) {
+    Direction[Direction["UP"] = 0] = "UP";
+    Direction[Direction["DOWN"] = 1] = "DOWN";
+    Direction[Direction["LEFT"] = 2] = "LEFT";
+    Direction[Direction["RIGHT"] = 3] = "RIGHT";
+})(Direction || (Direction = {}));
+
+// @ts-nocheck
+// zzfx() - the universal entry point -- returns a AudioBufferSourceNode
+let zzfx = (...t) => zzfxP(zzfxG(...t));
+// zzfxP() - the sound player -- returns a AudioBufferSourceNode
+let zzfxP = (...t) => {
+    let e = zzfxX.createBufferSource(), f = zzfxX.createBuffer(t.length, t[0].length, zzfxR);
+    t.map((d, i) => f.getChannelData(i).set(d)),
+        (e.buffer = f),
+        e.connect(zzfxX.destination),
+        e.start();
+    return e;
+};
+// zzfxG() - the sound generator -- returns an array of sample data
+let zzfxG = (q = 1, k = 0.05, c = 220, e = 0, t = 0, u = 0.1, r = 0, F = 1, v = 0, z = 0, w = 0, A = 0, l = 0, B = 0, x = 0, G = 0, d = 0, y = 1, m = 0, C = 0) => {
+    let b = 2 * Math.PI, H = (v *= (500 * b) / zzfxR ** 2), I = ((0 < x ? 1 : -1) * b) / 4, D = (c *= ((1 + 2 * k * Math.random() - k) * b) / zzfxR), Z = [], g = 0, E = 0, a = 0, n = 1, J = 0, K = 0, f = 0, p, h;
+    e = 99 + zzfxR * e;
+    m *= zzfxR;
+    t *= zzfxR;
+    u *= zzfxR;
+    d *= zzfxR;
+    z *= (500 * b) / zzfxR ** 3;
+    x *= b / zzfxR;
+    w *= b / zzfxR;
+    A *= zzfxR;
+    l = (zzfxR * l) | 0;
+    for (h = (e + m + t + u + d) | 0; a < h; Z[a++] = f)
+        ++K % ((100 * G) | 0) ||
+            ((f = r
+                ? 1 < r
+                    ? 2 < r
+                        ? 3 < r
+                            ? Math.sin((g % b) ** 3)
+                            : Math.max(Math.min(Math.tan(g), 1), -1)
+                        : 1 - (((((2 * g) / b) % 2) + 2) % 2)
+                    : 1 - 4 * Math.abs(Math.round(g / b) - g / b)
+                : Math.sin(g)),
+                (f =
+                    (l ? 1 - C + C * Math.sin((2 * Math.PI * a) / l) : 1) *
+                        (0 < f ? 1 : -1) *
+                        Math.abs(f) ** F *
+                        q *
+                        zzfxV *
+                        (a < e
+                            ? a / e
+                            : a < e + m
+                                ? 1 - ((a - e) / m) * (1 - y)
+                                : a < e + m + t
+                                    ? y
+                                    : a < h - d
+                                        ? ((h - a - d) / u) * y
+                                        : 0)),
+                (f = d
+                    ? f / 2 +
+                        (d > a ? 0 : ((a < h - d ? 1 : (h - a) / d) * Z[(a - d) | 0]) / 2)
+                    : f)),
+            (p = (c += v += z) * Math.sin(E * x - I)),
+            (g += p - p * B * (1 - ((1e9 * (Math.sin(a) + 1)) % 2))),
+            (E += p - p * B * (1 - ((1e9 * (Math.sin(a) ** 2 + 1)) % 2))),
+            n && ++n > A && ((c += w), (D += w), (n = 0)),
+            !l || ++J % l || ((c = D), (v = H), (n = n || 1));
+    return Z;
+};
+// zzfxV - global volume
+let zzfxV = 0.3;
+// zzfxR - global sample rate
+let zzfxR = 44100;
+// zzfxX - the common audio context
+let zzfxX = new (window.AudioContext || webkitAudioContext)();
+//! ZzFXM (v2.0.3) | (C) Keith Clark | MIT | https://github.com/keithclark/ZzFXM
+let zzfxM = (n, f, t, e = 125) => {
+    let l, o, z, r, g, h, x, a, u, c, i, m, p, G, M = 0, R = [], b = [], j = [], k = 0, q = 0, s = 1, v = {}, w = ((zzfxR / e) * 60) >> 2;
+    for (; s; k++)
+        (R = [(s = a = m = 0)]),
+            t.map((e, d) => {
+                for (x = f[e][k] || [0, 0, 0],
+                    s |= !!f[e][k],
+                    G = m + (f[e][0].length - 2 - !a) * w,
+                    p = d == t.length - 1,
+                    o = 2,
+                    r = m; o < x.length + p; a = ++o) {
+                    for (g = x[o],
+                        u = (o == x.length + p - 1 && p) || (c != (x[0] || 0)) | g | 0,
+                        z = 0; z < w && a; z++ > w - 99 && u ? (i += (i < 1) / 99) : 0)
+                        (h = ((1 - i) * R[M++]) / 2 || 0),
+                            (b[r] = (b[r] || 0) - h * q + h),
+                            (j[r] = (j[r++] || 0) + h * q + h);
+                    g &&
+                        ((i = g % 1),
+                            (q = x[1] || 0),
+                            (g |= 0) &&
+                                (R = v[[(c = x[(M = 0)] || 0), g]] =
+                                    v[[c, g]] ||
+                                        ((l = [...n[c]]),
+                                            (l[2] *= 2 ** ((g - 12) / 12)),
+                                            g > 0 ? zzfxG(...l) : [])));
+                }
+                m = G;
+            });
+    return [b, j];
+};
+
+let bgm = [
+    [
+        [1.5, 0, 400],
+        [1.5, 0, 4e3, , , 0.03, 2, 1.25, , , , , 0.02, 6.8, -0.3, , 0.5],
+        [1.5, 0, 360, , , 0.12, 2, 2, , , , , , 9, , 0.1],
+    ],
+    [
+        [
+            [
+                2,
+                -1,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+            ],
+            [
+                1,
+                1,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                20,
+                ,
+                20,
+                ,
+                ,
+            ],
+            [
+                ,
+                ,
+                ,
+                ,
+                ,
+                12,
+                ,
+                12,
+                12,
+                15,
+                ,
+                15,
+                15,
+                8,
+                ,
+                8,
+                8,
+                10,
+                12,
+                13,
+                12,
+                12,
+                ,
+                12,
+                12,
+                15,
+                ,
+                15,
+                17,
+                8,
+                ,
+                8,
+                8,
+                10,
+                11,
+                13,
+                12,
+                12,
+                ,
+                12,
+                12,
+                15,
+                ,
+                15,
+                15,
+                8,
+                ,
+                8,
+                8,
+                10,
+                12,
+                13,
+                12,
+                12,
+                ,
+                12,
+                12,
+                15,
+                ,
+                15,
+                15,
+                20,
+                ,
+                ,
+                ,
+                ,
+                ,
+                ,
+            ],
+        ],
+    ],
+    [0],
+    90,
+];
+
+var GAME_STATE;
+(function (GAME_STATE) {
+    GAME_STATE[GAME_STATE["IDLE"] = 0] = "IDLE";
+    GAME_STATE[GAME_STATE["SWIPING"] = 1] = "SWIPING";
+})(GAME_STATE || (GAME_STATE = {}));
+class GameManager {
+    get level() {
+        return Math.floor(this.moveCount / 5);
+    }
+    constructor() {
+        Object.defineProperty(this, "state", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: GAME_STATE.IDLE
+        });
+        Object.defineProperty(this, "moveCount", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "currentItems", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: []
+        });
+        Object.defineProperty(this, "reusableEnemyCards", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: []
+        });
+        onInput(["arrowleft", "a", "swipeleft"], this.swipe.bind(this, Direction.LEFT));
+        onInput(["arrowright", "d", "swiperight"], this.swipe.bind(this, Direction.RIGHT));
+        onInput(["arrowup", "w", "swipeup"], this.swipe.bind(this, Direction.UP));
+        onInput(["arrowdown", "s", "swipedown"], this.swipe.bind(this, Direction.DOWN));
+        on(EVENT.SWIPE_FINISH, () => {
+            this.state = GAME_STATE.IDLE;
+        });
+        on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
+        // @ts-ignore
+        let music = zzfxP(...zzfxM(...bgm));
+        music.loop = true;
+    }
+    static getInstance() {
+        if (!GameManager.instance) {
+            GameManager.instance = new GameManager();
+        }
+        return GameManager.instance;
+    }
+    swipe(direction) {
+        if (this.state !== GAME_STATE.IDLE)
+            return;
+        this.moveCount++;
+        this.state = GAME_STATE.SWIPING;
+        zzfx(...[3, , 576, , , 0.007, 1, 0.6, , , -273, , , , , , , 0.64]);
+        emit(EVENT.SWIPE, direction);
+    }
+    addItems(itemCards) {
+        itemCards.forEach((item) => this.currentItems.push(item));
+        emit(EVENT.ITEMS_UPDATED, itemCards, []);
+    }
+    removeItems(itemCards) {
+        // remove from current items
+        let newCurrentItem = this.currentItems.filter((item) => !itemCards.includes(item));
+        this.currentItems = newCurrentItem;
+        emit(EVENT.ITEMS_UPDATED, [], itemCards);
+    }
+    onEnemyDead(card) {
+        this.reusableEnemyCards.push(card);
+        emit(EVENT.REMOVE_ENEMY_DEAD, card);
+    }
+}
+
+let GRID_SIZE = 100;
+
+let ITEM_PER_PAGE = 4;
+class ItemPanel extends Sprite {
+    // private pageIdx = 0;
+    constructor(x, y) {
+        super({
+            x,
+            y,
+            width: 462,
+            height: 136,
+            color: COLOR.YELLOW_7,
+        });
+        let titleText = factory$7({
+            text: "Items",
+            x: 12,
+            y: 9,
+            ...INFO_TEXT_CONFIG,
+        });
+        this.addChild([titleText]);
+        on(EVENT.ITEMS_UPDATED, this.onItemsUpdated.bind(this));
+    }
+    onItemsUpdated(added, removed) {
+        if (added.length > 0)
+            this.addChild(added);
+        if (removed.length > 0)
+            this.removeChild(removed);
+        // this.pageIdx = 0;
+        let gm = GameManager.getInstance();
+        // mark all items as invisible
+        gm.currentItems.forEach((item) => item.setInactive(0));
+        // show first 4 items
+        gm.currentItems
+            .sort((a, b) => a.duration - b.duration)
+            .slice(0, ITEM_PER_PAGE)
+            .forEach((item, index) => item.setActive(60 + index * (GRID_SIZE + 4), 76));
+    }
+}
+
 let INFO_PANEL_HEIGHT = 184;
 class InfoPanel extends GameObject {
     constructor(x, y) {
@@ -2121,11 +3061,13 @@ class InfoPanel extends GameObject {
             width: this.context.canvas.width,
             height: INFO_PANEL_HEIGHT,
         });
-        this.addChild([bg, new Templar({ x: 8, y: 42, withWeapon: true })]);
+        this.addChild([
+            bg,
+            new Templar({ x: 8, y: 42, withWeapon: true }),
+            new ItemPanel(120, 30),
+        ]);
     }
 }
-
-let GRID_SIZE = 100;
 
 class Grid extends Sprite {
     constructor({ x, y, coord }) {
@@ -2147,17 +3089,40 @@ class Grid extends Sprite {
     }
 }
 
+var AttackDirection;
+(function (AttackDirection) {
+    AttackDirection["FRONT"] = "front";
+    AttackDirection["LINE"] = "line";
+    AttackDirection["AROUND"] = "around";
+})(AttackDirection || (AttackDirection = {}));
+
+function randomPick(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
 var CardType;
 (function (CardType) {
     CardType[CardType["TEMPLAR"] = 0] = "TEMPLAR";
     CardType[CardType["ENEMY"] = 1] = "ENEMY";
     CardType[CardType["WEAPON"] = 2] = "WEAPON";
+    CardType[CardType["SHIELD"] = 3] = "SHIELD";
+    CardType[CardType["POTION"] = 4] = "POTION";
 })(CardType || (CardType = {}));
 var Belongs;
 (function (Belongs) {
     Belongs[Belongs["PLAYER"] = 0] = "PLAYER";
     Belongs[Belongs["ENEMY"] = 1] = "ENEMY";
 })(Belongs || (Belongs = {}));
+
+class SwordIcon extends GameObject {
+    constructor(x, y, scale = 0.5) {
+        super({ x, y });
+        this.setScale(scale);
+    }
+    draw() {
+        drawPolygon(this.context, "10 18 23 5 24 0 19 1 6 14 4 13 2 15 4 17 0 22 1 23 2 24 7 20 9 22 11 20 10 18", COLOR.WHITE_6);
+    }
+}
 
 function tween(obj, config, duration, delay = 0) {
     return new Promise((resolve) => {
@@ -2221,6 +3186,12 @@ class BaseCard extends Sprite {
             writable: true,
             value: true
         });
+        Object.defineProperty(this, "mainIcon", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
         this.type = type;
         this.setScale(0);
         this.main = factory$8({
@@ -2234,28 +3205,42 @@ class BaseCard extends Sprite {
             radius: 24,
             color: getCardColor(type, CardPart.CIRCLE),
             anchor: { x: 0.5, y: 0.5 },
-            y: this.type === CardType.TEMPLAR ? 0 : -20,
+            y: this.type === CardType.TEMPLAR
+                ? 0
+                : this.type === CardType.ENEMY
+                    ? -14
+                    : -20,
         });
-        let mainIcon = this.getMainIcon();
-        this.main.addChild([circle, mainIcon]);
+        this.mainIcon = this.getMainIcon();
+        this.main.addChild([circle, this.mainIcon]);
     }
-    moveTo(x, y) {
-        tween(this, { targetX: x, targetY: y }, 200);
+    async moveTo(x, y) {
+        await tween(this, { targetX: x, targetY: y }, 100);
     }
-    setInactive() {
-        this.setChildrenOpacity(0, 200);
+    async setInactive(ms = 200) {
+        await this.setChildrenOpacity(0, ms);
         this.isActive = false;
     }
+    setActive(x, y) {
+        this.x = x;
+        this.y = y;
+        this.setChildrenOpacity(1, 200);
+        this.isActive = true;
+    }
     reset() {
+        // for reusing
+        this.isActive = true;
         this.setChildrenOpacity(1, 0);
         this.setScale(0);
-        this.isActive = true;
-        // TODO: Props update
+        this.resetProps();
     }
-    setChildrenOpacity(opacity, duration) {
-        tween(this, { opacity }, duration);
-        this.children.forEach((child) => tween(child, { opacity }, duration));
-        this.main.children.forEach((child) => tween(child, { opacity }, duration));
+    async setChildrenOpacity(opacity, duration) {
+        await Promise.all([
+            tween(this, { opacity }, duration),
+            tween(this.main, { opacity }, duration),
+            ...this.children.map((child) => tween(child, { opacity }, duration)),
+            ...this.main.children.map((child) => tween(child, { opacity }, duration)),
+        ]);
     }
     update() {
         // When generating the card
@@ -2282,6 +3267,13 @@ function getCardColor(type, part) {
                 case CardPart.CIRCLE:
                     return COLOR.YELLOW_6;
             }
+        case CardType.ENEMY:
+            switch (part) {
+                case CardPart.BACKGROUND:
+                    return COLOR.RED_7;
+                case CardPart.CIRCLE:
+                    return COLOR.RED_6;
+            }
         case CardType.WEAPON:
             switch (part) {
                 case CardPart.BACKGROUND:
@@ -2289,54 +3281,20 @@ function getCardColor(type, part) {
                 case CardPart.CIRCLE:
                     return COLOR.BLUE_6;
             }
-    }
-}
-
-class Sword extends GameObject {
-    constructor(x, y, scale) {
-        super({ x, y });
-        this.setScale(scale ?? 1);
-    }
-    draw() {
-        drawPolygon(this.context, "12 0 0 0 0 3 4 3 4 13 7 13 7 3 12 3 12 0", COLOR.BROWN_7, 0, 74);
-        drawPolygon(this.context, "5 0 0 15 1 74 5 74 8 74 10 15 5 0", COLOR.WHITE_6, 1, 0);
-    }
-}
-
-class ClockIcon extends GameObject {
-    constructor(x, y) {
-        super({ x, y });
-        this.setScale(0.5);
-    }
-    draw() {
-        drawPolygon(this.context, "7 7 0 7 0 0 2 0 2 5 7 5 7 7", COLOR.WHITE_6, 11, 6);
-        drawPolygon(this.context, "22 3 15 0 12 0 12 2 13 2 20 5 22 10 22 14 20 19 13 22 11 22 4 19 2 14 2 10 4 5 11 2 12 2 12 0 9 0 2 3 0 8 0 16 2 21 9 24 15 24 22 21 24 16 24 8 22 3", COLOR.WHITE_6);
-    }
-}
-
-let COMMON_TEXT_CONFIG = {
-    color: COLOR.WHITE_6,
-    font: "12px Trebuchet MS",
-    anchor: { x: 0.5, y: 0.5 },
-};
-
-class WeightIcon extends GameObject {
-    constructor(x, y) {
-        super({ x, y });
-        this.setScale(0.4);
-    }
-    draw() {
-        drawPolygon(this.context, "24 5 20 5 20 0 12 0 12 5 8 5 0 24 32 24 24 5", COLOR.WHITE_6, 0, 4);
-    }
-}
-
-class SwordIcon extends GameObject {
-    constructor(x, y) {
-        super({ x, y });
-        this.setScale(0.5);
-    }
-    draw() {
-        drawPolygon(this.context, "10 18 23 5 24 0 19 1 6 14 4 13 2 15 4 17 0 22 1 23 2 24 7 20 9 22 11 20 10 18", COLOR.WHITE_6);
+        case CardType.SHIELD:
+            switch (part) {
+                case CardPart.BACKGROUND:
+                    return COLOR.BROWN_7;
+                case CardPart.CIRCLE:
+                    return COLOR.BROWN_6;
+            }
+        case CardType.POTION:
+            switch (part) {
+                case CardPart.BACKGROUND:
+                    return COLOR.GREEN_6;
+                case CardPart.CIRCLE:
+                    return COLOR.GREEN_5;
+            }
     }
 }
 
@@ -2350,25 +3308,24 @@ class HeartIcon extends GameObject {
 }
 
 class ShieldIcon extends GameObject {
-    constructor(x, y, scale) {
+    constructor(x, y, scale, color = COLOR.BROWN_7) {
         super({ x, y });
         this.setScale(scale ?? 1);
+        this.color = color;
     }
     draw() {
-        drawPolygon(this.context, "10 0 0 3 0 15 2 19 10 23 17 19 19 15 19 3 10 0", COLOR.BROWN_7);
+        drawPolygon(this.context, "10 0 0 3 0 15 2 19 10 23 17 19 19 15 19 3 10 0", this.color);
     }
 }
 
-var Direction;
-(function (Direction) {
-    Direction[Direction["UP"] = 0] = "UP";
-    Direction[Direction["DOWN"] = 1] = "DOWN";
-    Direction[Direction["LEFT"] = 2] = "LEFT";
-    Direction[Direction["RIGHT"] = 3] = "RIGHT";
-})(Direction || (Direction = {}));
+function delay(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 class CharacterCard extends BaseCard {
-    constructor({ type, x, y, belongs, maxHealth, health, shield, dodgeRate, attack, hitRate, criticalRate, attackDirection, hitBackAttack, }) {
+    constructor({ type, x, y, belongs }) {
         super({ type, x, y });
         Object.defineProperty(this, "attackText", {
             enumerable: true,
@@ -2388,13 +3345,13 @@ class CharacterCard extends BaseCard {
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "belongs", {
+        Object.defineProperty(this, "impactText", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        Object.defineProperty(this, "maxHealth", {
+        Object.defineProperty(this, "belongs", {
             enumerable: true,
             configurable: true,
             writable: true,
@@ -2404,60 +3361,45 @@ class CharacterCard extends BaseCard {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: 0
         });
         Object.defineProperty(this, "shield", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
-        });
-        Object.defineProperty(this, "dodgeRate", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: void 0
+            value: 0
         });
         Object.defineProperty(this, "attack", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: 0
         });
         Object.defineProperty(this, "hitRate", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: 0
         });
         Object.defineProperty(this, "criticalRate", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: 0
         });
         Object.defineProperty(this, "attackDirection", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: AttackDirection.FRONT
         });
         Object.defineProperty(this, "hitBackAttack", {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: 0
         });
         this.belongs = belongs;
-        this.maxHealth = maxHealth;
-        this.health = health;
-        this.shield = shield;
-        this.dodgeRate = dodgeRate; // TODO: consider to delete
-        this.attack = attack;
-        this.hitRate = hitRate;
-        this.criticalRate = criticalRate;
-        this.attackDirection = attackDirection;
-        this.hitBackAttack = hitBackAttack;
         this.color = COLOR.DARK_6;
         this.attackText = factory$7({
             text: `${this.attack}`,
@@ -2477,6 +3419,7 @@ class CharacterCard extends BaseCard {
             y: -34,
             ...COMMON_TEXT_CONFIG,
         });
+        this.impactText = new ImpactText(0);
         this.main.addChild([
             new SwordIcon(20, 30),
             this.attackText,
@@ -2484,9 +3427,12 @@ class CharacterCard extends BaseCard {
             this.healthText,
             new ShieldIcon(28, -46),
             this.shieldText,
+            this.impactText,
         ]);
     }
-    async playAttack(direction) {
+    async execAttack(direction, target, isHitBack = false) {
+        if (target.health <= 0 || this.health <= 0)
+            return;
         let origX = this.x;
         let origY = this.y;
         await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
@@ -2500,60 +3446,275 @@ class CharacterCard extends BaseCard {
             await tween(this, { targetX: this.x, targetY: this.y + 10 * yFactor }, 50);
             await tween(this, { targetX: this.x, targetY: this.y - 30 * yFactor }, 40);
         }
+        zzfx(...[3, , 179, , 0.03, 0.06, , 2.8, , , , , , 0.5, 25, , , 0.46, 0.05]);
         await tween(this, { targetX: origX, targetY: origY }, 50, 400);
-        tween(this.main, { targetX: 0, targetY: 0 }, 200);
+        let counterDirection = () => {
+            switch (direction) {
+                case Direction.RIGHT:
+                    return Direction.LEFT;
+                case Direction.LEFT:
+                    return Direction.RIGHT;
+                case Direction.UP:
+                    return Direction.DOWN;
+                case Direction.DOWN:
+                    return Direction.UP;
+            }
+        };
+        await Promise.all([
+            tween(this.main, { targetX: 0, targetY: 0 }, 200),
+            target.applyDamage(this, counterDirection(), isHitBack),
+        ]);
+    }
+    async applyDamage(attacker, counterDirection, isHitBack = false) {
+        let { attack, hitBackAttack, hitRate, criticalRate } = attacker;
+        let isHit = Math.random() <= hitRate;
+        if (!isHit) {
+            await this.impactText.show("Miss");
+            return;
+        }
+        let isCritical = Math.random() <= criticalRate;
+        let damage = isHitBack ? hitBackAttack : attack;
+        let calculatedDamage = isCritical ? damage * 2 : damage;
+        if (isCritical) {
+            await this.impactText.show(`Critical -${calculatedDamage}`);
+        }
+        else {
+            await this.impactText.show(`-${calculatedDamage}`);
+        }
+        let remainingDamage = this.updateShield(-calculatedDamage);
+        let isDead = this.updateHealth(-remainingDamage);
+        if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
+            await this.execAttack(counterDirection, attacker, true);
+        }
+    }
+    async applyOverweightDamage() {
+        await this.impactText.show(`Overweight -1`);
+        this.updateHealth(-1);
+    }
+    // return true if the card is dead
+    updateHealth(value) {
+        this.health += value;
+        if (this.health <= 0) {
+            this.setInactive();
+            this.deathCallback();
+            return true;
+        }
+        this.healthText.text = `${this.health}`;
+    }
+    updateShield(value) {
+        let remainingDamage = 0;
+        this.shield += value;
+        if (this.shield <= 0) {
+            remainingDamage = -this.shield;
+            this.shield = 0;
+        }
+        this.shieldText.text = `${this.shield}`;
+        return remainingDamage;
+    }
+    updateAttack(value) {
+        this.attack += value;
+        this.attackText.text = `${this.attack}`;
+    }
+    refreshText() {
+        this.attackText.text = `${this.attack}`;
+        this.healthText.text = `${this.health}`;
+        this.shieldText.text = `${this.shield}`;
+        this.impactText.reset();
     }
     applyBuff(buff) {
-        this.maxHealth += buff.maxHealth || 0;
-        this.health += buff.health || 0;
-        this.health = Math.min(this.health, this.maxHealth);
-        this.shield += buff.shield || 0;
-        this.dodgeRate += buff.dodgeRate || 0;
-        this.attack += buff.attack || 0;
+        this.updateHealth(buff.health || 0);
+        this.updateShield(buff.shield || 0);
+        this.updateAttack(buff.attack || 0);
         this.hitRate += buff.hitRate || 0;
         this.criticalRate += buff.criticalRate || 0;
         this.attackDirection = buff.attackDirection || this.attackDirection;
         this.hitBackAttack += buff.hitBackAttack || 0;
-        this.attackText.text = `${this.attack}`;
-        this.healthText.text = `${this.health}`;
-        this.shieldText.text = `${this.shield}`;
         // TODO: show buff effect
     }
 }
+class ImpactText extends Sprite {
+    set text(text) {
+        this._text.text = text;
+    }
+    constructor(y) {
+        super({
+            x: 0,
+            y,
+            width: 100,
+            height: 20,
+            color: COLOR.BROWN_8,
+            anchor: { x: 0.5, y: 0.5 },
+            opacity: 0,
+        });
+        Object.defineProperty(this, "_text", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this._text = factory$7({
+            text: "",
+            font: "16px Trebuchet MS",
+            color: COLOR.WHITE_6,
+            anchor: { x: 0.5, y: 0.5 },
+        });
+        this.addChild(this._text);
+    }
+    async show(text) {
+        this._text.text = text;
+        await Promise.all([
+            tween(this._text, { opacity: 1 }, 500),
+            tween(this, { opacity: 1 }, 500),
+            tween(this, { targetY: this.y - 10 }, 500),
+        ]);
+        await delay(100);
+        await Promise.all([
+            tween(this._text, { opacity: 0 }, 300),
+            tween(this, { opacity: 0 }, 300),
+        ]);
+        this.y += 10;
+    }
+    reset() {
+        this.opacity = 0;
+        this._text.opacity = 0;
+    }
+}
 
-var AttackDirection;
-(function (AttackDirection) {
-    AttackDirection["FRONT"] = "front";
-    AttackDirection["FORWARD"] = "forward";
-    AttackDirection["AROUND"] = "around";
-    AttackDirection["LINE"] = "line";
-})(AttackDirection || (AttackDirection = {}));
+class EnemyIcon extends GameObject {
+    constructor(x, y) {
+        super({ x, y });
+        this.setScale(0.9);
+    }
+    draw() {
+        drawPolygon(this.context, "10 0 0 8 0 25 5 32 6 16 2 15 3 12 8 13 8 23 10 25 11 23 11 13 16 12 17 15 13 16 14 32 19 25 19 8 10 0", COLOR.WHITE_6);
+    }
+}
 
-class TemplarCard extends CharacterCard {
+class EnemyCard extends CharacterCard {
     constructor({ x, y }) {
         super({
-            type: CardType.TEMPLAR,
+            type: CardType.ENEMY,
             x,
             y,
-            belongs: Belongs.PLAYER,
-            maxHealth: 10,
-            health: 10,
-            shield: 0,
-            dodgeRate: 0,
-            attack: 1,
-            hitRate: 0.8,
-            criticalRate: 0.2,
-            attackDirection: AttackDirection.FRONT,
-            hitBackAttack: 0,
+            belongs: Belongs.ENEMY,
         });
+        Object.defineProperty(this, "descriptionText", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.descriptionText = factory$7({
+            x: 0,
+            y: 18,
+            text: "",
+            ...COMMON_TEXT_CONFIG,
+            textAlign: "center",
+        });
+        this.main.addChild(this.descriptionText);
+        this.resetProps();
     }
     getMainIcon() {
-        let templar = new Templar({
-            x: -12,
-            y: -20,
-            scale: 0.33,
-        });
-        return templar;
+        return new EnemyIcon(-8, -29);
+    }
+    deathCallback() {
+        emit(EVENT.ENEMY_DEAD, this);
+    }
+    resetProps() {
+        let { level, moveCount } = GameManager.getInstance();
+        this.health = 5 + 2 * level;
+        this.attack = 2 + 1 * level;
+        this.shield = 0;
+        this.hitRate = 0.8;
+        this.criticalRate = 0.1;
+        this.attackDirection = AttackDirection.FRONT;
+        this.hitBackAttack = 0;
+        let isElite = moveCount > 0 && moveCount % 13 === 0;
+        // Add extra buff
+        let { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));
+        this.applyBuff(buff);
+        this.descriptionText.text = desc;
+        this.refreshText();
+    }
+}
+let getEnemyBuffsAndDesc = (factor, isElite) => {
+    if (isElite) {
+        return [
+            {
+                buff: {
+                    attackDirection: AttackDirection.AROUND,
+                    health: 2 * factor,
+                },
+                desc: `"Whirlstriker"\nAttack: around`,
+            },
+            {
+                buff: {
+                    attackDirection: AttackDirection.LINE,
+                    attack: 2 * factor,
+                    health: 1 * factor,
+                },
+                desc: `"Spearman"\nAttack: line`,
+            },
+            {
+                buff: {
+                    hitBackAttack: 3 * factor,
+                    health: 2 * factor,
+                },
+                desc: `"Counterstriker"\nHit back: ${3 * factor}`,
+            },
+        ];
+    }
+    else {
+        let buffs = [
+            { shield: 2 * factor, health: -2 * factor },
+            { health: 1 * factor, attack: -1 * factor },
+            { criticalRate: 0.1 * factor, health: -2 * factor },
+            { attack: 1 * factor, hitRate: -0.2 },
+        ];
+        return buffs.map((buff) => ({ buff, desc: getDescText$1(buff) }));
+    }
+};
+let getDescText$1 = (buff) => {
+    let buffTexts = Object.entries(buff).map(([key, value]) => {
+        if (!value)
+            return "";
+        if (key === "attackDirection")
+            return `attack: ${value}`;
+        if (value > 0)
+            return `high ${key}`;
+        return `low ${key}`;
+    });
+    return buffTexts.join("\n");
+};
+
+class ClockIcon extends GameObject {
+    constructor(x, y) {
+        super({ x, y });
+        this.setScale(0.5);
+    }
+    draw() {
+        drawPolygon(this.context, "7 7 0 7 0 0 2 0 2 5 7 5 7 7", COLOR.WHITE_6, 11, 6);
+        drawPolygon(this.context, "22 3 15 0 12 0 12 2 13 2 20 5 22 10 22 14 20 19 13 22 11 22 4 19 2 14 2 10 4 5 11 2 12 2 12 0 9 0 2 3 0 8 0 16 2 21 9 24 15 24 22 21 24 16 24 8 22 3", COLOR.WHITE_6);
+    }
+}
+
+class WeightIcon extends GameObject {
+    constructor(x, y) {
+        super({ x, y });
+        this.setScale(0.4);
+    }
+    draw() {
+        drawPolygon(this.context, "24 5 20 5 20 0 12 0 12 5 8 5 0 24 32 24 24 5", COLOR.WHITE_6, 0, 4);
+    }
+}
+
+class PotionIcon extends GameObject {
+    constructor(x, y) {
+        super({ x, y });
+    }
+    draw() {
+        drawRect(this.context, 6, 0, 6, 3, COLOR.WHITE_6);
+        drawPolygon(this.context, "12 6 12 0 6 0 6 6 0 11 4 24 14 24 18 11 12 6", COLOR.WHITE_6, 0, 5);
     }
 }
 
@@ -2578,6 +3739,24 @@ class ItemCard extends BaseCard {
             writable: true,
             value: void 0
         });
+        Object.defineProperty(this, "buff", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "duration", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "weight", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
         this.buff = buff;
         this.duration = duration;
         this.weight = weight;
@@ -2586,7 +3765,6 @@ class ItemCard extends BaseCard {
             y: 18,
             text: getDescText(buff),
             ...COMMON_TEXT_CONFIG,
-            font: "10px Trebuchet MS",
             textAlign: "center",
         });
         this.durationText = factory$7({
@@ -2612,19 +3790,34 @@ class ItemCard extends BaseCard {
     getMainIcon() {
         switch (this.type) {
             case CardType.WEAPON:
-                return new Sword(-3, -40, 0.45);
+                return new SwordIcon(-11, -32, 1);
+            case CardType.SHIELD:
+                return new ShieldIcon(-10, -31, 1, COLOR.WHITE_6);
+            case CardType.POTION:
+                return new PotionIcon(-9, -36);
             default:
                 throw new Error(`Invalid card type: ${this.type}`);
         }
     }
-    equip(by) {
-        tween(this.main, { targetY: -24 }, 200);
-        if (by instanceof TemplarCard) {
-            this.setChildrenOpacity(0, 200);
-        }
-        else {
-            this.setInactive();
-        }
+    async equip() {
+        this.duration = Math.max(this.duration, 2);
+        await Promise.all([
+            tween(this.main, { targetY: -24 }, 300, 50),
+            this.setChildrenOpacity(0, 300),
+        ]);
+        zzfx(...[0.4, , 100, , 0.3, 0.4, 1, 0.1, , , 50, , 0.09, , , , , 0.5, 0.2]);
+        this.main.y = 0; // reset
+    }
+    resetProps() {
+        this.durationText.text = `${this.duration}`;
+        this.weightText.text = `${this.weight}`;
+    }
+    updateDuration(value) {
+        this.duration += value;
+        if (this.duration <= 0)
+            return false;
+        this.durationText.text = `${this.duration}`;
+        return true;
     }
 }
 // Utils
@@ -2641,38 +3834,161 @@ let getDescText = (buff) => {
     return buffTexts.join("\n");
 };
 
+class TemplarCard extends CharacterCard {
+    constructor({ x, y }) {
+        super({
+            type: CardType.TEMPLAR,
+            x,
+            y,
+            belongs: Belongs.PLAYER,
+        });
+        Object.defineProperty(this, "weight", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "weightText", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        this.resetProps();
+        this.weightText = factory$7({
+            text: `${this.weight}`,
+            x: -24,
+            y: 40,
+            ...COMMON_TEXT_CONFIG,
+        });
+        this.main.addChild([new WeightIcon(-46, 32), this.weightText]);
+    }
+    getMainIcon() {
+        let templar = new Templar({
+            x: -12,
+            y: -20,
+            scale: 0.33,
+        });
+        return templar;
+    }
+    deathCallback() { }
+    resetProps() {
+        this.health = 10;
+        this.shield = 0;
+        this.attack = 4;
+        this.hitRate = 1;
+        this.criticalRate = 0.2;
+        this.attackDirection = AttackDirection.FRONT;
+        this.hitBackAttack = 0;
+        this.refreshText();
+    }
+    updateWeight(value) {
+        this.weight += value;
+        this.weightText.text = `${this.weight}`;
+        this.weightText.color = this.weight >= 13 ? COLOR.BROWN_8 : COLOR.WHITE_6;
+    }
+}
+
 class CardFactory {
-    static createCard({ type, x, y }) {
+    static createCard(x, y) {
+        let { moveCount } = GameManager.getInstance();
+        let isSpawnEnemy = moveCount % 13 === 0 || moveCount % 4 === 0;
+        if (isSpawnEnemy) {
+            return CardFactory.factory({
+                type: CardType.ENEMY,
+                x,
+                y,
+            });
+        }
+        else {
+            let picked = randomPick([
+                CardType.SHIELD,
+                CardType.WEAPON,
+                CardType.WEAPON,
+                CardType.POTION,
+            ]);
+            return CardFactory.factory({
+                type: picked,
+                x,
+                y,
+            });
+        }
+    }
+    static factory(props) {
+        let { type, x, y } = props;
+        let gm = GameManager.getInstance();
+        let factor = gm.level + 1;
         switch (type) {
             case CardType.TEMPLAR:
                 return new TemplarCard({ x, y });
-            case CardType.WEAPON:
+            case CardType.ENEMY:
+                if (gm.reusableEnemyCards.length > 2) {
+                    let card = gm.reusableEnemyCards.shift();
+                    card.reset();
+                    card.x = x;
+                    card.y = y;
+                    return card;
+                }
+                return new EnemyCard({ x, y });
+            case CardType.WEAPON: // TODO: combine card to upgrade
                 return new ItemCard({
-                    type,
-                    x,
-                    y,
+                    ...props,
+                    ...CardFactory.randomPickWeapon(),
+                });
+            case CardType.SHIELD:
+                return new ItemCard({
+                    ...props,
                     buff: {
-                        attack: 1,
-                        hitRate: -1,
+                        shield: 1 * factor,
                     },
-                    duration: 3,
-                    weight: 1,
+                    duration: 6,
+                    weight: 5,
+                });
+            case CardType.POTION:
+                return new ItemCard({
+                    ...props,
+                    buff: this.randomPickPotionBuff(factor),
+                    duration: 4,
+                    weight: 0,
                 });
             default:
                 throw new Error(`Invalid card type: ${type}`);
         }
     }
-}
-
-let EVENT = {
-    SWIPE: "swipe",
-    SWIPE_FINISH: "swipe_finish",
-};
-
-function delay(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
+    static randomPickWeapon() {
+        let gm = GameManager.getInstance();
+        let factor = gm.level + 1;
+        let weaponSet = [
+            {
+                buff: { attack: 2 * factor, criticalRate: -0.1 },
+                duration: 6,
+                weight: 4,
+            }, // Sword
+            {
+                buff: { attack: 1 * factor, criticalRate: 0.2 },
+                duration: 6,
+                weight: 2,
+            }, // Dagger
+            { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 6, weight: 4 }, // Axe
+            {
+                buff: {
+                    attack: 1 * factor,
+                    attackDirection: Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE,
+                },
+                duration: 6,
+                weight: 6,
+            }, // Bow
+        ];
+        return randomPick(weaponSet);
+    }
+    static randomPickPotionBuff(factor) {
+        let buffs = [
+            { health: 1 * factor * (Math.random() > 0.5 ? 1 : -1) },
+            { criticalRate: Math.random() > 0.3 ? -0.1 : 0.1 },
+            { hitRate: Math.random() > 0.3 ? -0.1 : 0.1 },
+        ];
+        return randomPick(buffs);
+    }
 }
 
 let GAP = 4;
@@ -2693,6 +4009,12 @@ class Board extends GameObject {
             configurable: true,
             writable: true,
             value: Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => null))
+        });
+        Object.defineProperty(this, "templarCard", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
         });
         on(EVENT.SWIPE, this.onSwipe.bind(this));
         let bg = factory$8({
@@ -2715,29 +4037,15 @@ class Board extends GameObject {
             }
         }
         let centerGrid = this.getGridByCoord([2, 2]);
-        let templarCard = CardFactory.createCard({
+        this.templarCard = CardFactory.factory({
             type: CardType.TEMPLAR,
             x: centerGrid.x,
             y: centerGrid.y,
         });
-        this.addChild(templarCard);
-        this.occupiedInfo[2][2] = templarCard;
-        let tGrid = this.getGridByCoord([2, 3]);
-        let weaponCard = CardFactory.createCard({
-            type: CardType.WEAPON,
-            x: tGrid.x,
-            y: tGrid.y,
-        });
-        this.addChild(weaponCard);
-        this.occupiedInfo[2][3] = weaponCard;
-        let sGrid = this.getGridByCoord([3, 4]);
-        let aeaponCard = CardFactory.createCard({
-            type: CardType.WEAPON,
-            x: sGrid.x,
-            y: sGrid.y,
-        });
-        this.addChild(aeaponCard);
-        this.occupiedInfo[3][4] = aeaponCard;
+        this.addChild(this.templarCard);
+        this.occupiedInfo[2][2] = this.templarCard;
+        this.spawnCards();
+        on(EVENT.REMOVE_ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
     }
     getGridByCoord(coord) {
         let grid = this.grids[coord[0] + coord[1] * GRIDS_IN_LINE];
@@ -2745,8 +4053,34 @@ class Board extends GameObject {
             throw new Error(`Grid not found by coord: ${coord}`);
         return grid;
     }
-    onSwipe(direction) {
-        this.moveCards(direction);
+    onRemoveEnemyDead(card) {
+        for (let i = 0; i < GRIDS_IN_LINE; i++) {
+            let found = false;
+            for (let j = 0; j < GRIDS_IN_LINE; j++) {
+                let c = this.occupiedInfo[j][i];
+                if (c === card) {
+                    this.occupiedInfo[j][i] = null;
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+                break;
+        }
+        this.removeChild(card);
+    }
+    async onSwipe(direction) {
+        await this.checkOverweight();
+        await this.moveCards(direction);
+        await this.checkAttack(direction);
+        await this.checkDuration();
+        this.spawnCards();
+        emit(EVENT.SWIPE_FINISH);
+    }
+    async checkOverweight() {
+        if (this.templarCard.weight < 13)
+            return;
+        this.templarCard.applyOverweightDamage();
     }
     async moveCards(direction) {
         let moveRight = direction === Direction.RIGHT;
@@ -2759,6 +4093,36 @@ class Board extends GameObject {
         let endJ = moveDown ? -1 : GRIDS_IN_LINE;
         let stepI = moveRight ? -1 : 1;
         let stepJ = moveDown ? -1 : 1;
+        // Move cards
+        let moveInfos = [];
+        for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
+            for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
+                let card = this.occupiedInfo[j][i];
+                if (!card)
+                    continue;
+                let currI = i, currJ = j;
+                while (true) {
+                    let nextI = currI + (moveRight ? 1 : moveLeft ? -1 : 0);
+                    let nextJ = currJ + (moveDown ? 1 : moveUp ? -1 : 0);
+                    let occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
+                    if (nextI < 0 ||
+                        nextI >= GRIDS_IN_LINE ||
+                        nextJ < 0 ||
+                        nextJ >= GRIDS_IN_LINE ||
+                        occupiedCard)
+                        break;
+                    currI = nextI;
+                    currJ = nextJ;
+                }
+                let targetGrid = this.getGridByCoord([currJ, currI]);
+                moveInfos.push({ card, x: targetGrid.x, y: targetGrid.y });
+                this.occupiedInfo[j][i] = null;
+                this.occupiedInfo[currJ][currI] = card;
+            }
+        }
+        await Promise.all(moveInfos.map(({ card, x, y }) => card.moveTo(x, y)));
+        // Equip cards
+        let equippedItems = [];
         for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
             for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
                 let card = this.occupiedInfo[j][i];
@@ -2773,17 +4137,30 @@ class Board extends GameObject {
                         nextJ < 0 ||
                         nextJ >= GRIDS_IN_LINE)
                         break;
-                    let occupiedCard = this.occupiedInfo[nextJ][nextI];
+                    let occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
                     if (occupiedCard) {
-                        if (card instanceof CharacterCard &&
+                        if (card instanceof TemplarCard &&
                             occupiedCard instanceof ItemCard) {
                             card.applyBuff(occupiedCard.buff);
-                            occupiedCard.equip(card);
+                            await occupiedCard.equip();
                             this.occupiedInfo[nextJ][nextI] = null;
-                            // TODO: move the card (templar)
+                            // anim effect
+                            if (card instanceof TemplarCard &&
+                                occupiedCard.type !== CardType.POTION) {
+                                card.updateWeight(occupiedCard.weight);
+                                equippedItems.push(occupiedCard);
+                            }
+                            else {
+                                await occupiedCard.setInactive();
+                            }
+                            this.removeChild(occupiedCard);
+                            let targetGrid = this.getGridByCoord([nextJ, nextI]);
+                            await card.moveTo(targetGrid.x, targetGrid.y);
                             continue;
                         }
-                        break;
+                        else {
+                            break;
+                        }
                     }
                     currI = nextI;
                     currJ = nextJ;
@@ -2791,51 +4168,190 @@ class Board extends GameObject {
                 let targetGrid = this.getGridByCoord([currJ, currI]);
                 await card.moveTo(targetGrid.x, targetGrid.y);
                 this.occupiedInfo[j][i] = null;
+                if (card instanceof CharacterCard && card.health <= 0)
+                    continue;
                 this.occupiedInfo[currJ][currI] = card;
             }
         }
-        await delay(100);
-        emit(EVENT.SWIPE_FINISH);
+        if (equippedItems.length) {
+            let gm = GameManager.getInstance();
+            gm.addItems(equippedItems);
+        }
+    }
+    spawnCards() {
+        let emptyIndices = [];
+        for (let i = 0; i < GRIDS_IN_LINE; i++) {
+            for (let j = 0; j < GRIDS_IN_LINE; j++) {
+                if (!this.occupiedInfo[j][i]) {
+                    emptyIndices.push([j, i]);
+                }
+            }
+        }
+        let randomIndex = Math.floor(Math.random() * emptyIndices.length);
+        let [j, i] = emptyIndices[randomIndex];
+        let grid = this.getGridByCoord([j, i]);
+        let card = CardFactory.createCard(grid.x, grid.y);
+        this.addChild(card);
+        this.occupiedInfo[j][i] = card;
+    }
+    async checkAttack(direction) {
+        let battleInfos = [];
+        for (let i = 0; i < GRIDS_IN_LINE; i++) {
+            for (let j = 0; j < GRIDS_IN_LINE; j++) {
+                let card = this.occupiedInfo[j][i];
+                if (!(card instanceof CharacterCard))
+                    continue;
+                let { attackDirection } = card;
+                let isNormalCase = attackDirection === AttackDirection.FRONT;
+                let isAroundCase = attackDirection === AttackDirection.AROUND;
+                let isLineCase = attackDirection === AttackDirection.LINE;
+                if (isNormalCase) {
+                    let targetJ = j +
+                        (direction === Direction.UP
+                            ? -1
+                            : direction === Direction.DOWN
+                                ? 1
+                                : 0);
+                    let targetI = i +
+                        (direction === Direction.LEFT
+                            ? -1
+                            : direction === Direction.RIGHT
+                                ? 1
+                                : 0);
+                    let targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
+                    if (targetI < 0 ||
+                        targetI >= GRIDS_IN_LINE ||
+                        targetJ < 0 ||
+                        targetJ >= GRIDS_IN_LINE ||
+                        !targetCard ||
+                        !(targetCard instanceof CharacterCard) ||
+                        targetCard.belongs === card.belongs)
+                        continue;
+                    battleInfos.push({ attacker: card, target: targetCard, direction });
+                }
+                else if (isAroundCase) {
+                    // check 4 directions
+                    let directions = [
+                        [0, 1],
+                        [1, 0],
+                        [0, -1],
+                        [-1, 0],
+                    ];
+                    for (let [di, dj] of directions) {
+                        let targetJ = j + di;
+                        let targetI = i + dj;
+                        let targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
+                        if (targetCard instanceof CharacterCard &&
+                            targetCard.belongs !== card.belongs) {
+                            let direction = di === 0 && dj === 1
+                                ? Direction.RIGHT
+                                : di === 1 && dj === 0
+                                    ? Direction.DOWN
+                                    : di === 0 && dj === -1
+                                        ? Direction.LEFT
+                                        : Direction.UP;
+                            battleInfos.push({
+                                attacker: card,
+                                target: targetCard,
+                                direction,
+                            });
+                        }
+                    }
+                }
+                else if (isLineCase) {
+                    // check the same direction of the card
+                    let isVertical = direction === Direction.UP || direction === Direction.DOWN;
+                    let fixedIndex = isVertical ? i : j;
+                    let variableIndex = isVertical ? j : i;
+                    for (let k = 0; k < GRIDS_IN_LINE; k++) {
+                        if (k === variableIndex)
+                            continue;
+                        let targetCard = isVertical
+                            ? this.occupiedInfo[k][fixedIndex]
+                            : this.occupiedInfo[fixedIndex][k];
+                        if (targetCard instanceof CharacterCard &&
+                            targetCard.belongs !== card.belongs) {
+                            battleInfos.push({
+                                attacker: card,
+                                target: targetCard,
+                                direction: k < variableIndex && isVertical
+                                    ? Direction.UP
+                                    : k < variableIndex && !isVertical
+                                        ? Direction.LEFT
+                                        : k > variableIndex && isVertical
+                                            ? Direction.DOWN
+                                            : Direction.RIGHT,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        for (let { attacker, target, direction } of battleInfos) {
+            await attacker.execAttack(direction, target);
+        }
+    }
+    async checkDuration() {
+        let gm = GameManager.getInstance();
+        let deprecated = [];
+        // items on board
+        for (let i = 0; i < GRIDS_IN_LINE; i++) {
+            for (let j = 0; j < GRIDS_IN_LINE; j++) {
+                let card = this.occupiedInfo[j][i];
+                if (card instanceof ItemCard) {
+                    let isAlive = card.updateDuration(-1);
+                    if (!isAlive) {
+                        deprecated.push(card);
+                        this.occupiedInfo[j][i] = null;
+                    }
+                }
+            }
+        }
+        // items equipped on the templar
+        let removed = []; // any item that should be removed from templar
+        for (let item of gm.currentItems) {
+            let isAlive = item.updateDuration(-1);
+            if (!isAlive) {
+                removed.push(item);
+                deprecated.push(item);
+                let debuff = {};
+                Object.entries(item.buff).forEach(([key, value]) => {
+                    if (key === "attackDirection") {
+                        debuff[key] = AttackDirection.FRONT;
+                    }
+                    else if (key !== "shield") {
+                        debuff[key] = value * -1;
+                    }
+                });
+                this.templarCard.applyBuff(debuff);
+                this.templarCard.updateWeight(-item.weight);
+            }
+        }
+        if (removed.length)
+            gm.removeItems(removed);
+        await Promise.all(deprecated.map((item) => item.setInactive()));
     }
 }
 
-var GAME_STATE;
-(function (GAME_STATE) {
-    GAME_STATE[GAME_STATE["IDLE"] = 0] = "IDLE";
-    GAME_STATE[GAME_STATE["SWIPING"] = 1] = "SWIPING";
-})(GAME_STATE || (GAME_STATE = {}));
-class GameManager {
-    constructor() {
-        Object.defineProperty(this, "state", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: GAME_STATE.IDLE
+class Header extends Text {
+    constructor(x, y) {
+        super({
+            text: "MOVE 0",
+            x,
+            y,
+            color: COLOR.GRAY_7,
+            font: "36px Gill Sans",
+            anchor: { x: 0.5, y: 0.5 },
         });
-        onInput(["arrowleft", "a", "swipeleft"], this.swipe.bind(this, Direction.LEFT));
-        onInput(["arrowright", "d", "swiperight"], this.swipe.bind(this, Direction.RIGHT));
-        onInput(["arrowup", "w", "swipeup"], this.swipe.bind(this, Direction.UP));
-        onInput(["arrowdown", "s", "swipedown"], this.swipe.bind(this, Direction.DOWN));
-        on(EVENT.SWIPE_FINISH, () => {
-            this.state = GAME_STATE.IDLE;
+        on(EVENT.SWIPE, () => {
+            this.text = `MOVE ${GameManager.getInstance().moveCount}`;
         });
-    }
-    static getInstance() {
-        if (!GameManager.instance) {
-            GameManager.instance = new GameManager();
-        }
-        return GameManager.instance;
-    }
-    swipe(direction) {
-        if (this.state !== GAME_STATE.IDLE)
-            return;
-        this.state = GAME_STATE.SWIPING;
-        emit(EVENT.SWIPE, direction);
     }
 }
 
 let { canvas } = init$1();
 initKeys();
+initPointer();
 initGesture();
 GameManager.getInstance();
 function resize() {
@@ -2850,14 +4366,17 @@ function resize() {
 (onresize = resize)();
 let infoPanel = new InfoPanel(0, canvas.height - INFO_PANEL_HEIGHT);
 let board = new Board((canvas.width - BOARD_SIZE) / 2, 92);
+let header = new Header(canvas.width / 2, 48);
 let loop = GameLoop({
     update: () => {
         infoPanel.update();
         board.update();
+        header.update();
     },
     render: () => {
         infoPanel.render();
         board.render();
+        header.render();
     },
 });
 loop.start();
