@@ -11,6 +11,7 @@ import { SwordIcon } from "../icons/sword-icon";
 import { COLOR } from "../../../constants/color";
 import { ShieldIcon } from "../icons/shield-icon";
 import { PotionIcon } from "../icons/potion-icon";
+import { getItemPropsDescText } from "../../../utils/desc-utils";
 
 export type ItemCardProps = {
   type: CardType;
@@ -39,7 +40,7 @@ export class ItemCard extends BaseCard {
     this.descriptionText = Text({
       x: 0,
       y: 18,
-      text: getDescText(buff),
+      text: getItemPropsDescText(buff),
       ...COMMON_TEXT_CONFIG,
       textAlign: "center",
     });
@@ -99,14 +100,3 @@ export class ItemCard extends BaseCard {
     return true;
   }
 }
-
-// Utils
-const getDescText = (buff: OptionalCharacterProps) => {
-  const buffTexts = Object.entries(buff).map(([key, value]) => {
-    if (!value) return "";
-    if (key === "attackDirection") return `attack: ${value}`;
-    if ((value as number) > 0) return `${key} +${value}`;
-    return `${key} ${value}`;
-  });
-  return buffTexts.join("\n");
-};

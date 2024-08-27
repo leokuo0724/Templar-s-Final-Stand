@@ -8,6 +8,7 @@ import { tween } from "../../../utils/tween-utils";
 import { Direction } from "../../../types/direction";
 import {
   AttackDirection,
+  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
@@ -36,6 +37,7 @@ export abstract class CharacterCard extends BaseCard {
   public criticalRate: number = 0;
   public attackDirection: AttackDirection = AttackDirection.FRONT;
   public hitBackAttack: number = 0;
+  public attackType: string = AttackType.NORMAL;
 
   constructor({ type, x, y, belongs }: CharacterCardProps) {
     super({ type, x, y });
@@ -76,7 +78,8 @@ export abstract class CharacterCard extends BaseCard {
   public async execAttack(
     direction: Direction,
     target: CharacterCard,
-    isHitBack: boolean = false
+    isHitBack: boolean = false,
+    isPenetrate: boolean = false
   ) {
     if (target.health <= 0 || this.health <= 0) return;
     const origX = this.x;
@@ -124,14 +127,15 @@ export abstract class CharacterCard extends BaseCard {
     };
     await Promise.all([
       tween(this.main, { targetX: 0, targetY: 0 }, 200),
-      target.applyDamage(this, counterDirection(), isHitBack),
+      target.applyDamage(this, counterDirection(), isHitBack, isPenetrate),
     ]);
   }
 
   public async applyDamage(
     attacker: CharacterCard,
     counterDirection: Direction,
-    isHitBack: boolean = false
+    isHitBack: boolean = false,
+    isPenetrate: boolean = false
   ) {
     const { attack, hitBackAttack, hitRate, criticalRate } = attacker;
     const isHit = Math.random() <= hitRate;
@@ -148,10 +152,12 @@ export abstract class CharacterCard extends BaseCard {
       await this.impactText.show(`-${calculatedDamage}`);
     }
 
-    const remainingDamage = this.updateShield(-calculatedDamage);
+    const remainingDamage = isPenetrate
+      ? calculatedDamage
+      : this.updateShield(-calculatedDamage);
     const isDead = this.updateHealth(-remainingDamage);
     if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
-      await this.execAttack(counterDirection, attacker, true);
+      await this.execAttack(counterDirection, attacker, true, false);
     }
   }
 
@@ -200,6 +206,7 @@ export abstract class CharacterCard extends BaseCard {
     this.hitRate += buff.hitRate || 0;
     this.criticalRate += buff.criticalRate || 0;
     this.attackDirection = buff.attackDirection || this.attackDirection;
+    this.attackType = buff.attackType || this.attackType;
     this.hitBackAttack += buff.hitBackAttack || 0;
 
     // TODO: show buff effect

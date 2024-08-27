@@ -11,7 +11,7 @@ import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
-import { AttackDirection } from "../../types/character";
+import { AttackDirection, AttackType } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 
 type BattleInfo = {
@@ -340,7 +340,12 @@ export class Board extends GameObjectClass {
     }
 
     for (const { attacker, target, direction } of battleInfos) {
-      await attacker.execAttack(direction, target);
+      await attacker.execAttack(
+        direction,
+        target,
+        false,
+        attacker.attackType === AttackType.PENETRATE
+      );
     }
   }
 
@@ -372,6 +377,8 @@ export class Board extends GameObjectClass {
         Object.entries(item.buff).forEach(([key, value]) => {
           if (key === "attackDirection") {
             debuff[key] = AttackDirection.FRONT;
+          } else if (key === "attackType") {
+            debuff[key] = AttackType.NORMAL;
           } else if (key !== "shield") {
             debuff[key] = (value as number) * -1;
           }

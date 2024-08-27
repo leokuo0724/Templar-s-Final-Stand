@@ -3,6 +3,10 @@ export enum AttackDirection {
   LINE = "line", // 4 grid
   AROUND = "around", // 4 grid
 }
+export enum AttackType {
+  NORMAL = "normal",
+  PENETRATE = "penetrate",
+}
 
 export type CharacterProps = {
   health: number;
@@ -11,6 +15,7 @@ export type CharacterProps = {
   hitRate: number;
   criticalRate: number;
   attackDirection: AttackDirection;
+  attackType: AttackType;
   hitBackAttack: number;
 };
 export type OptionalCharacterProps = {

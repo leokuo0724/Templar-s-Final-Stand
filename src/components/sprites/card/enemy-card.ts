@@ -3,6 +3,7 @@ import { Belongs, CardType } from "./type";
 import { CharacterCard } from "./character-card";
 import {
   AttackDirection,
+  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { EVENT } from "../../../constants/event";
@@ -11,6 +12,7 @@ import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 import { EnemyIcon } from "../icons/enemy-icon";
+import { getEnemyPropsDescText } from "../../../utils/desc-utils";
 
 export class EnemyCard extends CharacterCard {
   protected descriptionText: Text;
@@ -74,7 +76,7 @@ const getEnemyBuffsAndDesc = (
           attackDirection: AttackDirection.AROUND,
           health: 2 * factor,
         },
-        desc: `"Whirlstriker"\nAttack: around`,
+        desc: `"Whirlstriker"\nRange: around`,
       },
       {
         buff: {
@@ -82,7 +84,7 @@ const getEnemyBuffsAndDesc = (
           attack: 2 * factor,
           health: 1 * factor,
         },
-        desc: `"Spearman"\nAttack: line`,
+        desc: `"Spearman"\nRange: line`,
       },
       {
         buff: {
@@ -90,6 +92,19 @@ const getEnemyBuffsAndDesc = (
           health: 2 * factor,
         },
         desc: `"Counterstriker"\nHit back: ${3 * factor}`,
+      },
+      {
+        buff: {
+          shield: 4 * factor,
+        },
+        desc: `"Guardian"\nShield: ${4 * factor}`,
+      },
+      {
+        buff: {
+          attackType: AttackType.PENETRATE,
+          attack: 2 * factor,
+        },
+        desc: `"Penetrator"\nPenetrate shield`,
       },
     ];
     eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);
@@ -101,16 +116,6 @@ const getEnemyBuffsAndDesc = (
       { criticalRate: 0.1 * factor, health: -2 * factor },
       { attack: 1 * factor, hitRate: -0.2 },
     ];
-    return buffs.map((buff) => ({ buff, desc: getDescText(buff) }));
+    return buffs.map((buff) => ({ buff, desc: getEnemyPropsDescText(buff) }));
   }
-};
-
-const getDescText = (buff: OptionalCharacterProps) => {
-  const buffTexts = Object.entries(buff).map(([key, value]) => {
-    if (!value) return "";
-    if (key === "attackDirection") return `attack: ${value}`;
-    if ((value as number) > 0) return `high ${key}`;
-    return `low ${key}`;
-  });
-  return buffTexts.join("\n");
 };

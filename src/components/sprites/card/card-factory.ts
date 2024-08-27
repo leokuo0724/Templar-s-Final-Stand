@@ -1,6 +1,7 @@
 import { GameManager } from "../../../managers/game-manager";
 import {
   AttackDirection,
+  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { randomPick } from "../../../utils/random-utils";
@@ -86,6 +87,7 @@ export class CardFactory {
     }
   }
 
+  // TODO:
   private static randomPickWeapon(): ItemSetProps {
     const gm = GameManager.getInstance();
     const factor = gm.level + 1;
