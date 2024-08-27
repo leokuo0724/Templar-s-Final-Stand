@@ -1,4 +1,4 @@
-import { GameLoop, init, initGesture, initKeys } from "kontra";
+import { GameLoop, init, initKeys } from "kontra";
 import {
   INFO_PANEL_HEIGHT,
   InfoPanel,
@@ -10,7 +10,6 @@ import { Header } from "./components/board-section/header";
 const { canvas } = init();
 
 initKeys();
-initGesture();
 GameManager.getInstance();
 
 function resize() {

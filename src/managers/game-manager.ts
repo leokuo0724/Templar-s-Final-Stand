@@ -5,6 +5,7 @@ import { ItemCard } from "../components/sprites/card/item-card";
 import { EnemyCard } from "../components/sprites/card/enemy-card";
 import { zzfx, zzfxM, zzfxP } from "../audios/zzfx";
 import { bgm } from "../audios/bgm";
+import { SwipeDetector } from "../utils/swipe-detector";
 
 enum GAME_STATE {
   IDLE,
@@ -24,19 +25,17 @@ export class GameManager {
   public reusableEnemyCards: EnemyCard[] = [];
 
   private constructor() {
-    onInput(
-      ["arrowleft", "a", "swipeleft"],
-      this.swipe.bind(this, Direction.LEFT)
-    );
-    onInput(
-      ["arrowright", "d", "swiperight"],
-      this.swipe.bind(this, Direction.RIGHT)
-    );
-    onInput(["arrowup", "w", "swipeup"], this.swipe.bind(this, Direction.UP));
-    onInput(
-      ["arrowdown", "s", "swipedown"],
-      this.swipe.bind(this, Direction.DOWN)
-    );
+    new SwipeDetector({
+      onSwipeLeft: this.swipe.bind(this, Direction.LEFT),
+      onSwipeRight: this.swipe.bind(this, Direction.RIGHT),
+      onSwipeUp: this.swipe.bind(this, Direction.UP),
+      onSwipeDown: this.swipe.bind(this, Direction.DOWN),
+    });
+
+    onInput(["arrowleft", "a"], this.swipe.bind(this, Direction.LEFT));
+    onInput(["arrowright", "d"], this.swipe.bind(this, Direction.RIGHT));
+    onInput(["arrowup", "w"], this.swipe.bind(this, Direction.UP));
+    onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
 
     on(EVENT.SWIPE_FINISH, () => {
       this.state = GAME_STATE.IDLE;

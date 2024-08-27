@@ -62,12 +62,13 @@ export class EnemyCard extends CharacterCard {
   }
 }
 
+let eliteCount = -1;
 const getEnemyBuffsAndDesc = (
   factor: number,
   isElite: boolean
 ): { buff: OptionalCharacterProps; desc: string }[] => {
   if (isElite) {
-    return [
+    const elites = [
       {
         buff: {
           attackDirection: AttackDirection.AROUND,
@@ -91,6 +92,8 @@ const getEnemyBuffsAndDesc = (
         desc: `"Counterstriker"\nHit back: ${3 * factor}`,
       },
     ];
+    eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);
+    return [elites[eliteCount]];
   } else {
     const buffs = [
       { shield: 2 * factor, health: -2 * factor },
