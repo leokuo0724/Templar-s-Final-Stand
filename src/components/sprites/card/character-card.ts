@@ -1,4 +1,4 @@
-import { SpriteClass, Text } from "kontra";
+import { emit, SpriteClass, Text } from "kontra";
 import { SwordIcon } from "../icons/sword-icon";
 import { BaseCard } from "./base-card";
 import { Belongs, CardType } from "./type";
@@ -15,6 +15,7 @@ import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { COLOR } from "../../../constants/color";
 import { zzfx } from "../../../audios/zzfx";
 import { delay } from "../../../utils/time-utils";
+import { EVENT } from "../../../constants/event";
 
 type CharacterCardProps = {
   type: CardType;
@@ -208,6 +209,8 @@ export abstract class CharacterCard extends BaseCard {
     this.attackDirection = buff.attackDirection || this.attackDirection;
     this.attackType = buff.attackType || this.attackType;
     this.hitBackAttack += buff.hitBackAttack || 0;
+
+    if (this.type === CardType.TEMPLAR) emit(EVENT.UPDATE_TEMPLAR_INFO, this);
 
     // TODO: show buff effect
   }

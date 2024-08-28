@@ -1,7 +1,6 @@
 import { GameManager } from "../../../managers/game-manager";
 import {
   AttackDirection,
-  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { randomPick } from "../../../utils/random-utils";

@@ -2,11 +2,12 @@ import { Belongs, CardType } from "./type";
 
 import { Templar } from "../templar";
 import { CharacterCard } from "./character-card";
-import { AttackDirection } from "../../../types/character";
-import { Text } from "kontra";
+import { AttackDirection, AttackType } from "../../../types/character";
+import { emit, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { COLOR } from "../../../constants/color";
+import { EVENT } from "../../../constants/event";
 
 export class TemplarCard extends CharacterCard {
   public weight = 0;
@@ -44,16 +45,20 @@ export class TemplarCard extends CharacterCard {
     this.health = 10;
     this.shield = 0;
     this.attack = 4;
-    this.hitRate = 1;
+    this.hitRate = 0.9;
     this.criticalRate = 0.2;
     this.attackDirection = AttackDirection.FRONT;
+    this.attackType = AttackType.NORMAL;
     this.hitBackAttack = 0;
     this.refreshText();
+    emit(EVENT.UPDATE_TEMPLAR_INFO, this);
   }
 
   public updateWeight(value: number): void {
     this.weight += value;
     this.weightText.text = `${this.weight}`;
-    this.weightText.color = this.weight >= 13 ? COLOR.BROWN_8 : COLOR.WHITE_6;
+    const isOverweight = this.weight >= 13;
+    this.weightText.color = isOverweight ? COLOR.BROWN_8 : COLOR.WHITE_6;
+    emit(EVENT.UPDATE_TEMPLAR_WEIGHT, isOverweight);
   }
 }
