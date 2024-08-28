@@ -6,4 +6,5 @@ export const EVENT = {
   REMOVE_ENEMY_DEAD: "r_e_d",
   UPDATE_TEMPLAR_INFO: "u_t_i",
   UPDATE_TEMPLAR_WEIGHT: "u_t_w",
+  GAME_OVER: "g_o",
 };

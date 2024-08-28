@@ -7,15 +7,16 @@ import { zzfx, zzfxM, zzfxP } from "../audios/zzfx";
 import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";
 
-enum GAME_STATE {
+export enum GAME_STATE {
   IDLE,
   SWIPING,
+  GAME_OVER,
 }
 
 export class GameManager {
   private static instance: GameManager;
 
-  private state: GAME_STATE = GAME_STATE.IDLE;
+  public state: GAME_STATE = GAME_STATE.IDLE;
   public moveCount = 0;
   public get level() {
     return Math.floor(this.moveCount / 5);
@@ -38,6 +39,7 @@ export class GameManager {
     onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
 
     on(EVENT.SWIPE_FINISH, () => {
+      if (this.state === GAME_STATE.GAME_OVER) return;
       this.state = GAME_STATE.IDLE;
     });
     on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
@@ -76,5 +78,10 @@ export class GameManager {
   public onEnemyDead(card: EnemyCard) {
     this.reusableEnemyCards.push(card);
     emit(EVENT.REMOVE_ENEMY_DEAD, card);
+  }
+
+  public gameOver() {
+    this.state = GAME_STATE.GAME_OVER;
+    emit(EVENT.GAME_OVER);
   }
 }

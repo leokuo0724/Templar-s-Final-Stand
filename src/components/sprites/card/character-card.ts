@@ -11,7 +11,7 @@ import {
   AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
-import { COMMON_TEXT_CONFIG } from "../../../constants/text";
+import { COMMON_TEXT_CONFIG, FONT } from "../../../constants/text";
 import { COLOR } from "../../../constants/color";
 import { zzfx } from "../../../audios/zzfx";
 import { delay } from "../../../utils/time-utils";
@@ -234,7 +234,7 @@ class ImpactText extends SpriteClass {
     });
     this._text = Text({
       text: "",
-      font: "16px Trebuchet MS",
+      font: `16px ${FONT}`,
       color: COLOR.WHITE_6,
       anchor: { x: 0.5, y: 0.5 },
     });

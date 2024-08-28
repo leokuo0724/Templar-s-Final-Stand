@@ -4,6 +4,7 @@ import { Templar } from "../sprites/templar";
 import { ItemPanel } from "./item-panel";
 import { EVENT } from "../../constants/event";
 import { TemplarCard } from "../sprites/card/templar-card";
+import { FONT } from "../../constants/text";
 
 export const INFO_PANEL_HEIGHT = 184;
 
@@ -23,7 +24,7 @@ export class InfoPanel extends GameObjectClass {
     });
     const textProps = {
       text: "",
-      font: "12px Trebuchet MS",
+      font: `12px ${FONT}`,
       color: COLOR.BROWN_7,
     };
 

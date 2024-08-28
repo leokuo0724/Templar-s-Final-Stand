@@ -8,6 +8,7 @@ import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { COLOR } from "../../../constants/color";
 import { EVENT } from "../../../constants/event";
+import { GameManager } from "../../../managers/game-manager";
 
 export class TemplarCard extends CharacterCard {
   public weight = 0;
@@ -39,7 +40,10 @@ export class TemplarCard extends CharacterCard {
     return templar;
   }
 
-  protected deathCallback() {}
+  protected deathCallback() {
+    const gm = GameManager.getInstance();
+    gm.gameOver();
+  }
 
   protected resetProps(): void {
     this.health = 10;
