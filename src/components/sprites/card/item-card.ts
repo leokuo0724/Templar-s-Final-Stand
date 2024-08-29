@@ -1,6 +1,10 @@
 import { BaseCard } from "./base-card";
 import { CardType } from "./type";
-import { OptionalCharacterProps } from "../../../types/character";
+import {
+  AttackDirection,
+  AttackType,
+  OptionalCharacterProps,
+} from "../../../types/character";
 import { ClockIcon } from "../icons/clock-icon";
 import { Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
@@ -12,13 +16,14 @@ import { COLOR } from "../../../constants/color";
 import { ShieldIcon } from "../icons/shield-icon";
 import { PotionIcon } from "../icons/potion-icon";
 import { getItemPropsDescText } from "../../../utils/desc-utils";
+import { GameManager } from "../../../managers/game-manager";
+import { randomPick } from "../../../utils/random-utils";
 
 export type ItemCardProps = {
   type: CardType;
   x: number;
   y: number;
   // props
-  buff: OptionalCharacterProps;
   duration: number;
   weight: number;
 };
@@ -30,17 +35,18 @@ export class ItemCard extends BaseCard {
   public buff: OptionalCharacterProps;
   public duration: number;
   public weight: number;
+  public level: number = 1;
 
-  constructor({ type, x, y, buff, duration, weight }: ItemCardProps) {
+  constructor({ type, x, y, duration, weight }: ItemCardProps) {
     super({ type, x, y });
-    this.buff = buff;
     this.duration = duration;
     this.weight = weight;
 
+    this.buff = this.pickBuff();
     this.descriptionText = Text({
       x: 0,
       y: 18,
-      text: getItemPropsDescText(buff),
+      text: getItemPropsDescText(this.buff),
       ...COMMON_TEXT_CONFIG,
       textAlign: "center",
     });
@@ -99,4 +105,76 @@ export class ItemCard extends BaseCard {
     this.durationText.text = `${this.duration}`;
     return true;
   }
+
+  public upgrade(card: ItemCard) {
+    this.level += card.level;
+    this.level = Math.min(this.level, 4);
+    this.duration += card.duration;
+    this.weight = 2 * this.level;
+
+    this.buff = this.pickBuff();
+    this.descriptionText.text = getItemPropsDescText(this.buff);
+    this.resetProps();
+  }
+
+  public pickBuff() {
+    const gm = GameManager.getInstance();
+    const factor = gm.level + 1;
+    switch (this.type) {
+      case CardType.WEAPON:
+        return getWeaponLevelBuff(this.level, factor);
+      case CardType.SHIELD:
+        return getShieldLevelBuff(this.level, factor);
+      case CardType.POTION:
+        return getPotionLevelBuff(this.level, factor);
+      default:
+        throw new Error(`Invalid card type: ${this.type}`);
+    }
+  }
 }
+
+const getWeaponLevelBuff = (
+  level: number,
+  factor: number
+): OptionalCharacterProps => {
+  const attack = factor + 2 * level;
+  const random = Math.random();
+  if (level === 1) {
+    return { attack };
+  } else if (level === 2) {
+    return random < 0.6
+      ? { attack, criticalRate: 0.1 }
+      : { attack, hitRate: 0.1 };
+  } else if (level === 3) {
+    return {
+      attack,
+      criticalRate: 0.1,
+      attackType: AttackType.PENETRATE,
+    };
+  } else {
+    const dir = random < 0.5 ? AttackDirection.AROUND : AttackDirection.LINE;
+    return {
+      attack,
+      attackDirection: dir,
+      hitBackAttack: 3 * factor,
+    };
+  }
+};
+const getShieldLevelBuff = (
+  level: number,
+  factor: number
+): OptionalCharacterProps => {
+  return { shield: 2 * factor + level };
+};
+const getPotionLevelBuff = (
+  level: number,
+  factor: number
+): OptionalCharacterProps => {
+  const random = Math.random();
+  const buffs: OptionalCharacterProps[] = [
+    { health: factor * (random > 0.5 - 0.1 * level ? 1 : -1) },
+    { criticalRate: factor * random > 0.6 - 0.1 * level ? 0.1 : -0.1 },
+    { hitRate: factor * random > 1 - 0.05 * level ? 0.1 : -0.1 },
+  ];
+  return randomPick(buffs);
+};

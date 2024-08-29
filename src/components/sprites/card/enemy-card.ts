@@ -106,6 +106,14 @@ const getEnemyBuffsAndDesc = (
         },
         desc: `"Penetrator"\nPenetrate shield`,
       },
+      {
+        buff: {
+          AttackDirection: AttackDirection.AROUND,
+          AttackType: AttackType.PENETRATE,
+          shield: 5 * factor,
+        },
+        desc: `"Tough Guy"\nPenetrate, Range: around`,
+      },
     ];
     eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);
     return [elites[eliteCount]];

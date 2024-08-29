@@ -59,8 +59,11 @@ export class GameOverDialog extends SpriteClass {
       const maxX = world.x + world.width / 2;
       const minY = world.y - world.height / 2;
       const maxY = world.y + world.height / 2;
-      const x = event.x - offsetLeft;
-      const y = event.y - offsetTop;
+
+      const { width: w, height: h } = canvas;
+      const scale = Math.min(innerWidth / w, innerHeight / h, devicePixelRatio);
+      const x = (event.x - offsetLeft) / scale;
+      const y = (event.y - offsetTop) / scale;
       if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
         window.location.reload();
       }

@@ -177,11 +177,15 @@ export class Board extends GameObjectClass {
             break;
           const occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
           if (occupiedCard) {
-            if (
-              card instanceof TemplarCard &&
-              occupiedCard instanceof ItemCard
-            ) {
-              card.applyBuff(occupiedCard.buff);
+            const isTemplarEquip =
+              card.type === CardType.TEMPLAR &&
+              occupiedCard instanceof ItemCard;
+            const isItemUpgrade =
+              card.type === occupiedCard.type && card instanceof ItemCard;
+
+            if (isTemplarEquip || isItemUpgrade) {
+              isTemplarEquip && card.applyBuff(occupiedCard.buff);
+              isItemUpgrade && card.upgrade(occupiedCard as ItemCard);
               await occupiedCard.equip();
               this.occupiedInfo[nextJ][nextI] = null;
               // anim effect
@@ -190,6 +194,7 @@ export class Board extends GameObjectClass {
                 occupiedCard.type !== CardType.POTION
               ) {
                 card.updateWeight(occupiedCard.weight);
+                // @ts-ignore
                 equippedItems.push(occupiedCard);
               } else {
                 await occupiedCard.setInactive();
@@ -219,20 +224,25 @@ export class Board extends GameObjectClass {
   }
 
   private spawnCards() {
-    const emptyIndices = [];
-    for (let i = 0; i < GRIDS_IN_LINE; i++) {
-      for (let j = 0; j < GRIDS_IN_LINE; j++) {
-        if (!this.occupiedInfo[j][i]) {
-          emptyIndices.push([j, i]);
+    const gm = GameManager.getInstance();
+    const isDual = gm.moveCount % 5 === 1 || gm.moveCount % 5 === 3;
+    for (let i = 0; i < (isDual ? 2 : 1); i++) {
+      const emptyIndices = [];
+      for (let i = 0; i < GRIDS_IN_LINE; i++) {
+        for (let j = 0; j < GRIDS_IN_LINE; j++) {
+          if (!this.occupiedInfo[j][i]) {
+            emptyIndices.push([j, i]);
+          }
         }
       }
+
+      const randomIndex = Math.floor(Math.random() * emptyIndices.length);
+      const [j, i] = emptyIndices[randomIndex];
+      const grid = this.getGridByCoord([j, i]);
+      const card = CardFactory.createCard(grid.x, grid.y);
+      this.addChild(card);
+      this.occupiedInfo[j][i] = card;
     }
-    const randomIndex = Math.floor(Math.random() * emptyIndices.length);
-    const [j, i] = emptyIndices[randomIndex];
-    const grid = this.getGridByCoord([j, i]);
-    const card = CardFactory.createCard(grid.x, grid.y);
-    this.addChild(card);
-    this.occupiedInfo[j][i] = card;
   }
 
   private async checkAttack(direction: Direction) {

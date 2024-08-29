@@ -49,7 +49,7 @@ export class TemplarCard extends CharacterCard {
     this.health = 10;
     this.shield = 0;
     this.attack = 4;
-    this.hitRate = 0.9;
+    this.hitRate = 0.8;
     this.criticalRate = 0.2;
     this.attackDirection = AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;
