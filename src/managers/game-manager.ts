@@ -7,16 +7,22 @@ import { zzfx, zzfxM, zzfxP } from "../audios/zzfx";
 import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";
 
-export enum GAME_STATE {
+export enum GameState {
+  INIT,
   IDLE,
   SWIPING,
   GAME_OVER,
+}
+export enum TemplarClass {
+  KNIGHT,
+  WIZARD,
+  DEFENDER,
 }
 
 export class GameManager {
   private static instance: GameManager;
 
-  public state: GAME_STATE = GAME_STATE.IDLE;
+  public state: GameState = GameState.INIT;
   public moveCount = 0;
   public get level() {
     return Math.floor(this.moveCount / 5);
@@ -24,6 +30,7 @@ export class GameManager {
 
   public currentItems: ItemCard[] = [];
   public reusableEnemyCards: EnemyCard[] = [];
+  public cls: TemplarClass | null = null;
 
   private constructor() {
     new SwipeDetector({
@@ -39,13 +46,10 @@ export class GameManager {
     onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
 
     on(EVENT.SWIPE_FINISH, () => {
-      if (this.state === GAME_STATE.GAME_OVER) return;
-      this.state = GAME_STATE.IDLE;
+      if (this.state === GameState.GAME_OVER) return;
+      this.state = GameState.IDLE;
     });
     on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
-    // @ts-ignore
-    const music = zzfxP(...zzfxM(...bgm));
-    music.loop = true;
   }
   static getInstance() {
     if (!GameManager.instance) {
@@ -54,10 +58,23 @@ export class GameManager {
     return GameManager.instance;
   }
 
+  public setClass(cls: TemplarClass) {
+    this.cls = cls;
+    this.playBGM();
+    this.state = GameState.IDLE;
+  }
+
+  private playBGM() {
+    // TODO: click to play music
+    // @ts-ignore
+    const music = zzfxP(...zzfxM(...bgm));
+    music.loop = true;
+  }
+
   private swipe(direction: Direction) {
-    if (this.state !== GAME_STATE.IDLE) return;
+    if (this.state !== GameState.IDLE) return;
     this.moveCount++;
-    this.state = GAME_STATE.SWIPING;
+    this.state = GameState.SWIPING;
     zzfx(...[3, , 576, , , 0.007, 1, 0.6, , , -273, , , , , , , 0.64]);
     emit(EVENT.SWIPE, direction);
   }
@@ -81,7 +98,7 @@ export class GameManager {
   }
 
   public gameOver() {
-    this.state = GAME_STATE.GAME_OVER;
+    this.state = GameState.GAME_OVER;
     emit(EVENT.GAME_OVER);
   }
 }

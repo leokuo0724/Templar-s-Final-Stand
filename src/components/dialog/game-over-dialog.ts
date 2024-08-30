@@ -1,12 +1,13 @@
 import { getCanvas, on, Sprite, SpriteClass, Text } from "kontra";
 import { COLOR } from "../../constants/color";
-import { GAME_STATE, GameManager } from "../../managers/game-manager";
+import { GameState, GameManager } from "../../managers/game-manager";
 import { EVENT } from "../../constants/event";
 import { FONT } from "../../constants/text";
+import { CustomButton } from "./shared-ui";
 
 export class GameOverDialog extends SpriteClass {
   private descText: Text;
-  private button: Button;
+  private button: CustomButton;
 
   constructor() {
     const { width, height } = getCanvas();
@@ -42,7 +43,7 @@ export class GameOverDialog extends SpriteClass {
       color: COLOR.BROWN_7,
       font: `16px ${FONT}`,
     });
-    this.button = new Button(width / 2, height / 2 + 50, "Restart");
+    this.button = new CustomButton(width / 2, height / 2 + 50, "Restart");
     this.addChild([wrapper, title, this.descText, this.button]);
 
     on(EVENT.GAME_OVER, this.show.bind(this));
@@ -51,50 +52,12 @@ export class GameOverDialog extends SpriteClass {
   private show() {
     const gm = GameManager.getInstance();
     this.descText.text = `You did a great job!\nSurvived for ${gm.moveCount} moves!`;
-    const canvas = getCanvas();
-    canvas.addEventListener("pointerdown", (event) => {
-      const { offsetLeft, offsetTop } = event.target as HTMLCanvasElement;
-      const { world } = this.button;
-      const minX = world.x - world.width / 2;
-      const maxX = world.x + world.width / 2;
-      const minY = world.y - world.height / 2;
-      const maxY = world.y + world.height / 2;
-
-      const { width: w, height: h } = canvas;
-      const scale = Math.min(innerWidth / w, innerHeight / h, devicePixelRatio);
-      const x = (event.x - offsetLeft) / scale;
-      const y = (event.y - offsetTop) / scale;
-      if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-        window.location.reload();
-      }
-    });
+    this.button.bindClick(() => window.location.reload());
   }
 
   public render() {
     const gm = GameManager.getInstance();
-    if (gm.state !== GAME_STATE.GAME_OVER) return;
+    if (gm.state !== GameState.GAME_OVER) return;
     super.render();
-  }
-}
-
-class Button extends SpriteClass {
-  private text: Text;
-
-  constructor(x: number, y: number, text: string) {
-    super({
-      x,
-      y,
-      width: 96,
-      height: 28,
-      color: COLOR.BROWN_7,
-      anchor: { x: 0.5, y: 0.5 },
-    });
-    this.text = Text({
-      text,
-      anchor: { x: 0.5, y: 0.5 },
-      color: COLOR.WHITE_6,
-      font: `16px ${FONT}`,
-    });
-    this.addChild(this.text);
   }
 }

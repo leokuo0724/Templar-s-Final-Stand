@@ -164,7 +164,7 @@ const getShieldLevelBuff = (
   level: number,
   factor: number
 ): OptionalCharacterProps => {
-  return { shield: 2 * factor + level };
+  return { shield: factor + 2 * level };
 };
 const getPotionLevelBuff = (
   level: number,
