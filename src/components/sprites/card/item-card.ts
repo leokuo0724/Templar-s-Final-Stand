@@ -16,7 +16,7 @@ import { COLOR } from "../../../constants/color";
 import { ShieldIcon } from "../icons/shield-icon";
 import { PotionIcon } from "../icons/potion-icon";
 import { getItemPropsDescText } from "../../../utils/desc-utils";
-import { GameManager } from "../../../managers/game-manager";
+import { GameManager, TemplarClass } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 
 export type ItemCardProps = {
@@ -122,11 +122,11 @@ export class ItemCard extends BaseCard {
     const factor = gm.level + 1;
     switch (this.type) {
       case CardType.WEAPON:
-        return getWeaponLevelBuff(this.level, factor);
+        return getWeaponLevelBuff(this.level, factor, gm.cls!);
       case CardType.SHIELD:
         return getShieldLevelBuff(this.level, factor);
       case CardType.POTION:
-        return getPotionLevelBuff(this.level, factor);
+        return getPotionLevelBuff(this.level, factor, gm.cls!);
       default:
         throw new Error(`Invalid card type: ${this.type}`);
     }
@@ -135,9 +135,11 @@ export class ItemCard extends BaseCard {
 
 const getWeaponLevelBuff = (
   level: number,
-  factor: number
+  factor: number,
+  cls: TemplarClass
 ): OptionalCharacterProps => {
-  const attack = factor + 2 * level;
+  const isKnight = cls === TemplarClass.KNIGHT;
+  const attack = isKnight ? factor + 2 * level : 1;
   const random = Math.random();
   if (level === 1) {
     return { attack };
@@ -168,13 +170,21 @@ const getShieldLevelBuff = (
 };
 const getPotionLevelBuff = (
   level: number,
-  factor: number
+  factor: number,
+  cls: TemplarClass
 ): OptionalCharacterProps => {
   const random = Math.random();
   const buffs: OptionalCharacterProps[] = [
-    { health: factor * (random > 0.5 - 0.1 * level ? 1 : -1) },
+    {
+      health:
+        factor *
+        (random > (cls === TemplarClass.DEFENDER ? 0 : 0.5 - 0.1 * level)
+          ? 1
+          : -1),
+    },
     { criticalRate: factor * random > 0.6 - 0.1 * level ? 0.1 : -0.1 },
     { hitRate: factor * random > 1 - 0.05 * level ? 0.1 : -0.1 },
   ];
+
   return randomPick(buffs);
 };

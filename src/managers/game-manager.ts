@@ -61,6 +61,7 @@ export class GameManager {
   public setClass(cls: TemplarClass) {
     this.cls = cls;
     this.playBGM();
+    emit(EVENT.UPDATE_TEMPLAR_CLASS, cls);
     this.state = GameState.IDLE;
   }
 
@@ -80,7 +81,12 @@ export class GameManager {
   }
 
   public addItems(itemCards: ItemCard[]) {
-    itemCards.forEach((item) => this.currentItems.push(item));
+    console.log(itemCards.map((item) => item.duration));
+    itemCards.forEach((item) => {
+      if (this.cls === TemplarClass.DEFENDER)
+        item.duration = Math.min(3, item.duration);
+      this.currentItems.push(item);
+    });
     emit(EVENT.ITEMS_UPDATED, itemCards, []);
   }
   public removeItems(itemCards: ItemCard[]) {

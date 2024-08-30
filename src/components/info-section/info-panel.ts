@@ -5,10 +5,12 @@ import { ItemPanel } from "./item-panel";
 import { EVENT } from "../../constants/event";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { FONT } from "../../constants/text";
+import { TemplarClass } from "../../managers/game-manager";
 
-export const INFO_PANEL_HEIGHT = 184;
+export const INFO_PANEL_HEIGHT = 200;
 
 export class InfoPanel extends GameObjectClass {
+  private classText: Text;
   private infoText: Text;
   private overweightText: Text;
 
@@ -27,15 +29,19 @@ export class InfoPanel extends GameObjectClass {
       font: `12px ${FONT}`,
       color: COLOR.BROWN_7,
     };
-
-    this.infoText = Text({
+    this.classText = Text({
       x: 120,
       y: 10,
       ...textProps,
     });
+    this.infoText = Text({
+      x: 120,
+      y: 28,
+      ...textProps,
+    });
     this.overweightText = Text({
       x: 56,
-      y: 16,
+      y: 36,
       anchor: { x: 0.5, y: 0.5 },
       ...textProps,
       color: COLOR.BROWN_8,
@@ -43,14 +49,32 @@ export class InfoPanel extends GameObjectClass {
 
     this.addChild([
       bg,
-      new Templar({ x: 8, y: 42, withWeapon: true }),
-      new ItemPanel(120, 30),
+      new Templar({ x: 8, y: 62, withWeapon: true }),
+      new ItemPanel(120, 46),
+      this.classText,
       this.infoText,
       this.overweightText,
     ]);
 
+    on(EVENT.UPDATE_TEMPLAR_CLASS, this.updateClassText.bind(this));
     on(EVENT.UPDATE_TEMPLAR_INFO, this.updateTemplarInfo.bind(this));
     on(EVENT.UPDATE_TEMPLAR_WEIGHT, this.updateOverweightText.bind(this));
+  }
+
+  private updateClassText(cls: TemplarClass) {
+    switch (cls) {
+      case TemplarClass.WIZARD:
+        this.classText.text =
+          "Wizard: low attack, equip potion to attack all enemies";
+        break;
+      case TemplarClass.KNIGHT:
+        this.classText.text = "Knight: everything is normal but strong";
+        break;
+      case TemplarClass.DEFENDER:
+        this.classText.text =
+          "Defender: low attack, attack around, hit back with shield";
+        break;
+    }
   }
 
   private updateTemplarInfo(templarCard: TemplarCard) {

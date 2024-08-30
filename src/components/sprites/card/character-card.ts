@@ -16,6 +16,7 @@ import { COLOR } from "../../../constants/color";
 import { zzfx } from "../../../audios/zzfx";
 import { delay } from "../../../utils/time-utils";
 import { EVENT } from "../../../constants/event";
+import { TemplarClass } from "../../../managers/game-manager";
 
 type CharacterCardProps = {
   type: CardType;
@@ -189,6 +190,10 @@ export abstract class CharacterCard extends BaseCard {
       this.shield = 0;
     }
     this.shieldText.text = `${this.shield}`;
+    if (this.type === CardType.TEMPLAR && this.cls === TemplarClass.DEFENDER) {
+      this.hitBackAttack = this.shield;
+      emit(EVENT.UPDATE_TEMPLAR_INFO, this);
+    }
     return remainingDamage;
   }
   protected updateAttack(value: number) {

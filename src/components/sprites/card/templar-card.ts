@@ -3,14 +3,15 @@ import { Belongs, CardType } from "./type";
 import { Templar } from "../templar";
 import { CharacterCard } from "./character-card";
 import { AttackDirection, AttackType } from "../../../types/character";
-import { emit, Text } from "kontra";
+import { emit, on, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { COLOR } from "../../../constants/color";
 import { EVENT } from "../../../constants/event";
-import { GameManager } from "../../../managers/game-manager";
+import { GameManager, TemplarClass } from "../../../managers/game-manager";
 
 export class TemplarCard extends CharacterCard {
+  public cls: TemplarClass = TemplarClass.KNIGHT;
   public weight = 0;
   protected weightText: Text;
 
@@ -29,6 +30,7 @@ export class TemplarCard extends CharacterCard {
       ...COMMON_TEXT_CONFIG,
     });
     this.main.addChild([new WeightIcon(-46, 32), this.weightText]);
+    on(EVENT.UPDATE_TEMPLAR_CLASS, this.updateCls.bind(this));
   }
 
   protected getMainIcon() {
@@ -45,15 +47,25 @@ export class TemplarCard extends CharacterCard {
     gm.gameOver();
   }
 
+  private updateCls(cls: TemplarClass) {
+    this.cls = cls;
+    this.resetProps();
+  }
+
   protected resetProps(): void {
+    const isDefender = this.cls === TemplarClass.DEFENDER;
+    const isKnight = this.cls === TemplarClass.KNIGHT;
     this.health = 10;
-    this.shield = 0;
-    this.attack = 4;
+    this.shield = isDefender ? 10 : 0;
+    this.attack = isKnight ? 4 : 1;
     this.hitRate = 0.8;
-    this.criticalRate = 0.2;
-    this.attackDirection = AttackDirection.FRONT;
+    this.criticalRate = isKnight ? 0.1 : 0.5;
+    this.attackDirection = isDefender
+      ? AttackDirection.AROUND
+      : AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;
-    this.hitBackAttack = 0;
+    this.hitBackAttack = isDefender ? this.shield : 0;
+    if (isDefender) this.updateWeight(3);
     this.refreshText();
     emit(EVENT.UPDATE_TEMPLAR_INFO, this);
   }
