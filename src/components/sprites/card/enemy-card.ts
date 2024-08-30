@@ -108,11 +108,11 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
-          AttackDirection: AttackDirection.AROUND,
-          AttackType: AttackType.PENETRATE,
+          attackDirection: AttackDirection.AROUND,
+          attackType: AttackType.PENETRATE,
           shield: 5 * factor,
         },
-        desc: `"Tough Guy"\nPenetrate, Range: around`,
+        desc: `"Stormpiercer"\nPenetrate, around`,
       },
     ];
     eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);

@@ -142,6 +142,8 @@ export abstract class CharacterCard extends BaseCard {
     const isHit = Math.random() <= hitRate;
     if (!isHit) {
       await this.impactText.show("Miss");
+      if (this.hitBackAttack > 0 && !isHitBack)
+        await this.execAttack(counterDirection, attacker, true, false);
       return;
     }
     const isCritical = Math.random() <= criticalRate;
