@@ -110,7 +110,7 @@ export class ItemCard extends BaseCard {
     this.level += card.level;
     this.level = Math.min(this.level, 4);
     this.duration += card.duration;
-    this.weight = 2 * this.level;
+    this.weight = card.type === CardType.POTION ? 0 : 2 * this.level;
 
     this.buff = this.pickBuff();
     this.descriptionText.text = getItemPropsDescText(this.buff);
@@ -124,7 +124,7 @@ export class ItemCard extends BaseCard {
       case CardType.WEAPON:
         return getWeaponLevelBuff(this.level, factor, gm.cls!);
       case CardType.SHIELD:
-        return getShieldLevelBuff(this.level, factor);
+        return getShieldLevelBuff(this.level, factor, gm.cls!);
       case CardType.POTION:
         return getPotionLevelBuff(this.level, factor, gm.cls!);
       default:
@@ -164,9 +164,10 @@ const getWeaponLevelBuff = (
 };
 const getShieldLevelBuff = (
   level: number,
-  factor: number
+  factor: number,
+  cls: TemplarClass
 ): OptionalCharacterProps => {
-  return { shield: factor + 2 * level };
+  return { shield: factor + (cls === TemplarClass.DEFENDER ? 4 : 2) * level };
 };
 const getPotionLevelBuff = (
   level: number,

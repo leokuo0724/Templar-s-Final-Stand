@@ -49,15 +49,30 @@ export class GameStartDialog extends SpriteClass {
       height / 2 + 52,
       "Wizard"
     );
-    wizardButton.bindClick(() => gm.setClass(TemplarClass.WIZARD));
     const knightButton = new CustomButton(width / 2, height / 2 + 52, "Knight");
-    knightButton.bindClick(() => gm.setClass(TemplarClass.KNIGHT));
     const defenderButton = new CustomButton(
       width / 2 + 108,
       height / 2 + 52,
       "Defender"
     );
-    defenderButton.bindClick(() => gm.setClass(TemplarClass.DEFENDER));
+    const removeAllEvents = () => {
+      wizardButton.offClick();
+      knightButton.offClick();
+      defenderButton.offClick();
+    };
+
+    wizardButton.bindClick(() => {
+      gm.setClass(TemplarClass.WIZARD);
+      removeAllEvents();
+    });
+    knightButton.bindClick(() => {
+      gm.setClass(TemplarClass.KNIGHT);
+      removeAllEvents();
+    });
+    defenderButton.bindClick(() => {
+      gm.setClass(TemplarClass.DEFENDER);
+      removeAllEvents();
+    });
 
     this.addChild([
       wrapper,

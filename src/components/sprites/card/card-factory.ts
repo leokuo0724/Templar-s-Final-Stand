@@ -30,8 +30,8 @@ export class CardFactory {
         CardType.ENEMY,
         isDefender ? CardType.SHIELD : CardType.WEAPON,
         randomItem,
-        CardType.WEAPON,
-        randomItem,
+        isDefender ? CardType.POTION : CardType.WEAPON,
+        isDefender ? CardType.WEAPON : randomItem,
       ];
       return CardFactory.factory({
         type: itemOrder[moveCount % itemOrder.length],
@@ -71,7 +71,7 @@ export class CardFactory {
       case CardType.POTION:
         return new ItemCard({
           ...props,
-          duration: 4,
+          duration: gm.cls === TemplarClass.KNIGHT ? 4 : 6,
           weight: 0,
         });
       default:

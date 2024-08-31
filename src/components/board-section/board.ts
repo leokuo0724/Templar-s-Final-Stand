@@ -10,7 +10,7 @@ import { Direction } from "../../types/direction";
 import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
-import { GameManager, TemplarClass } from "../../managers/game-manager";
+import { GameManager } from "../../managers/game-manager";
 import { AttackDirection, AttackType } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 
@@ -386,10 +386,7 @@ export class Board extends GameObjectClass {
         const debuff: any = {};
         Object.entries(item.buff).forEach(([key, value]) => {
           if (key === "attackDirection") {
-            debuff[key] =
-              gm.cls === TemplarClass.DEFENDER
-                ? AttackDirection.AROUND
-                : AttackDirection.FRONT;
+            debuff[key] = AttackDirection.FRONT;
           } else if (key === "attackType") {
             debuff[key] = AttackType.NORMAL;
           } else if (key !== "shield") {

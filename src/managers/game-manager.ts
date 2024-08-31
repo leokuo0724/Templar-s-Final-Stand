@@ -81,10 +81,9 @@ export class GameManager {
   }
 
   public addItems(itemCards: ItemCard[]) {
-    console.log(itemCards.map((item) => item.duration));
     itemCards.forEach((item) => {
       if (this.cls === TemplarClass.DEFENDER)
-        item.duration = Math.min(3, item.duration);
+        item.duration = Math.min(4, item.duration);
       this.currentItems.push(item);
     });
     emit(EVENT.ITEMS_UPDATED, itemCards, []);

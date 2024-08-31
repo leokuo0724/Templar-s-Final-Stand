@@ -49,6 +49,7 @@ export class OverlayDialog extends SpriteClass {
 
 export class CustomButton extends SpriteClass {
   private text: Text;
+  private canvasCallback: ((event: PointerEvent) => void) | null = null;
 
   constructor(x: number, y: number, text: string) {
     super({
@@ -70,7 +71,7 @@ export class CustomButton extends SpriteClass {
 
   public bindClick(callback: () => void) {
     const canvas = getCanvas();
-    canvas.addEventListener("pointerdown", (event) => {
+    this.canvasCallback = (event: PointerEvent) => {
       const { offsetLeft, offsetTop } = event.target as HTMLCanvasElement;
       const { world } = this;
       const minX = world.x - world.width / 2;
@@ -85,6 +86,12 @@ export class CustomButton extends SpriteClass {
       if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
         callback();
       }
-    });
+    };
+    canvas.addEventListener("pointerdown", this.canvasCallback);
+  }
+  public offClick() {
+    if (this.canvasCallback) {
+      getCanvas().removeEventListener("pointerdown", this.canvasCallback);
+    }
   }
 }
