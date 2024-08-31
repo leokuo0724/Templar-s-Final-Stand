@@ -10,7 +10,7 @@ import { Direction } from "../../types/direction";
 import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
-import { GameManager } from "../../managers/game-manager";
+import { GameManager, TemplarClass } from "../../managers/game-manager";
 import { AttackDirection, AttackType } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 
@@ -157,6 +157,7 @@ export class Board extends GameObjectClass {
 
     // Equip cards
     const equippedItems: ItemCard[] = [];
+    const potionLevels: number[] = [];
     for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
       for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
         const card = this.occupiedInfo[j][i];
@@ -182,13 +183,23 @@ export class Board extends GameObjectClass {
               occupiedCard instanceof ItemCard;
             const isItemUpgrade =
               card.type === occupiedCard.type && card instanceof ItemCard;
+            const potionAttackEnabled =
+              this.templarCard.cls === TemplarClass.WIZARD;
 
             if (isTemplarEquip || isItemUpgrade) {
               isTemplarEquip && card.applyBuff(occupiedCard.buff);
               isItemUpgrade && card.upgrade(occupiedCard as ItemCard);
+              if (
+                potionAttackEnabled &&
+                occupiedCard.type === CardType.POTION &&
+                card.type === CardType.POTION
+              )
+                potionLevels.push(1);
+
               await occupiedCard.equip();
               this.occupiedInfo[nextJ][nextI] = null;
-              // anim effect
+
+              // TODO: anim effect
               if (
                 card instanceof TemplarCard &&
                 occupiedCard.type !== CardType.POTION
@@ -197,6 +208,9 @@ export class Board extends GameObjectClass {
                 // @ts-ignore
                 equippedItems.push(occupiedCard);
               } else {
+                if (potionAttackEnabled && card.type === CardType.TEMPLAR)
+                  potionLevels.push(occupiedCard.level);
+
                 await occupiedCard.setInactive();
               }
               this.removeChild(occupiedCard);
@@ -215,6 +229,19 @@ export class Board extends GameObjectClass {
         this.occupiedInfo[j][i] = null;
         if (card instanceof CharacterCard && card.health <= 0) continue;
         this.occupiedInfo[currJ][currI] = card;
+      }
+    }
+    if (potionLevels.length) {
+      // attack all enemies
+      const allEnemies = this.occupiedInfo
+        .flat()
+        .filter((card) => card instanceof EnemyCard);
+      for (const potionLevel of potionLevels) {
+        await Promise.all(
+          allEnemies.map((enemy) =>
+            enemy.onWizardAttack(this.templarCard, potionLevel)
+          )
+        );
       }
     }
     if (equippedItems.length) {

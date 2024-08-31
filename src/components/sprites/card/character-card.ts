@@ -137,18 +137,23 @@ export abstract class CharacterCard extends BaseCard {
     attacker: CharacterCard,
     counterDirection: Direction,
     isHitBack: boolean = false,
-    isPenetrate: boolean = false
+    isPenetrate: boolean = false,
+    wizardAttack: number = 0
   ) {
     const { attack, hitBackAttack, hitRate, criticalRate } = attacker;
     const isHit = Math.random() <= hitRate;
     if (!isHit) {
       await this.impactText.show("Miss");
-      if (this.hitBackAttack > 0 && !isHitBack)
+      if (this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
         await this.execAttack(counterDirection, attacker, true, false);
       return;
     }
     const isCritical = Math.random() <= criticalRate;
-    const damage = isHitBack ? hitBackAttack : attack;
+    const damage = isHitBack
+      ? hitBackAttack
+      : wizardAttack > 0
+      ? wizardAttack
+      : attack;
     const calculatedDamage = isCritical ? damage * 2 : damage;
     if (isCritical) {
       await this.impactText.show(`Critical -${calculatedDamage}`);
@@ -160,9 +165,8 @@ export abstract class CharacterCard extends BaseCard {
       ? calculatedDamage
       : this.updateShield(-calculatedDamage);
     const isDead = this.updateHealth(-remainingDamage);
-    if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
+    if (!isDead && this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
       await this.execAttack(counterDirection, attacker, true, false);
-    }
   }
 
   public async applyOverweightDamage() {

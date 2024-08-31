@@ -55,11 +55,12 @@ export class TemplarCard extends CharacterCard {
   protected resetProps(): void {
     const isDefender = this.cls === TemplarClass.DEFENDER;
     const isKnight = this.cls === TemplarClass.KNIGHT;
-    this.health = 10;
+    const isWizard = this.cls === TemplarClass.WIZARD;
+    this.health = isWizard ? 6 : 10;
     this.shield = isDefender ? 10 : 0;
     this.attack = isKnight ? 4 : 1;
     this.hitRate = 0.8;
-    this.criticalRate = isKnight ? 0.1 : 0.5;
+    this.criticalRate = isDefender ? 0.4 : 0.1;
     this.attackDirection = AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;
     this.hitBackAttack = isDefender ? this.shield : 0;

@@ -41,7 +41,7 @@ export class InfoPanel extends GameObjectClass {
     });
     this.overweightText = Text({
       x: 56,
-      y: 36,
+      y: 34,
       anchor: { x: 0.5, y: 0.5 },
       ...textProps,
       color: COLOR.BROWN_8,
@@ -68,7 +68,7 @@ export class InfoPanel extends GameObjectClass {
           "Wizard: low attack, equip potion to attack all enemies";
         break;
       case TemplarClass.KNIGHT:
-        this.classText.text = "Knight: everything is normal but strong";
+        this.classText.text = "Knight: everything is normal but balanced";
         break;
       case TemplarClass.DEFENDER:
         this.classText.text =

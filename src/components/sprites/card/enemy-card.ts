@@ -13,6 +13,8 @@ import { GameManager, TemplarClass } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 import { EnemyIcon } from "../icons/enemy-icon";
 import { getEnemyPropsDescText } from "../../../utils/desc-utils";
+import { TemplarCard } from "./templar-card";
+import { Direction } from "../../../types/direction";
 
 export class EnemyCard extends CharacterCard {
   protected descriptionText: Text;
@@ -34,6 +36,18 @@ export class EnemyCard extends CharacterCard {
     });
     this.main.addChild(this.descriptionText);
     this.resetProps();
+  }
+
+  public async onWizardAttack(wizard: TemplarCard, level: number) {
+    const gm = GameManager.getInstance();
+    const factor = gm.level + 1;
+    await this.applyDamage(
+      wizard,
+      Direction.UP,
+      false,
+      wizard.attackType === AttackType.PENETRATE,
+      level * factor
+    );
   }
 
   protected getMainIcon() {
