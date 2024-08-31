@@ -81,8 +81,8 @@ export class InfoPanel extends GameObjectClass {
     const texts = [
       `Attack: ${templarCard.attackType}`,
       `Range: ${templarCard.attackDirection}`,
-      `Hit Rate: ${templarCard.hitRate.toFixed(1)}`,
-      `Critical Rate: ${templarCard.criticalRate.toFixed(1)}`,
+      `Hit Rate: ${(templarCard.hitRate * 100).toFixed()}%`,
+      `Critical Rate: ${(templarCard.criticalRate * 100).toFixed()}%`,
       `Hit Back: ${templarCard.hitBackAttack}`,
     ];
     this.infoText.text = texts.join(" | ");

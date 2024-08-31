@@ -121,7 +121,7 @@ const getEnemyBuffsAndDesc = (
     const buffs = [
       { shield: 2 * factor, health: -2 * factor },
       { health: 1 * factor, attack: -1 * factor },
-      { criticalRate: 0.1 * factor, health: -2 * factor },
+      { criticalRate: 0.05 * factor, health: -2 * factor },
       { attack: 1 * factor, hitRate: -0.2 },
     ];
     return buffs.map((buff) => ({ buff, desc: getEnemyPropsDescText(buff) }));

@@ -14,10 +14,19 @@ const getCharacterPropsDescText = (
     if (!value) return "";
     if (key === "attackDirection") return `range: ${value}`;
     if (key === "attackType") return `type: ${value}`;
+    const percentageKeys = ["hitRate", "criticalRate"];
     if ((value as number) > 0) {
-      return isAccurate ? `${key} +${value}` : `high ${key}`;
+      if (!isAccurate) return `high ${key}`;
+      if (percentageKeys.includes(key)) {
+        return `${key} +${((value as number) * 100).toFixed()}%`;
+      }
+      return `${key} +${value}`;
     } else {
-      return isAccurate ? `${key} ${value}` : `low ${key}`;
+      if (!isAccurate) return `low ${key}`;
+      if (percentageKeys.includes(key)) {
+        return `${key} ${((value as number) * 100).toFixed()}%`;
+      }
+      return `${key} ${value}`;
     }
   });
   return buffTexts.join("\n");

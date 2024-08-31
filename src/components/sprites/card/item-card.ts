@@ -145,8 +145,8 @@ const getWeaponLevelBuff = (
     return { attack };
   } else if (level === 2) {
     return random < 0.6
-      ? { attack, criticalRate: 0.1 }
-      : { attack, hitRate: 0.1 };
+      ? { attack, criticalRate: 0.05 }
+      : { attack, hitRate: 0.05 };
   } else if (level === 3) {
     return {
       attack,
@@ -175,16 +175,20 @@ const getPotionLevelBuff = (
   cls: TemplarClass
 ): OptionalCharacterProps => {
   const random = Math.random();
+  const baseVal = level;
+  const baseRate = 0.025 + 0.025 * level;
   const buffs: OptionalCharacterProps[] = [
     {
       health:
         factor *
-        (random > (cls === TemplarClass.DEFENDER ? 0 : 0.5 - 0.1 * level)
-          ? 1
-          : -1),
+        (random > (cls === TemplarClass.DEFENDER ? 0.4 : 0.6) - 0.1 * level
+          ? baseVal
+          : -baseVal),
     },
-    { criticalRate: factor * random > 0.6 - 0.1 * level ? 0.1 : -0.1 },
-    { hitRate: factor * random > 1 - 0.05 * level ? 0.1 : -0.1 },
+    {
+      criticalRate: factor * random > 0.95 - 0.1 * level ? baseRate : -baseRate,
+    },
+    { hitRate: factor * random > 0.95 - 0.1 * level ? baseRate : -baseRate },
   ];
 
   return randomPick(buffs);

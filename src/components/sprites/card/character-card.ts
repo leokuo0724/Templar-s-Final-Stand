@@ -212,7 +212,9 @@ export abstract class CharacterCard extends BaseCard {
     this.updateShield(buff.shield || 0);
     this.updateAttack(buff.attack || 0);
     this.hitRate += buff.hitRate || 0;
+    this.hitRate = Math.max(Math.min(this.hitRate, 1), 0);
     this.criticalRate += buff.criticalRate || 0;
+    this.criticalRate = Math.max(Math.min(this.criticalRate, 1), 0);
     this.attackDirection = buff.attackDirection || this.attackDirection;
     this.attackType = buff.attackType || this.attackType;
     this.hitBackAttack += buff.hitBackAttack || 0;

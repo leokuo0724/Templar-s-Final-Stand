@@ -24,13 +24,14 @@ export class CardFactory {
       });
     } else {
       const isDefender = cls === TemplarClass.DEFENDER;
+      const isKnight = cls === TemplarClass.KNIGHT;
       const randomItem =
         Math.random() > 0.5 ? CardType.POTION : CardType.SHIELD;
       const itemOrder = [
         CardType.ENEMY,
         isDefender ? CardType.SHIELD : CardType.WEAPON,
         randomItem,
-        isDefender ? CardType.POTION : CardType.WEAPON,
+        isKnight ? CardType.WEAPON : CardType.POTION,
         isDefender ? CardType.WEAPON : randomItem,
       ];
       return CardFactory.factory({
@@ -60,7 +61,7 @@ export class CardFactory {
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: 3,
+          weight: gm.cls === TemplarClass.DEFENDER ? 4 : 3,
         });
       case CardType.SHIELD:
         return new ItemCard({
@@ -71,7 +72,7 @@ export class CardFactory {
       case CardType.POTION:
         return new ItemCard({
           ...props,
-          duration: gm.cls === TemplarClass.KNIGHT ? 4 : 6,
+          duration: 5,
           weight: 0,
         });
       default:
