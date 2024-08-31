@@ -147,6 +147,16 @@ let handler$1 = {
 };
 
 /**
+ * Return the canvas element.
+ * @function getCanvas
+ *
+ * @returns {HTMLCanvasElement} The canvas element for the game.
+ */
+function getCanvas() {
+  return canvasEl;
+}
+
+/**
  * Return the context object.
  * @function getContext
  *
@@ -2013,14 +2023,15 @@ class Templar extends GameObject {
     }
 }
 
+let FONT = "Trebuchet MS";
 let COMMON_TEXT_CONFIG = {
     color: COLOR.WHITE_6,
-    font: "12px Trebuchet MS",
+    font: `12px ${FONT}`,
     anchor: { x: 0.5, y: 0.5 },
 };
 let INFO_TEXT_CONFIG = {
     color: COLOR.BROWN_7,
-    font: "12px Trebuchet MS",
+    font: `12px ${FONT}`,
 };
 
 let EVENT = {
@@ -2029,6 +2040,10 @@ let EVENT = {
     ITEMS_UPDATED: "i_u",
     ENEMY_DEAD: "e_d",
     REMOVE_ENEMY_DEAD: "r_e_d",
+    UPDATE_TEMPLAR_CLASS: "u_t_c",
+    UPDATE_TEMPLAR_INFO: "u_t_i",
+    UPDATE_TEMPLAR_WEIGHT: "u_t_w",
+    GAME_OVER: "g_o",
 };
 
 var Direction;
@@ -2142,9 +2157,9 @@ let zzfxM = (n, f, t, e = 125) => {
 
 let bgm = [
     [
-        [1.5, 0, 400],
-        [1.5, 0, 4e3, , , 0.03, 2, 1.25, , , , , 0.02, 6.8, -0.3, , 0.5],
-        [1.5, 0, 360, , , 0.12, 2, 2, , , , , , 9, , 0.1],
+        [1, 0, 400],
+        [1, 0, 4e3, , , 0.03, 2, 1.25, , , , , 0.02, 6.8, -0.3, , 0.5],
+        [1, 0, 360, , , 0.12, 2, 2, , , , , , 9, , 0.1],
     ],
     [
         [
@@ -2361,91 +2376,9 @@ let bgm = [
         ],
     ],
     [0],
-    90,
+    84,
 ];
 
-var GAME_STATE;
-(function (GAME_STATE) {
-    GAME_STATE[GAME_STATE["IDLE"] = 0] = "IDLE";
-    GAME_STATE[GAME_STATE["SWIPING"] = 1] = "SWIPING";
-})(GAME_STATE || (GAME_STATE = {}));
-class GameManager {
-    get level() {
-        return Math.floor(this.moveCount / 5);
-    }
-    constructor() {
-        Object.defineProperty(this, "state", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: GAME_STATE.IDLE
-        });
-        Object.defineProperty(this, "moveCount", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: 0
-        });
-        Object.defineProperty(this, "currentItems", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: []
-        });
-        Object.defineProperty(this, "reusableEnemyCards", {
-            enumerable: true,
-            configurable: true,
-            writable: true,
-            value: []
-        });
-        new SwipeDetector({
-            onSwipeLeft: this.swipe.bind(this, Direction.LEFT),
-            onSwipeRight: this.swipe.bind(this, Direction.RIGHT),
-            onSwipeUp: this.swipe.bind(this, Direction.UP),
-            onSwipeDown: this.swipe.bind(this, Direction.DOWN),
-            threshold: 75, // Optional: Adjust the threshold as needed
-        });
-        onInput(["arrowleft", "a"], this.swipe.bind(this, Direction.LEFT));
-        onInput(["arrowright", "d"], this.swipe.bind(this, Direction.RIGHT));
-        onInput(["arrowup", "w", "swipeup"], this.swipe.bind(this, Direction.UP));
-        onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
-        on(EVENT.SWIPE_FINISH, () => {
-            this.state = GAME_STATE.IDLE;
-        });
-        on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
-        // @ts-ignore
-        let music = zzfxP(...zzfxM(...bgm));
-        music.loop = true;
-    }
-    static getInstance() {
-        if (!GameManager.instance) {
-            GameManager.instance = new GameManager();
-        }
-        return GameManager.instance;
-    }
-    swipe(direction) {
-        if (this.state !== GAME_STATE.IDLE)
-            return;
-        this.moveCount++;
-        this.state = GAME_STATE.SWIPING;
-        zzfx(...[3, , 576, , , 0.007, 1, 0.6, , , -273, , , , , , , 0.64]);
-        emit(EVENT.SWIPE, direction);
-    }
-    addItems(itemCards) {
-        itemCards.forEach((item) => this.currentItems.push(item));
-        emit(EVENT.ITEMS_UPDATED, itemCards, []);
-    }
-    removeItems(itemCards) {
-        // remove from current items
-        let newCurrentItem = this.currentItems.filter((item) => !itemCards.includes(item));
-        this.currentItems = newCurrentItem;
-        emit(EVENT.ITEMS_UPDATED, [], itemCards);
-    }
-    onEnemyDead(card) {
-        this.reusableEnemyCards.push(card);
-        emit(EVENT.REMOVE_ENEMY_DEAD, card);
-    }
-}
 class SwipeDetector {
     constructor(options) {
         Object.defineProperty(this, "options", {
@@ -2470,21 +2403,14 @@ class SwipeDetector {
             enumerable: true,
             configurable: true,
             writable: true,
-            value: void 0
+            value: 50
         });
-        this.threshold = options.threshold || 50; // Default threshold of 50px
         this.addEventListeners();
     }
     addEventListeners() {
-        ["touchstart"].forEach((evt) => 
-        // @ts-ignore
-        window.addEventListener(evt, this.onStart.bind(this)));
-        ["touchend"].forEach((evt) => 
-        // @ts-ignore
-        window.addEventListener(evt, this.onEnd.bind(this)));
-        ["touchmove"].forEach((evt) => 
-        // @ts-ignore
-        window.addEventListener(evt, this.preventDefault.bind(this)));
+        window.addEventListener("touchstart", this.onStart.bind(this));
+        window.addEventListener("touchend", this.onEnd.bind(this));
+        window.addEventListener("touchmove", this.preventDefault.bind(this));
     }
     onStart(event) {
         let point = this.getPoint(event);
@@ -2507,6 +2433,121 @@ class SwipeDetector {
     }
     preventDefault(event) {
         event.preventDefault();
+    }
+}
+
+var GameState;
+(function (GameState) {
+    GameState[GameState["INIT"] = 0] = "INIT";
+    GameState[GameState["IDLE"] = 1] = "IDLE";
+    GameState[GameState["SWIPING"] = 2] = "SWIPING";
+    GameState[GameState["GAME_OVER"] = 3] = "GAME_OVER";
+})(GameState || (GameState = {}));
+var TemplarClass;
+(function (TemplarClass) {
+    TemplarClass[TemplarClass["KNIGHT"] = 0] = "KNIGHT";
+    TemplarClass[TemplarClass["WIZARD"] = 1] = "WIZARD";
+    TemplarClass[TemplarClass["DEFENDER"] = 2] = "DEFENDER";
+})(TemplarClass || (TemplarClass = {}));
+class GameManager {
+    get level() {
+        return Math.floor(this.moveCount / 5);
+    }
+    constructor() {
+        Object.defineProperty(this, "state", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: GameState.INIT
+        });
+        Object.defineProperty(this, "moveCount", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 0
+        });
+        Object.defineProperty(this, "currentItems", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: []
+        });
+        Object.defineProperty(this, "reusableEnemyCards", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: []
+        });
+        Object.defineProperty(this, "cls", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: null
+        });
+        new SwipeDetector({
+            onSwipeLeft: this.swipe.bind(this, Direction.LEFT),
+            onSwipeRight: this.swipe.bind(this, Direction.RIGHT),
+            onSwipeUp: this.swipe.bind(this, Direction.UP),
+            onSwipeDown: this.swipe.bind(this, Direction.DOWN),
+        });
+        onInput(["arrowleft", "a"], this.swipe.bind(this, Direction.LEFT));
+        onInput(["arrowright", "d"], this.swipe.bind(this, Direction.RIGHT));
+        onInput(["arrowup", "w"], this.swipe.bind(this, Direction.UP));
+        onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
+        on(EVENT.SWIPE_FINISH, () => {
+            if (this.state === GameState.GAME_OVER)
+                return;
+            this.state = GameState.IDLE;
+        });
+        on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
+    }
+    static getInstance() {
+        if (!GameManager.instance) {
+            GameManager.instance = new GameManager();
+        }
+        return GameManager.instance;
+    }
+    setClass(cls) {
+        this.cls = cls;
+        this.playBGM();
+        emit(EVENT.UPDATE_TEMPLAR_CLASS, cls);
+        this.state = GameState.IDLE;
+    }
+    playBGM() {
+        // TODO: click to play music
+        // @ts-ignore
+        let music = zzfxP(...zzfxM(...bgm));
+        music.loop = true;
+    }
+    swipe(direction) {
+        if (this.state !== GameState.IDLE)
+            return;
+        this.moveCount++;
+        this.state = GameState.SWIPING;
+        zzfx(...[3, , 576, , , 0.007, 1, 0.6, , , -273, , , , , , , 0.64]);
+        emit(EVENT.SWIPE, direction);
+    }
+    addItems(itemCards) {
+        itemCards.forEach((item) => {
+            if (this.cls === TemplarClass.DEFENDER)
+                item.duration = Math.min(4, item.duration);
+            this.currentItems.push(item);
+        });
+        emit(EVENT.ITEMS_UPDATED, itemCards, []);
+    }
+    removeItems(itemCards) {
+        // remove from current items
+        let newCurrentItem = this.currentItems.filter((item) => !itemCards.includes(item));
+        this.currentItems = newCurrentItem;
+        emit(EVENT.ITEMS_UPDATED, [], itemCards);
+    }
+    onEnemyDead(card) {
+        this.reusableEnemyCards.push(card);
+        emit(EVENT.REMOVE_ENEMY_DEAD, card);
+    }
+    gameOver() {
+        this.state = GameState.GAME_OVER;
+        emit(EVENT.GAME_OVER);
     }
 }
 
@@ -2549,10 +2590,28 @@ class ItemPanel extends Sprite {
     }
 }
 
-let INFO_PANEL_HEIGHT = 184;
+let INFO_PANEL_HEIGHT = 200;
 class InfoPanel extends GameObject {
     constructor(x, y) {
         super({ x, y });
+        Object.defineProperty(this, "classText", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "infoText", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "overweightText", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
         let bg = factory$8({
             x: 0,
             y: 0,
@@ -2560,11 +2619,67 @@ class InfoPanel extends GameObject {
             width: this.context.canvas.width,
             height: INFO_PANEL_HEIGHT,
         });
+        let textProps = {
+            text: "",
+            font: `12px ${FONT}`,
+            color: COLOR.BROWN_7,
+        };
+        this.classText = factory$7({
+            x: 120,
+            y: 10,
+            ...textProps,
+        });
+        this.infoText = factory$7({
+            x: 120,
+            y: 28,
+            ...textProps,
+        });
+        this.overweightText = factory$7({
+            x: 56,
+            y: 34,
+            anchor: { x: 0.5, y: 0.5 },
+            ...textProps,
+            color: COLOR.BROWN_8,
+        });
         this.addChild([
             bg,
-            new Templar({ x: 8, y: 42, withWeapon: true }),
-            new ItemPanel(120, 30),
+            new Templar({ x: 8, y: 62, withWeapon: true }),
+            new ItemPanel(120, 46),
+            this.classText,
+            this.infoText,
+            this.overweightText,
         ]);
+        on(EVENT.UPDATE_TEMPLAR_CLASS, this.updateClassText.bind(this));
+        on(EVENT.UPDATE_TEMPLAR_INFO, this.updateTemplarInfo.bind(this));
+        on(EVENT.UPDATE_TEMPLAR_WEIGHT, this.updateOverweightText.bind(this));
+    }
+    updateClassText(cls) {
+        switch (cls) {
+            case TemplarClass.WIZARD:
+                this.classText.text =
+                    "Wizard: low attack, equip potion to attack all enemies";
+                break;
+            case TemplarClass.KNIGHT:
+                this.classText.text = "Knight: everything is normal but balanced";
+                break;
+            case TemplarClass.DEFENDER:
+                this.classText.text =
+                    "Defender: low attack, attack around, hit back with shield";
+                break;
+        }
+    }
+    updateTemplarInfo(templarCard) {
+        let texts = [
+            `Attack: ${templarCard.attackType}`,
+            `Range: ${templarCard.attackDirection}`,
+            `Hit Rate: ${(templarCard.hitRate * 100).toFixed()}%`,
+            `Critical Rate: ${(templarCard.criticalRate * 100).toFixed()}%`,
+            `Hit Back: ${templarCard.hitBackAttack}`,
+        ];
+        this.infoText.text = texts.join(" | ");
+    }
+    updateOverweightText(isOverweight) {
+        this.overweightText.text = isOverweight ? "Overweight!!!" : "";
     }
 }
 
@@ -2586,17 +2701,6 @@ class Grid extends Sprite {
         });
         this.coord = coord;
     }
-}
-
-var AttackDirection;
-(function (AttackDirection) {
-    AttackDirection["FRONT"] = "front";
-    AttackDirection["LINE"] = "line";
-    AttackDirection["AROUND"] = "around";
-})(AttackDirection || (AttackDirection = {}));
-
-function randomPick(array) {
-    return array[Math.floor(Math.random() * array.length)];
 }
 
 var CardType;
@@ -2817,6 +2921,18 @@ class ShieldIcon extends GameObject {
     }
 }
 
+var AttackDirection;
+(function (AttackDirection) {
+    AttackDirection["FRONT"] = "front";
+    AttackDirection["LINE"] = "line";
+    AttackDirection["AROUND"] = "around";
+})(AttackDirection || (AttackDirection = {}));
+var AttackType;
+(function (AttackType) {
+    AttackType["NORMAL"] = "normal";
+    AttackType["PENETRATE"] = "penetrate";
+})(AttackType || (AttackType = {}));
+
 function delay(ms) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -2898,6 +3014,12 @@ class CharacterCard extends BaseCard {
             writable: true,
             value: 0
         });
+        Object.defineProperty(this, "attackType", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: AttackType.NORMAL
+        });
         this.belongs = belongs;
         this.color = COLOR.DARK_6;
         this.attackText = factory$7({
@@ -2929,7 +3051,7 @@ class CharacterCard extends BaseCard {
             this.impactText,
         ]);
     }
-    async execAttack(direction, target, isHitBack = false) {
+    async execAttack(direction, target, isHitBack = false, isPenetrate = false) {
         if (target.health <= 0 || this.health <= 0)
             return;
         let origX = this.x;
@@ -2961,18 +3083,24 @@ class CharacterCard extends BaseCard {
         };
         await Promise.all([
             tween(this.main, { targetX: 0, targetY: 0 }, 200),
-            target.applyDamage(this, counterDirection(), isHitBack),
+            target.applyDamage(this, counterDirection(), isHitBack, isPenetrate),
         ]);
     }
-    async applyDamage(attacker, counterDirection, isHitBack = false) {
+    async applyDamage(attacker, counterDirection, isHitBack = false, isPenetrate = false, wizardAttack = 0) {
         let { attack, hitBackAttack, hitRate, criticalRate } = attacker;
         let isHit = Math.random() <= hitRate;
         if (!isHit) {
             await this.impactText.show("Miss");
+            if (this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
+                await this.execAttack(counterDirection, attacker, true, false);
             return;
         }
         let isCritical = Math.random() <= criticalRate;
-        let damage = isHitBack ? hitBackAttack : attack;
+        let damage = isHitBack
+            ? hitBackAttack
+            : wizardAttack > 0
+                ? wizardAttack
+                : attack;
         let calculatedDamage = isCritical ? damage * 2 : damage;
         if (isCritical) {
             await this.impactText.show(`Critical -${calculatedDamage}`);
@@ -2980,11 +3108,12 @@ class CharacterCard extends BaseCard {
         else {
             await this.impactText.show(`-${calculatedDamage}`);
         }
-        let remainingDamage = this.updateShield(-calculatedDamage);
+        let remainingDamage = isPenetrate
+            ? calculatedDamage
+            : this.updateShield(-calculatedDamage);
         let isDead = this.updateHealth(-remainingDamage);
-        if (!isDead && this.hitBackAttack > 0 && !isHitBack) {
-            await this.execAttack(counterDirection, attacker, true);
-        }
+        if (!isDead && this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
+            await this.execAttack(counterDirection, attacker, true, false);
     }
     async applyOverweightDamage() {
         await this.impactText.show(`Overweight -1`);
@@ -3008,6 +3137,10 @@ class CharacterCard extends BaseCard {
             this.shield = 0;
         }
         this.shieldText.text = `${this.shield}`;
+        if (this.type === CardType.TEMPLAR && this.cls === TemplarClass.DEFENDER) {
+            this.hitBackAttack = this.shield;
+            emit(EVENT.UPDATE_TEMPLAR_INFO, this);
+        }
         return remainingDamage;
     }
     updateAttack(value) {
@@ -3025,9 +3158,14 @@ class CharacterCard extends BaseCard {
         this.updateShield(buff.shield || 0);
         this.updateAttack(buff.attack || 0);
         this.hitRate += buff.hitRate || 0;
+        this.hitRate = Math.max(Math.min(this.hitRate, 1), 0);
         this.criticalRate += buff.criticalRate || 0;
+        this.criticalRate = Math.max(Math.min(this.criticalRate, 1), 0);
         this.attackDirection = buff.attackDirection || this.attackDirection;
+        this.attackType = buff.attackType || this.attackType;
         this.hitBackAttack += buff.hitBackAttack || 0;
+        if (this.type === CardType.TEMPLAR)
+            emit(EVENT.UPDATE_TEMPLAR_INFO, this);
         // TODO: show buff effect
     }
 }
@@ -3053,7 +3191,7 @@ class ImpactText extends Sprite {
         });
         this._text = factory$7({
             text: "",
-            font: "16px Trebuchet MS",
+            font: `16px ${FONT}`,
             color: COLOR.WHITE_6,
             anchor: { x: 0.5, y: 0.5 },
         });
@@ -3079,6 +3217,10 @@ class ImpactText extends Sprite {
     }
 }
 
+function randomPick(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
 class EnemyIcon extends GameObject {
     constructor(x, y) {
         super({ x, y });
@@ -3088,6 +3230,37 @@ class EnemyIcon extends GameObject {
         drawPolygon(this.context, "10 0 0 8 0 25 5 32 6 16 2 15 3 12 8 13 8 23 10 25 11 23 11 13 16 12 17 15 13 16 14 32 19 25 19 8 10 0", COLOR.WHITE_6);
     }
 }
+
+let getEnemyPropsDescText = (buff) => getCharacterPropsDescText(buff, false);
+let getItemPropsDescText = (buff) => getCharacterPropsDescText(buff, true);
+let getCharacterPropsDescText = (buff, isAccurate) => {
+    let buffTexts = Object.entries(buff).map(([key, value]) => {
+        if (!value)
+            return "";
+        if (key === "attackDirection")
+            return `range: ${value}`;
+        if (key === "attackType")
+            return `type: ${value}`;
+        let percentageKeys = ["hitRate", "criticalRate"];
+        if (value > 0) {
+            if (!isAccurate)
+                return `high ${key}`;
+            if (percentageKeys.includes(key)) {
+                return `${key} +${(value * 100).toFixed()}%`;
+            }
+            return `${key} +${value}`;
+        }
+        else {
+            if (!isAccurate)
+                return `low ${key}`;
+            if (percentageKeys.includes(key)) {
+                return `${key} ${(value * 100).toFixed()}%`;
+            }
+            return `${key} ${value}`;
+        }
+    });
+    return buffTexts.join("\n");
+};
 
 class EnemyCard extends CharacterCard {
     constructor({ x, y }) {
@@ -3113,6 +3286,11 @@ class EnemyCard extends CharacterCard {
         this.main.addChild(this.descriptionText);
         this.resetProps();
     }
+    async onWizardAttack(wizard, level) {
+        let gm = GameManager.getInstance();
+        let factor = gm.level + 1;
+        await this.applyDamage(wizard, Direction.UP, false, wizard.attackType === AttackType.PENETRATE, level * factor);
+    }
     getMainIcon() {
         return new EnemyIcon(-8, -29);
     }
@@ -3120,11 +3298,11 @@ class EnemyCard extends CharacterCard {
         emit(EVENT.ENEMY_DEAD, this);
     }
     resetProps() {
-        let { level, moveCount } = GameManager.getInstance();
+        let { level, moveCount, cls } = GameManager.getInstance();
         this.health = 5 + 2 * level;
         this.attack = 2 + 1 * level;
         this.shield = 0;
-        this.hitRate = 0.8;
+        this.hitRate = cls === TemplarClass.DEFENDER ? 0.7 : 0.8;
         this.criticalRate = 0.1;
         this.attackDirection = AttackDirection.FRONT;
         this.hitBackAttack = 0;
@@ -3136,15 +3314,16 @@ class EnemyCard extends CharacterCard {
         this.refreshText();
     }
 }
+let eliteCount = -1;
 let getEnemyBuffsAndDesc = (factor, isElite) => {
     if (isElite) {
-        return [
+        let elites = [
             {
                 buff: {
                     attackDirection: AttackDirection.AROUND,
                     health: 2 * factor,
                 },
-                desc: `"Whirlstriker"\nAttack: around`,
+                desc: `"Whirlstriker"\nRange: around`,
             },
             {
                 buff: {
@@ -3152,7 +3331,7 @@ let getEnemyBuffsAndDesc = (factor, isElite) => {
                     attack: 2 * factor,
                     health: 1 * factor,
                 },
-                desc: `"Spearman"\nAttack: line`,
+                desc: `"Spearman"\nRange: line`,
             },
             {
                 buff: {
@@ -3161,29 +3340,40 @@ let getEnemyBuffsAndDesc = (factor, isElite) => {
                 },
                 desc: `"Counterstriker"\nHit back: ${3 * factor}`,
             },
+            {
+                buff: {
+                    shield: 4 * factor,
+                },
+                desc: `"Guardian"\nShield: ${4 * factor}`,
+            },
+            {
+                buff: {
+                    attackType: AttackType.PENETRATE,
+                    attack: 2 * factor,
+                },
+                desc: `"Penetrator"\nPenetrate shield`,
+            },
+            {
+                buff: {
+                    attackDirection: AttackDirection.AROUND,
+                    attackType: AttackType.PENETRATE,
+                    shield: 5 * factor,
+                },
+                desc: `"Stormpiercer"\nPenetrate, around`,
+            },
         ];
+        eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);
+        return [elites[eliteCount]];
     }
     else {
         let buffs = [
             { shield: 2 * factor, health: -2 * factor },
             { health: 1 * factor, attack: -1 * factor },
-            { criticalRate: 0.1 * factor, health: -2 * factor },
+            { criticalRate: 0.05 * factor, health: -2 * factor },
             { attack: 1 * factor, hitRate: -0.2 },
         ];
-        return buffs.map((buff) => ({ buff, desc: getDescText$1(buff) }));
+        return buffs.map((buff) => ({ buff, desc: getEnemyPropsDescText(buff) }));
     }
-};
-let getDescText$1 = (buff) => {
-    let buffTexts = Object.entries(buff).map(([key, value]) => {
-        if (!value)
-            return "";
-        if (key === "attackDirection")
-            return `attack: ${value}`;
-        if (value > 0)
-            return `high ${key}`;
-        return `low ${key}`;
-    });
-    return buffTexts.join("\n");
 };
 
 class ClockIcon extends GameObject {
@@ -3218,7 +3408,7 @@ class PotionIcon extends GameObject {
 }
 
 class ItemCard extends BaseCard {
-    constructor({ type, x, y, buff, duration, weight }) {
+    constructor({ type, x, y, duration, weight }) {
         super({ type, x, y });
         Object.defineProperty(this, "descriptionText", {
             enumerable: true,
@@ -3256,13 +3446,19 @@ class ItemCard extends BaseCard {
             writable: true,
             value: void 0
         });
-        this.buff = buff;
+        Object.defineProperty(this, "level", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 1
+        });
         this.duration = duration;
         this.weight = weight;
+        this.buff = this.pickBuff();
         this.descriptionText = factory$7({
             x: 0,
             y: 18,
-            text: getDescText(buff),
+            text: getItemPropsDescText(this.buff),
             ...COMMON_TEXT_CONFIG,
             textAlign: "center",
         });
@@ -3318,19 +3514,78 @@ class ItemCard extends BaseCard {
         this.durationText.text = `${this.duration}`;
         return true;
     }
+    upgrade(card) {
+        this.level += card.level;
+        this.level = Math.min(this.level, 4);
+        this.duration += card.duration;
+        this.weight = card.type === CardType.POTION ? 0 : 2 * this.level;
+        this.buff = this.pickBuff();
+        this.descriptionText.text = getItemPropsDescText(this.buff);
+        this.resetProps();
+    }
+    pickBuff() {
+        let gm = GameManager.getInstance();
+        let factor = gm.level + 1;
+        switch (this.type) {
+            case CardType.WEAPON:
+                return getWeaponLevelBuff(this.level, factor, gm.cls);
+            case CardType.SHIELD:
+                return getShieldLevelBuff(this.level, factor, gm.cls);
+            case CardType.POTION:
+                return getPotionLevelBuff(this.level, factor, gm.cls);
+            default:
+                throw new Error(`Invalid card type: ${this.type}`);
+        }
+    }
 }
-// Utils
-let getDescText = (buff) => {
-    let buffTexts = Object.entries(buff).map(([key, value]) => {
-        if (!value)
-            return "";
-        if (key === "attackDirection")
-            return `attack: ${value}`;
-        if (value > 0)
-            return `${key} +${value}`;
-        return `${key} ${value}`;
-    });
-    return buffTexts.join("\n");
+let getWeaponLevelBuff = (level, factor, cls) => {
+    let isKnight = cls === TemplarClass.KNIGHT;
+    let attack = isKnight ? factor + 2 * level : 1;
+    let random = Math.random();
+    if (level === 1) {
+        return { attack };
+    }
+    else if (level === 2) {
+        return random < 0.6
+            ? { attack, criticalRate: 0.05 }
+            : { attack, hitRate: 0.05 };
+    }
+    else if (level === 3) {
+        return {
+            attack,
+            criticalRate: 0.1,
+            attackType: AttackType.PENETRATE,
+        };
+    }
+    else {
+        let dir = random < 0.5 ? AttackDirection.AROUND : AttackDirection.LINE;
+        return {
+            attack,
+            attackDirection: dir,
+            hitBackAttack: 3 * factor,
+        };
+    }
+};
+let getShieldLevelBuff = (level, factor, cls) => {
+    return { shield: factor + (cls === TemplarClass.DEFENDER ? 4 : 2) * level };
+};
+let getPotionLevelBuff = (level, factor, cls) => {
+    let random = Math.random();
+    let baseVal = level;
+    let baseRate = 0.025 + 0.025 * level;
+    let buffs = [
+        {
+            health: factor *
+                (random > (cls === TemplarClass.DEFENDER ? 0.4 : 0.6) - 0.1 * level
+                    ? baseVal
+                    : -baseVal),
+        },
+        {
+            criticalRate: factor * random > 0.95 - 0.1 * level ? baseRate : -baseRate,
+        },
+        { hitRate: factor * random > 0.95 - 0.1 * level ? baseRate : -baseRate },
+    ];
+    return randomPick(buffs);
 };
 
 class TemplarCard extends CharacterCard {
@@ -3340,6 +3595,12 @@ class TemplarCard extends CharacterCard {
             x,
             y,
             belongs: Belongs.PLAYER,
+        });
+        Object.defineProperty(this, "cls", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: TemplarClass.KNIGHT
         });
         Object.defineProperty(this, "weight", {
             enumerable: true,
@@ -3361,6 +3622,7 @@ class TemplarCard extends CharacterCard {
             ...COMMON_TEXT_CONFIG,
         });
         this.main.addChild([new WeightIcon(-46, 32), this.weightText]);
+        on(EVENT.UPDATE_TEMPLAR_CLASS, this.updateCls.bind(this));
     }
     getMainIcon() {
         let templar = new Templar({
@@ -3370,29 +3632,45 @@ class TemplarCard extends CharacterCard {
         });
         return templar;
     }
-    deathCallback() { }
+    deathCallback() {
+        let gm = GameManager.getInstance();
+        gm.gameOver();
+    }
+    updateCls(cls) {
+        this.cls = cls;
+        this.resetProps();
+    }
     resetProps() {
-        this.health = 10;
-        this.shield = 0;
-        this.attack = 4;
-        this.hitRate = 1;
-        this.criticalRate = 0.2;
+        let isDefender = this.cls === TemplarClass.DEFENDER;
+        let isKnight = this.cls === TemplarClass.KNIGHT;
+        let isWizard = this.cls === TemplarClass.WIZARD;
+        this.health = isWizard ? 6 : 10;
+        this.shield = isDefender ? 10 : 0;
+        this.attack = isKnight ? 4 : 1;
+        this.hitRate = 0.8;
+        this.criticalRate = isDefender ? 0.4 : 0.1;
         this.attackDirection = AttackDirection.FRONT;
-        this.hitBackAttack = 0;
+        this.attackType = AttackType.NORMAL;
+        this.hitBackAttack = isDefender ? this.shield : 0;
+        if (isDefender)
+            this.updateWeight(3);
         this.refreshText();
+        emit(EVENT.UPDATE_TEMPLAR_INFO, this);
     }
     updateWeight(value) {
         this.weight += value;
         this.weightText.text = `${this.weight}`;
-        this.weightText.color = this.weight >= 13 ? COLOR.BROWN_8 : COLOR.WHITE_6;
+        let isOverweight = this.weight >= 13;
+        this.weightText.color = isOverweight ? COLOR.BROWN_8 : COLOR.WHITE_6;
+        emit(EVENT.UPDATE_TEMPLAR_WEIGHT, isOverweight);
     }
 }
 
 class CardFactory {
     static createCard(x, y) {
-        let { moveCount } = GameManager.getInstance();
-        let isSpawnEnemy = moveCount % 13 === 0 || moveCount % 4 === 0;
-        if (isSpawnEnemy) {
+        let { moveCount, cls } = GameManager.getInstance();
+        let isSpawnEliteEnemy = moveCount % 13 === 0;
+        if (isSpawnEliteEnemy) {
             return CardFactory.factory({
                 type: CardType.ENEMY,
                 x,
@@ -3400,14 +3678,18 @@ class CardFactory {
             });
         }
         else {
-            let picked = randomPick([
-                CardType.SHIELD,
-                CardType.WEAPON,
-                CardType.WEAPON,
-                CardType.POTION,
-            ]);
+            let isDefender = cls === TemplarClass.DEFENDER;
+            let isKnight = cls === TemplarClass.KNIGHT;
+            let randomItem = Math.random() > 0.5 ? CardType.POTION : CardType.SHIELD;
+            let itemOrder = [
+                CardType.ENEMY,
+                isDefender ? CardType.SHIELD : CardType.WEAPON,
+                randomItem,
+                isKnight ? CardType.WEAPON : CardType.POTION,
+                isDefender ? CardType.WEAPON : randomItem,
+            ];
             return CardFactory.factory({
-                type: picked,
+                type: itemOrder[moveCount % itemOrder.length],
                 x,
                 y,
             });
@@ -3416,7 +3698,6 @@ class CardFactory {
     static factory(props) {
         let { type, x, y } = props;
         let gm = GameManager.getInstance();
-        let factor = gm.level + 1;
         switch (type) {
             case CardType.TEMPLAR:
                 return new TemplarCard({ x, y });
@@ -3429,64 +3710,27 @@ class CardFactory {
                     return card;
                 }
                 return new EnemyCard({ x, y });
-            case CardType.WEAPON: // TODO: combine card to upgrade
+            case CardType.WEAPON:
                 return new ItemCard({
                     ...props,
-                    ...CardFactory.randomPickWeapon(),
+                    duration: 4,
+                    weight: gm.cls === TemplarClass.DEFENDER ? 4 : 3,
                 });
             case CardType.SHIELD:
                 return new ItemCard({
                     ...props,
-                    buff: {
-                        shield: 1 * factor,
-                    },
                     duration: 6,
-                    weight: 5,
+                    weight: 3,
                 });
             case CardType.POTION:
                 return new ItemCard({
                     ...props,
-                    buff: this.randomPickPotionBuff(factor),
-                    duration: 4,
+                    duration: 5,
                     weight: 0,
                 });
             default:
                 throw new Error(`Invalid card type: ${type}`);
         }
-    }
-    static randomPickWeapon() {
-        let gm = GameManager.getInstance();
-        let factor = gm.level + 1;
-        let weaponSet = [
-            {
-                buff: { attack: 2 * factor, criticalRate: -0.1 },
-                duration: 6,
-                weight: 4,
-            }, // Sword
-            {
-                buff: { attack: 1 * factor, criticalRate: 0.2 },
-                duration: 6,
-                weight: 2,
-            }, // Dagger
-            { buff: { attack: 3 * factor, hitRate: -0.3 }, duration: 6, weight: 4 }, // Axe
-            {
-                buff: {
-                    attack: 1 * factor,
-                    attackDirection: Math.random() > 0.5 ? AttackDirection.AROUND : AttackDirection.LINE,
-                },
-                duration: 6,
-                weight: 6,
-            }, // Bow
-        ];
-        return randomPick(weaponSet);
-    }
-    static randomPickPotionBuff(factor) {
-        let buffs = [
-            { health: 1 * factor * (Math.random() > 0.5 ? 1 : -1) },
-            { criticalRate: Math.random() > 0.3 ? -0.1 : 0.1 },
-            { hitRate: Math.random() > 0.3 ? -0.1 : 0.1 },
-        ];
-        return randomPick(buffs);
     }
 }
 
@@ -3622,6 +3866,7 @@ class Board extends GameObject {
         await Promise.all(moveInfos.map(({ card, x, y }) => card.moveTo(x, y)));
         // Equip cards
         let equippedItems = [];
+        let potionLevels = [];
         for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
             for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
                 let card = this.occupiedInfo[j][i];
@@ -3638,18 +3883,29 @@ class Board extends GameObject {
                         break;
                     let occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
                     if (occupiedCard) {
-                        if (card instanceof TemplarCard &&
-                            occupiedCard instanceof ItemCard) {
-                            card.applyBuff(occupiedCard.buff);
+                        let isTemplarEquip = card.type === CardType.TEMPLAR &&
+                            occupiedCard instanceof ItemCard;
+                        let isItemUpgrade = card.type === occupiedCard.type && card instanceof ItemCard;
+                        let potionAttackEnabled = this.templarCard.cls === TemplarClass.WIZARD;
+                        if (isTemplarEquip || isItemUpgrade) {
+                            isTemplarEquip && card.applyBuff(occupiedCard.buff);
+                            isItemUpgrade && card.upgrade(occupiedCard);
+                            if (potionAttackEnabled &&
+                                occupiedCard.type === CardType.POTION &&
+                                card.type === CardType.POTION)
+                                potionLevels.push(1);
                             await occupiedCard.equip();
                             this.occupiedInfo[nextJ][nextI] = null;
-                            // anim effect
+                            // TODO: anim effect
                             if (card instanceof TemplarCard &&
                                 occupiedCard.type !== CardType.POTION) {
                                 card.updateWeight(occupiedCard.weight);
+                                // @ts-ignore
                                 equippedItems.push(occupiedCard);
                             }
                             else {
+                                if (potionAttackEnabled && card.type === CardType.TEMPLAR)
+                                    potionLevels.push(occupiedCard.level);
                                 await occupiedCard.setInactive();
                             }
                             this.removeChild(occupiedCard);
@@ -3672,26 +3928,39 @@ class Board extends GameObject {
                 this.occupiedInfo[currJ][currI] = card;
             }
         }
+        if (potionLevels.length) {
+            // attack all enemies
+            let allEnemies = this.occupiedInfo
+                .flat()
+                .filter((card) => card instanceof EnemyCard);
+            for (let potionLevel of potionLevels) {
+                await Promise.all(allEnemies.map((enemy) => enemy.onWizardAttack(this.templarCard, potionLevel)));
+            }
+        }
         if (equippedItems.length) {
             let gm = GameManager.getInstance();
             gm.addItems(equippedItems);
         }
     }
     spawnCards() {
-        let emptyIndices = [];
-        for (let i = 0; i < GRIDS_IN_LINE; i++) {
-            for (let j = 0; j < GRIDS_IN_LINE; j++) {
-                if (!this.occupiedInfo[j][i]) {
-                    emptyIndices.push([j, i]);
+        let gm = GameManager.getInstance();
+        let isDual = gm.moveCount % 5 === 1 || gm.moveCount % 5 === 3;
+        for (let i = 0; i < (isDual ? 2 : 1); i++) {
+            let emptyIndices = [];
+            for (let i = 0; i < GRIDS_IN_LINE; i++) {
+                for (let j = 0; j < GRIDS_IN_LINE; j++) {
+                    if (!this.occupiedInfo[j][i]) {
+                        emptyIndices.push([j, i]);
+                    }
                 }
             }
+            let randomIndex = Math.floor(Math.random() * emptyIndices.length);
+            let [j, i] = emptyIndices[randomIndex];
+            let grid = this.getGridByCoord([j, i]);
+            let card = CardFactory.createCard(grid.x, grid.y);
+            this.addChild(card);
+            this.occupiedInfo[j][i] = card;
         }
-        let randomIndex = Math.floor(Math.random() * emptyIndices.length);
-        let [j, i] = emptyIndices[randomIndex];
-        let grid = this.getGridByCoord([j, i]);
-        let card = CardFactory.createCard(grid.x, grid.y);
-        this.addChild(card);
-        this.occupiedInfo[j][i] = card;
     }
     async checkAttack(direction) {
         let battleInfos = [];
@@ -3787,7 +4056,7 @@ class Board extends GameObject {
             }
         }
         for (let { attacker, target, direction } of battleInfos) {
-            await attacker.execAttack(direction, target);
+            await attacker.execAttack(direction, target, false, attacker.attackType === AttackType.PENETRATE);
         }
     }
     async checkDuration() {
@@ -3818,6 +4087,9 @@ class Board extends GameObject {
                     if (key === "attackDirection") {
                         debuff[key] = AttackDirection.FRONT;
                     }
+                    else if (key === "attackType") {
+                        debuff[key] = AttackType.NORMAL;
+                    }
                     else if (key !== "shield") {
                         debuff[key] = value * -1;
                     }
@@ -3842,16 +4114,225 @@ class Header extends Text {
             font: "36px Gill Sans",
             anchor: { x: 0.5, y: 0.5 },
         });
-        on(EVENT.SWIPE, () => {
-            this.text = `MOVE ${GameManager.getInstance().moveCount}`;
+        let subText = factory$7({
+            text: "Powerful Enemy Coming!",
+            x: 0,
+            y: 310,
+            color: COLOR.RED_7,
+            font: "36px Gill Sans",
+            anchor: { x: 0.5, y: 0.5 },
+            opacity: 0,
         });
+        this.addChild(subText);
+        on(EVENT.SWIPE, async () => {
+            let moveCount = GameManager.getInstance().moveCount;
+            this.text = `MOVE ${moveCount}`;
+            let isThirteen = moveCount % 13 === 0;
+            if (isThirteen) {
+                this.color = COLOR.RED_7;
+                await tween(subText, { opacity: 1 }, 500);
+                await delay(500);
+                await tween(subText, { opacity: 0 }, 400);
+            }
+            else {
+                this.color = COLOR.GRAY_7;
+            }
+        });
+    }
+}
+
+class CustomButton extends Sprite {
+    constructor(x, y, text) {
+        super({
+            x,
+            y,
+            width: 96,
+            height: 28,
+            color: COLOR.BROWN_7,
+            anchor: { x: 0.5, y: 0.5 },
+        });
+        Object.defineProperty(this, "text", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "canvasCallback", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: null
+        });
+        this.text = factory$7({
+            text,
+            anchor: { x: 0.5, y: 0.5 },
+            color: COLOR.WHITE_6,
+            font: `16px ${FONT}`,
+        });
+        this.addChild(this.text);
+    }
+    bindClick(callback) {
+        let canvas = getCanvas();
+        this.canvasCallback = (event) => {
+            let { offsetLeft, offsetTop } = event.target;
+            let { world } = this;
+            let minX = world.x - world.width / 2;
+            let maxX = world.x + world.width / 2;
+            let minY = world.y - world.height / 2;
+            let maxY = world.y + world.height / 2;
+            let { width: w, height: h } = canvas;
+            let scale = Math.min(innerWidth / w, innerHeight / h, devicePixelRatio);
+            let x = (event.x - offsetLeft) / scale;
+            let y = (event.y - offsetTop) / scale;
+            if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                callback();
+            }
+        };
+        canvas.addEventListener("pointerdown", this.canvasCallback);
+    }
+    offClick() {
+        if (this.canvasCallback) {
+            getCanvas().removeEventListener("pointerdown", this.canvasCallback);
+        }
+    }
+}
+
+class GameOverDialog extends Sprite {
+    constructor() {
+        let { width, height } = getCanvas();
+        super({
+            width,
+            height,
+            opacity: 0.8,
+            color: COLOR.DARK_6,
+        });
+        Object.defineProperty(this, "descText", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "button", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        let wrapper = factory$8({
+            x: width / 2,
+            y: height / 2,
+            width: 280,
+            height: 180,
+            anchor: { x: 0.5, y: 0.5 },
+            color: COLOR.YELLOW_6,
+        });
+        let title = factory$7({
+            text: "Game Over",
+            x: width / 2,
+            y: height / 2 - 48,
+            anchor: { x: 0.5, y: 0.5 },
+            color: COLOR.BROWN_7,
+            font: `24px ${FONT}`,
+        });
+        this.descText = factory$7({
+            text: "",
+            x: width / 2,
+            y: height / 2,
+            anchor: { x: 0.5, y: 0.5 },
+            textAlign: "center",
+            color: COLOR.BROWN_7,
+            font: `16px ${FONT}`,
+        });
+        this.button = new CustomButton(width / 2, height / 2 + 50, "Restart");
+        this.addChild([wrapper, title, this.descText, this.button]);
+        on(EVENT.GAME_OVER, this.show.bind(this));
+    }
+    show() {
+        let gm = GameManager.getInstance();
+        this.descText.text = `You did a great job!\nSurvived for ${gm.moveCount} moves!`;
+        this.button.bindClick(() => window.location.reload());
+    }
+    render() {
+        let gm = GameManager.getInstance();
+        if (gm.state !== GameState.GAME_OVER)
+            return;
+        super.render();
+    }
+}
+
+class GameStartDialog extends Sprite {
+    constructor() {
+        let { width, height } = getCanvas();
+        super({
+            width,
+            height,
+            opacity: 0.8,
+            color: COLOR.DARK_6,
+        });
+        let wrapper = factory$8({
+            x: width / 2,
+            y: height / 2,
+            width: 360,
+            height: 180,
+            anchor: { x: 0.5, y: 0.5 },
+            color: COLOR.YELLOW_6,
+        });
+        let title = factory$7({
+            text: "Pick a Class",
+            x: width / 2,
+            y: height / 2 - 52,
+            anchor: { x: 0.5, y: 0.5 },
+            color: COLOR.BROWN_7,
+            font: `24px ${FONT}`,
+        });
+        let descText = factory$7({
+            text: "Pick a class to fight against enemies",
+            x: width / 2,
+            y: height / 2,
+            anchor: { x: 0.5, y: 0.5 },
+            color: COLOR.BROWN_7,
+            font: `16px ${FONT}`,
+        });
+        let gm = GameManager.getInstance();
+        let wizardButton = new CustomButton(width / 2 - 108, height / 2 + 52, "Wizard");
+        let knightButton = new CustomButton(width / 2, height / 2 + 52, "Knight");
+        let defenderButton = new CustomButton(width / 2 + 108, height / 2 + 52, "Defender");
+        let removeAllEvents = () => {
+            wizardButton.offClick();
+            knightButton.offClick();
+            defenderButton.offClick();
+        };
+        wizardButton.bindClick(() => {
+            gm.setClass(TemplarClass.WIZARD);
+            removeAllEvents();
+        });
+        knightButton.bindClick(() => {
+            gm.setClass(TemplarClass.KNIGHT);
+            removeAllEvents();
+        });
+        defenderButton.bindClick(() => {
+            gm.setClass(TemplarClass.DEFENDER);
+            removeAllEvents();
+        });
+        this.addChild([
+            wrapper,
+            title,
+            descText,
+            wizardButton,
+            knightButton,
+            defenderButton,
+        ]);
+    }
+    render() {
+        let gm = GameManager.getInstance();
+        if (gm.state !== GameState.INIT)
+            return;
+        super.render();
     }
 }
 
 let { canvas } = init$1();
 initKeys();
-// initPointer();
-// initGesture();
 GameManager.getInstance();
 function resize() {
     let ctx = canvas.getContext("2d");
@@ -3864,18 +4345,24 @@ function resize() {
 }
 (onresize = resize)();
 let infoPanel = new InfoPanel(0, canvas.height - INFO_PANEL_HEIGHT);
-let board = new Board((canvas.width - BOARD_SIZE) / 2, 92);
-let header = new Header(canvas.width / 2, 48);
+let board = new Board((canvas.width - BOARD_SIZE) / 2, 84);
+let header = new Header(canvas.width / 2, 46);
+let gameOverDialog = new GameOverDialog();
+let gameStartDialog = new GameStartDialog();
 let loop = GameLoop({
     update: () => {
         infoPanel.update();
         board.update();
         header.update();
+        gameOverDialog.update();
+        gameStartDialog.update();
     },
     render: () => {
         infoPanel.render();
         board.render();
         header.render();
+        gameOverDialog.render();
+        gameStartDialog.render();
     },
 });
 loop.start();
