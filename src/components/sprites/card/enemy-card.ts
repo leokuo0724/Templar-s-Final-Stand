@@ -15,6 +15,7 @@ import { EnemyIcon } from "../icons/enemy-icon";
 import { getEnemyPropsDescText } from "../../../utils/desc-utils";
 import { TemplarCard } from "./templar-card";
 import { Direction } from "../../../types/direction";
+import { delay } from "../../../utils/time-utils";
 
 export class EnemyCard extends CharacterCard {
   protected descriptionText: Text;
@@ -48,6 +49,7 @@ export class EnemyCard extends CharacterCard {
       wizard.attackType === AttackType.PENETRATE,
       level * factor
     );
+    await delay(100);
   }
 
   protected getMainIcon() {
