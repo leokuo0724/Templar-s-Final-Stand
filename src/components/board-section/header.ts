@@ -29,11 +29,11 @@ export class Header extends TextClass {
     on(EVENT.SWIPE, async () => {
       const moveCount = GameManager.getInstance().moveCount;
       this.text = `MOVE ${moveCount}`;
-      const isThirteen = moveCount % 13 === 0;
+      const isThirteen = moveCount % 13 === 0 || moveCount >= 130;
       if (isThirteen) {
         this.color = COLOR.RED_7;
         await tween(subText, { opacity: 1 }, 500);
-        await delay(500);
+        await delay(800);
         await tween(subText, { opacity: 0 }, 400);
       } else {
         this.color = COLOR.GRAY_7;

@@ -59,7 +59,7 @@ export class TemplarCard extends CharacterCard {
     this.health = isWizard ? 6 : 10;
     this.shield = isDefender ? 10 : 0;
     this.attack = isKnight ? 4 : 1;
-    this.hitRate = 0.8;
+    this.hitRate = isWizard ? 0.7 : 0.8;
     this.criticalRate = isDefender ? 0.2 : 0.1;
     this.attackDirection = AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;

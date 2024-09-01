@@ -61,13 +61,13 @@ export class CardFactory {
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: gm.cls === TemplarClass.DEFENDER ? 4 : 3,
+          weight: gm.cls === TemplarClass.KNIGHT ? 3 : 5,
         });
       case CardType.SHIELD:
         return new ItemCard({
           ...props,
           duration: 6,
-          weight: 3,
+          weight: gm.cls === TemplarClass.WIZARD ? 6 : 3,
         });
       case CardType.POTION:
         return new ItemCard({

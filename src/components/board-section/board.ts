@@ -13,6 +13,7 @@ import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager, TemplarClass } from "../../managers/game-manager";
 import { AttackDirection, AttackType } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
+import { delay } from "../../utils/time-utils";
 
 type BattleInfo = {
   attacker: CharacterCard;

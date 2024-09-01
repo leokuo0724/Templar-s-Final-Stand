@@ -110,7 +110,7 @@ export class ItemCard extends BaseCard {
     this.level += card.level;
     this.level = Math.min(this.level, 4);
     this.duration += card.duration;
-    this.weight = card.type === CardType.POTION ? 0 : 2 * this.level;
+    this.weight = getItemWeight(this.type, this.level);
 
     this.buff = this.pickBuff();
     this.descriptionText.text = getItemPropsDescText(this.buff);
@@ -132,6 +132,20 @@ export class ItemCard extends BaseCard {
     }
   }
 }
+
+const getItemWeight = (type: CardType, level: number) => {
+  if (type === CardType.POTION) return 0;
+
+  const gm = GameManager.getInstance();
+  const isWizard = gm.cls === TemplarClass.WIZARD;
+  const isKnight = gm.cls === TemplarClass.KNIGHT;
+  const levelFactor = 2 * (level - 1);
+  if (type === CardType.WEAPON) {
+    return (isKnight ? 1 : 3) + levelFactor;
+  } else {
+    return (isWizard ? 6 : 3) + levelFactor;
+  }
+};
 
 const getWeaponLevelBuff = (
   level: number,
@@ -167,7 +181,7 @@ const getShieldLevelBuff = (
   factor: number,
   cls: TemplarClass
 ): OptionalCharacterProps => {
-  return { shield: factor + (cls === TemplarClass.DEFENDER ? 4 : 2) * level };
+  return { shield: factor + (cls === TemplarClass.DEFENDER ? 3 : 2) * level };
 };
 const getPotionLevelBuff = (
   level: number,
@@ -175,13 +189,13 @@ const getPotionLevelBuff = (
   cls: TemplarClass
 ): OptionalCharacterProps => {
   const random = Math.random();
-  const baseVal = Math.round(level / 2);
+  const baseVal = Math.ceil(level / 3);
   const baseRate = 0.025 + 0.025 * level;
   const buffs: OptionalCharacterProps[] = [
     {
       health:
         factor *
-        (random > (cls === TemplarClass.DEFENDER ? 0.4 : 0.6) - 0.1 * level
+        (random > (cls === TemplarClass.DEFENDER ? 0.45 : 0.65) - 0.1 * level
           ? baseVal
           : -baseVal),
     },

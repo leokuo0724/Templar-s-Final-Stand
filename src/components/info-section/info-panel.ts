@@ -71,8 +71,7 @@ export class InfoPanel extends GameObjectClass {
         this.classText.text = "Knight: everything is normal but balanced";
         break;
       case TemplarClass.DEFENDER:
-        this.classText.text =
-          "Defender: low attack, attack around, hit back with shield";
+        this.classText.text = "Defender: low attack, hit back with shield";
         break;
     }
   }

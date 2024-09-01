@@ -9,13 +9,12 @@ import {
 import { EVENT } from "../../../constants/event";
 import { emit, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
-import { GameManager, TemplarClass } from "../../../managers/game-manager";
+import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 import { EnemyIcon } from "../icons/enemy-icon";
 import { getEnemyPropsDescText } from "../../../utils/desc-utils";
 import { TemplarCard } from "./templar-card";
 import { Direction } from "../../../types/direction";
-import { delay } from "../../../utils/time-utils";
 
 export class EnemyCard extends CharacterCard {
   protected descriptionText: Text;
@@ -49,7 +48,6 @@ export class EnemyCard extends CharacterCard {
       wizard.attackType === AttackType.PENETRATE,
       level * factor
     );
-    await delay(100);
   }
 
   protected getMainIcon() {
@@ -61,16 +59,16 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const { level, moveCount, cls } = GameManager.getInstance();
+    const { level, moveCount } = GameManager.getInstance();
     this.health = 5 + 2 * level;
     this.attack = 2 + 1 * level;
     this.shield = 0;
-    this.hitRate = cls === TemplarClass.DEFENDER ? 0.7 : 0.8;
+    this.hitRate = 0.8;
     this.criticalRate = 0.1;
     this.attackDirection = AttackDirection.FRONT;
     this.hitBackAttack = 0;
 
-    const isElite = moveCount > 0 && moveCount % 13 === 0;
+    const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 130;
 
     // Add extra buff
     const { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));

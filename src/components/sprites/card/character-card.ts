@@ -164,21 +164,23 @@ export abstract class CharacterCard extends BaseCard {
     const remainingDamage = isPenetrate
       ? calculatedDamage
       : this.updateShield(-calculatedDamage);
-    const isDead = this.updateHealth(-remainingDamage);
+    const isDead = await this.updateHealth(-remainingDamage);
     if (!isDead && this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
       await this.execAttack(counterDirection, attacker, true, false);
   }
 
   public async applyOverweightDamage() {
-    await this.impactText.show(`Overweight -1`);
-    this.updateHealth(-1);
+    await Promise.all([
+      this.impactText.show(`Overweight -1`),
+      this.updateHealth(-1),
+    ]);
   }
 
   // return true if the card is dead
-  protected updateHealth(value: number): boolean | undefined {
+  protected async updateHealth(value: number): Promise<boolean | undefined> {
     this.health += value;
     if (this.health <= 0) {
-      this.setInactive();
+      await this.setInactive();
       this.deathCallback();
       return true;
     }
