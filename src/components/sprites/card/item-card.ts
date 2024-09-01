@@ -175,7 +175,7 @@ const getPotionLevelBuff = (
   cls: TemplarClass
 ): OptionalCharacterProps => {
   const random = Math.random();
-  const baseVal = level;
+  const baseVal = Math.round(level / 2);
   const baseRate = 0.025 + 0.025 * level;
   const buffs: OptionalCharacterProps[] = [
     {

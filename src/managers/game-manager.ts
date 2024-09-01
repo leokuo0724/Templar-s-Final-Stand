@@ -28,6 +28,7 @@ export class GameManager {
     return Math.floor(this.moveCount / 5);
   }
 
+  private music: AudioBufferSourceNode | null = null;
   public currentItems: ItemCard[] = [];
   public reusableEnemyCards: EnemyCard[] = [];
   public cls: TemplarClass | null = null;
@@ -68,8 +69,8 @@ export class GameManager {
   private playBGM() {
     // TODO: click to play music
     // @ts-ignore
-    const music = zzfxP(...zzfxM(...bgm));
-    music.loop = true;
+    this.music = zzfxP(...zzfxM(...bgm));
+    this.music.loop = true;
   }
 
   private swipe(direction: Direction) {
@@ -104,6 +105,8 @@ export class GameManager {
 
   public gameOver() {
     this.state = GameState.GAME_OVER;
+    this.music?.stop();
+    zzfx(...[, 0, 350, , 0.3, 0.4, , 3, , , -65, , 0.1, , , , , 0.7]);
     emit(EVENT.GAME_OVER);
   }
 }
