@@ -9,7 +9,7 @@ import { GRID_SIZE } from "../../constants/size";
 const ITEM_PER_PAGE = 4;
 
 export class ItemPanel extends SpriteClass {
-  // private pageIdx = 0;
+  // private pageIdx = 0; // TODO: pagination
 
   constructor(x: number, y: number) {
     super({
@@ -31,20 +31,18 @@ export class ItemPanel extends SpriteClass {
     on(EVENT.ITEMS_UPDATED, this.onItemsUpdated.bind(this));
   }
 
-  private onItemsUpdated(added: ItemCard[], removed: ItemCard[]) {
+  private async onItemsUpdated(added: ItemCard[], removed: ItemCard[]) {
     if (added.length > 0) this.addChild(added);
     if (removed.length > 0) this.removeChild(removed);
 
-    // this.pageIdx = 0;
     const gm = GameManager.getInstance();
     // mark all items as invisible
-    gm.currentItems.forEach((item) => item.setInactive(0));
-    // show first 4 items
-    gm.currentItems
-      .sort((a, b) => a.duration - b.duration)
-      .slice(0, ITEM_PER_PAGE)
-      .forEach((item, index) =>
-        item.setActive(60 + index * (GRID_SIZE + 4), 76)
-      );
+    await Promise.all(gm.currentItems.map((item) => item.setInactive(0)));
+    await Promise.all(
+      gm.currentItems
+        .sort((a, b) => a.duration - b.duration)
+        .slice(0, ITEM_PER_PAGE)
+        .map((item, index) => item.setActive(60 + index * (GRID_SIZE + 4), 76))
+    );
   }
 }

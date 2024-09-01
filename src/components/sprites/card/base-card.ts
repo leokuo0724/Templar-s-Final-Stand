@@ -66,10 +66,10 @@ export abstract class BaseCard extends SpriteClass {
     await this.setChildrenOpacity(0, ms);
     this.isActive = false;
   }
-  public setActive(x: number, y: number) {
+  public async setActive(x: number, y: number) {
     this.x = x;
     this.y = y;
-    this.setChildrenOpacity(1, 200);
+    await this.setChildrenOpacity(1, 200);
     this.isActive = true;
   }
   public reset() {

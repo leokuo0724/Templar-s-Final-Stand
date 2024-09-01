@@ -181,7 +181,11 @@ const getShieldLevelBuff = (
   factor: number,
   cls: TemplarClass
 ): OptionalCharacterProps => {
-  return { shield: factor + (cls === TemplarClass.DEFENDER ? 3 : 2) * level };
+  return {
+    shield: Math.floor(
+      factor / 2 + (cls === TemplarClass.DEFENDER ? 3.5 : 2) * level
+    ),
+  };
 };
 const getPotionLevelBuff = (
   level: number,
