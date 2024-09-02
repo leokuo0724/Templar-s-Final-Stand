@@ -11,7 +11,6 @@ import { EVENT } from "../../../constants/event";
 import { GameManager, TemplarClass } from "../../../managers/game-manager";
 
 export class TemplarCard extends CharacterCard {
-  public cls: TemplarClass = TemplarClass.KNIGHT;
   public weight = 0;
   protected weightText: Text;
 
@@ -53,13 +52,11 @@ export class TemplarCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const isDefender = this.cls === TemplarClass.DEFENDER;
-    const isKnight = this.cls === TemplarClass.KNIGHT;
-    const isWizard = this.cls === TemplarClass.WIZARD;
+    const { isDefender, isKnight, isWizard } = GameManager.getInstance();
     this.health = isWizard ? 6 : 10;
     this.shield = isDefender ? 10 : 0;
     this.attack = isKnight ? 4 : 1;
-    this.hitRate = isWizard ? 0.7 : 0.8;
+    this.hitRate = isWizard ? 0.65 : 0.8;
     this.criticalRate = 0.1;
     this.attackDirection = AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;

@@ -32,6 +32,15 @@ export class GameManager {
   public currentItems: ItemCard[] = [];
   public reusableEnemyCards: EnemyCard[] = [];
   public cls: TemplarClass | null = null;
+  public get isWizard() {
+    return this.cls === TemplarClass.WIZARD;
+  }
+  public get isKnight() {
+    return this.cls === TemplarClass.KNIGHT;
+  }
+  public get isDefender() {
+    return this.cls === TemplarClass.DEFENDER;
+  }
 
   private constructor() {
     new SwipeDetector({
@@ -83,8 +92,7 @@ export class GameManager {
 
   public addItems(itemCards: ItemCard[]) {
     itemCards.forEach((item) => {
-      if (this.cls === TemplarClass.DEFENDER)
-        item.duration = Math.min(6, item.duration);
+      if (this.isDefender) item.duration = Math.min(6, item.duration);
       this.currentItems.push(item);
     });
     emit(EVENT.ITEMS_UPDATED, itemCards, []);

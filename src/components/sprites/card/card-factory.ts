@@ -1,4 +1,4 @@
-import { GameManager, TemplarClass } from "../../../managers/game-manager";
+import { GameManager } from "../../../managers/game-manager";
 import { BaseCard } from "./base-card";
 import { EnemyCard } from "./enemy-card";
 import { ItemCard } from "./item-card";
@@ -14,7 +14,7 @@ type CreateCardProps = {
 
 export class CardFactory {
   static createCard(x: number, y: number): BaseCard {
-    const { moveCount, cls } = GameManager.getInstance();
+    const { moveCount, isDefender, isKnight } = GameManager.getInstance();
     const isSpawnEliteEnemy = moveCount % 13 === 0;
     if (isSpawnEliteEnemy) {
       return CardFactory.factory({
@@ -23,8 +23,6 @@ export class CardFactory {
         y,
       });
     } else {
-      const isDefender = cls === TemplarClass.DEFENDER;
-      const isKnight = cls === TemplarClass.KNIGHT;
       const randomItem =
         Math.random() > 0.5 ? CardType.POTION : CardType.SHIELD;
       const itemOrder = [
@@ -61,13 +59,13 @@ export class CardFactory {
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: gm.cls === TemplarClass.KNIGHT ? 3 : 5,
+          weight: gm.isKnight ? 3 : 5,
         });
       case CardType.SHIELD:
         return new ItemCard({
           ...props,
           duration: 6,
-          weight: gm.cls === TemplarClass.WIZARD ? 6 : 3,
+          weight: gm.isWizard ? 6 : 3,
         });
       case CardType.POTION:
         return new ItemCard({

@@ -10,7 +10,7 @@ import { Direction } from "../../types/direction";
 import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
-import { GameManager, TemplarClass } from "../../managers/game-manager";
+import { GameManager } from "../../managers/game-manager";
 import { AttackDirection, AttackType } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 
@@ -108,6 +108,7 @@ export class Board extends GameObjectClass {
   }
 
   private async moveCards(direction: Direction) {
+    const gm = GameManager.getInstance();
     const moveRight = direction === Direction.RIGHT;
     const moveLeft = direction === Direction.LEFT;
     const moveUp = direction === Direction.UP;
@@ -183,8 +184,7 @@ export class Board extends GameObjectClass {
               occupiedCard instanceof ItemCard;
             const isItemUpgrade =
               card.type === occupiedCard.type && card instanceof ItemCard;
-            const potionAttackEnabled =
-              this.templarCard.cls === TemplarClass.WIZARD;
+            const potionAttackEnabled = gm.isWizard;
 
             if (isTemplarEquip || isItemUpgrade) {
               isTemplarEquip && card.applyBuff(occupiedCard.buff);
@@ -245,7 +245,6 @@ export class Board extends GameObjectClass {
       }
     }
     if (equippedItems.length) {
-      const gm = GameManager.getInstance();
       gm.addItems(equippedItems);
     }
   }

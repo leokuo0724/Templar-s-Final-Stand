@@ -16,7 +16,7 @@ import { COLOR } from "../../../constants/color";
 import { ShieldIcon } from "../icons/shield-icon";
 import { PotionIcon } from "../icons/potion-icon";
 import { getItemPropsDescText } from "../../../utils/desc-utils";
-import { GameManager, TemplarClass } from "../../../managers/game-manager";
+import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 
 export type ItemCardProps = {
@@ -118,15 +118,15 @@ export class ItemCard extends BaseCard {
   }
 
   public pickBuff() {
-    const gm = GameManager.getInstance();
-    const factor = gm.level + 1;
+    const { isKnight, isWizard, isDefender, level } = GameManager.getInstance();
+    const factor = level + 1;
     switch (this.type) {
       case CardType.WEAPON:
-        return getWeaponLevelBuff(this.level, factor, gm.cls!);
+        return getWeaponLevelBuff(this.level, factor, isKnight);
       case CardType.SHIELD:
-        return getShieldLevelBuff(this.level, factor, gm.cls!);
+        return getShieldLevelBuff(this.level, factor, isDefender);
       case CardType.POTION:
-        return getPotionLevelBuff(this.level, factor, gm.cls!);
+        return getPotionLevelBuff(this.level, factor, isWizard);
       default:
         throw new Error(`Invalid card type: ${this.type}`);
     }
@@ -136,9 +136,7 @@ export class ItemCard extends BaseCard {
 const getItemWeight = (type: CardType, level: number) => {
   if (type === CardType.POTION) return 0;
 
-  const gm = GameManager.getInstance();
-  const isWizard = gm.cls === TemplarClass.WIZARD;
-  const isKnight = gm.cls === TemplarClass.KNIGHT;
+  const { isWizard, isKnight } = GameManager.getInstance();
   const levelFactor = 2 * (level - 1);
   if (type === CardType.WEAPON) {
     return (isKnight ? 1 : 3) + levelFactor;
@@ -150,9 +148,8 @@ const getItemWeight = (type: CardType, level: number) => {
 const getWeaponLevelBuff = (
   level: number,
   factor: number,
-  cls: TemplarClass
+  isKnight: boolean
 ): OptionalCharacterProps => {
-  const isKnight = cls === TemplarClass.KNIGHT;
   const attack = isKnight ? factor + 2 * level : 1;
   const random = Math.random();
   if (level === 1) {
@@ -179,34 +176,36 @@ const getWeaponLevelBuff = (
 const getShieldLevelBuff = (
   level: number,
   factor: number,
-  cls: TemplarClass
+  isDefender: boolean
 ): OptionalCharacterProps => {
   return {
-    shield: Math.floor(
-      factor / 2 + (cls === TemplarClass.DEFENDER ? 3.5 : 2) * level
-    ),
+    shield: Math.floor(factor / 2 + (isDefender ? 3.5 : 2) * level),
   };
 };
 const getPotionLevelBuff = (
   level: number,
   factor: number,
-  cls: TemplarClass
+  isWizard: boolean
 ): OptionalCharacterProps => {
   const random = Math.random();
   const baseVal = Math.ceil(level / 3);
   const baseRate = 0.025 + 0.025 * level;
+  const decreaseFactor = isWizard ? 0.05 : 0.1;
   const buffs: OptionalCharacterProps[] = [
     {
       health:
         factor *
-        (random > (cls === TemplarClass.DEFENDER ? 0.45 : 0.65) - 0.1 * level
-          ? baseVal
-          : -baseVal),
+        // (random > (isDefender ? 0.45 : 0.65) - decreaseFactor * level
+        (random > 0.65 - decreaseFactor * level ? baseVal : -baseVal),
     },
     {
-      criticalRate: factor * random > 0.95 - 0.1 * level ? baseRate : -baseRate,
+      criticalRate:
+        factor * random > 0.95 - decreaseFactor * level ? baseRate : -baseRate,
     },
-    { hitRate: factor * random > 0.95 - 0.1 * level ? baseRate : -baseRate },
+    {
+      hitRate:
+        factor * random > 0.95 - decreaseFactor * level ? baseRate : -baseRate,
+    },
   ];
 
   return randomPick(buffs);

@@ -40,7 +40,7 @@ export class EnemyCard extends CharacterCard {
 
   public async onWizardAttack(wizard: TemplarCard, level: number) {
     const gm = GameManager.getInstance();
-    const factor = gm.level + 1;
+    const factor = gm.level;
     await this.applyDamage(
       wizard,
       Direction.UP,

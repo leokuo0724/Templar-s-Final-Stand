@@ -65,7 +65,7 @@ export class InfoPanel extends GameObjectClass {
     switch (cls) {
       case TemplarClass.WIZARD:
         this.classText.text =
-          "Wizard: low attack, equip potion to attack all enemies";
+          "Wizard: low attack, low hit rate, equip potion to attack all enemies";
         break;
       case TemplarClass.KNIGHT:
         this.classText.text = "Knight: everything is normal but balanced";
