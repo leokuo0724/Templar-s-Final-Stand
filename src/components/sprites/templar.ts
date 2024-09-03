@@ -4,61 +4,92 @@ import { COLOR } from "../../constants/color";
 import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
 import { EVENT } from "../../constants/event";
+import { GameManager, GameState } from "../../managers/game-manager";
 
 type TemplarProps = {
   x: number;
   y: number;
-  scale?: number;
-  withWeapon?: boolean;
+  isOnCard?: boolean;
 };
 
 export class Templar extends GameObjectClass {
+  private head: TemplarHead;
   private frontHand: TemplarFrontHand;
   private backHand: TemplarBackHand;
+  private isOnCard: boolean = false;
 
-  constructor({ x, y, scale = 1, withWeapon = false }: TemplarProps) {
+  constructor({ x, y, isOnCard = false }: TemplarProps) {
     super({ x, y });
-    this.setScale(scale);
-    this.withWeapon = withWeapon;
+    this.isOnCard = isOnCard;
+    this.setScale(isOnCard ? 0.5 : 1);
     this.backHand = new TemplarBackHand(46, 60);
+    this.head = new TemplarHead(14, 2);
     this.frontHand = new TemplarFrontHand(4, 58);
     this.addChild([
       this.backHand,
       new TemplarBody(0, 32),
-      new TemplarHead(14, 0),
       new TemplarShoes(11, 101),
+      this.head,
       this.frontHand,
     ]);
 
     on(EVENT.TEMPLAR_ATTACK, this.onTemplarAttack.bind(this));
+    on(EVENT.GAME_OVER, this.onGameOver.bind(this));
+  }
+
+  private async onGameOver() {
+    const x = this.head.x;
+    const y = this.head.y;
+    await tween(this.head, { targetY: y - 12 }, 100);
+    await delay(100);
+    await tween(this.head, { targetY: y + 72 }, 250);
+    await tween(this.head, { targetX: x + 3, targetY: y + 46 }, 100);
+    await tween(this.head, { targetX: x + 6, targetY: y + 52 }, 200);
+    await tween(this.head, { targetX: x + 9, targetY: y + 72 }, 300);
   }
 
   private async onTemplarAttack() {
-    const currX = this.frontHand.x;
-    const currY = this.frontHand.y;
-    await tween(
-      this.frontHand,
-      { targetX: currX + 14, targetY: currY - 5 },
-      50
-    );
-    await delay(200);
-    await tween(this.frontHand, { targetX: currX, targetY: currY }, 400);
+    const { isKnight, isDefender, isWizard } = GameManager.getInstance();
+    if (isKnight) {
+      const fCurrX = this.frontHand.x;
+      const fCurrY = this.frontHand.y;
+      await tween(
+        this.frontHand,
+        { targetX: fCurrX + 14, targetY: fCurrY - 5 },
+        50
+      );
+      await delay(200);
+      await tween(this.frontHand, { targetX: fCurrX, targetY: fCurrY }, 400);
+    }
+
+    const bCurrX = this.backHand.x;
+    const bCurrY = this.backHand.y;
+    if (isDefender) {
+      await tween(this.backHand, { targetX: bCurrX + 12 }, 50);
+      await delay(200);
+      await tween(this.backHand, { targetX: bCurrX }, 400);
+    }
+    if (isWizard) {
+      await tween(
+        this.backHand,
+        { targetX: bCurrX + 6, targetY: bCurrY - 10 },
+        50
+      );
+      await delay(200);
+      await tween(this.backHand, { targetX: bCurrX, targetY: bCurrY }, 400);
+    }
+  }
+
+  render(): void {
+    const gm = GameManager.getInstance();
+    if (gm.state === GameState.GAME_OVER && this.isOnCard) return;
+    super.render();
   }
 }
 
 class TemplarHead extends GameObjectClass {
   constructor(x: number, y: number) {
     super({ x, y });
-    this.play();
-  }
-
-  private async play() {
-    while (true) {
-      await delay(200);
-      await tween(this, { targetY: this.y + 4 }, 800);
-      await delay(200);
-      await tween(this, { targetY: this.y - 4 }, 800);
-    }
   }
 
   draw(): void {
@@ -128,14 +159,17 @@ class TemplarFrontHand extends GameObjectClass {
     super({ x, y });
   }
   draw(): void {
-    // sword
-    drawPolygon(
-      this.context,
-      "66 1 50 0 0 19 1 23 3 27 54 11 66 1",
-      COLOR.WHITE_6,
-      16,
-      -20
-    );
+    const { isKnight } = GameManager.getInstance();
+    if (isKnight) {
+      drawPolygon(
+        this.context,
+        "66 1 50 0 0 19 1 23 3 27 54 11 66 1",
+        COLOR.WHITE_6,
+        16,
+        -20
+      );
+    }
+
     drawPolygon(this.context, "2 2 0 10 13 12 19 7 16 0 10 0 2 2", COLOR.RED_7);
   }
 }
@@ -145,6 +179,33 @@ class TemplarBackHand extends GameObjectClass {
     super({ x, y });
   }
   draw(): void {
+    const { isDefender, isWizard } = GameManager.getInstance();
+    if (isDefender) {
+      drawPolygon(
+        this.context,
+        "28 0 0 7 0 42 7 54 28 68 48 54 55 42 55 7 28 0",
+        COLOR.BROWN_7,
+        -14,
+        -28
+      );
+    }
+    if (isWizard) {
+      drawPolygon(
+        this.context,
+        "3 95 0 94 25 0 32 2 3 95",
+        COLOR.BROWN_6,
+        -2,
+        -41
+      );
+      drawPolygon(
+        this.context,
+        "11 0 2 2 0 10 6 16 14 14 16 6 11 0",
+        COLOR.BLUE_6,
+        20,
+        -54
+      );
+    }
+    // shield
     drawPolygon(this.context, "6 0 19 0 19 8 12 11 0 11 6 0", COLOR.RED_7);
   }
 }

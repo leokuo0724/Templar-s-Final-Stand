@@ -14,7 +14,7 @@ export class GameOverDialog extends SpriteClass {
     super({
       width,
       height,
-      opacity: 0.8,
+      opacity: 0.5,
       color: COLOR.DARK_6,
     });
 

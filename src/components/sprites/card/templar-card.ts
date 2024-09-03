@@ -36,7 +36,7 @@ export class TemplarCard extends CharacterCard {
     const templar = new Templar({
       x: -18,
       y: -24,
-      scale: 0.5,
+      isOnCard: true,
     });
     return templar;
   }

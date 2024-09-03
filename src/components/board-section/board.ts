@@ -237,6 +237,7 @@ export class Board extends GameObjectClass {
         .flat()
         .filter((card) => card instanceof EnemyCard);
       for (const potionLevel of potionLevels) {
+        emit(EVENT.TEMPLAR_ATTACK);
         await Promise.all(
           allEnemies.map((enemy) =>
             enemy.onWizardAttack(this.templarCard, potionLevel)
