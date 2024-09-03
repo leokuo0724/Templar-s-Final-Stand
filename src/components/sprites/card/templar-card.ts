@@ -34,9 +34,9 @@ export class TemplarCard extends CharacterCard {
 
   protected getMainIcon() {
     const templar = new Templar({
-      x: -12,
-      y: -20,
-      scale: 0.33,
+      x: -18,
+      y: -24,
+      scale: 0.5,
     });
     return templar;
   }

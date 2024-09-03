@@ -8,4 +8,5 @@ export const EVENT = {
   UPDATE_TEMPLAR_INFO: "u_t_i",
   UPDATE_TEMPLAR_WEIGHT: "u_t_w",
   GAME_OVER: "g_o",
+  TEMPLAR_ATTACK: "t_a",
 };

@@ -87,6 +87,7 @@ export abstract class CharacterCard extends BaseCard {
     const origX = this.x;
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
+
     if ([Direction.RIGHT, Direction.LEFT].includes(direction)) {
       const xFactor = direction === Direction.RIGHT ? -1 : 1;
       await tween(
@@ -112,6 +113,7 @@ export abstract class CharacterCard extends BaseCard {
         40
       );
     }
+    if (this.type === CardType.TEMPLAR) emit(EVENT.TEMPLAR_ATTACK);
     zzfx(...[3, , 179, , 0.03, 0.06, , 2.8, , , , , , 0.5, 25, , , 0.46, 0.05]);
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
 
