@@ -6,22 +6,23 @@ import { delay } from "../../utils/time-utils";
 import { EVENT } from "../../constants/event";
 import { GameManager, GameState } from "../../managers/game-manager";
 
+type TemplarCondition = "b" | "i" | "d";
 type TemplarProps = {
   x: number;
   y: number;
-  isOnCard?: boolean;
+  condition: TemplarCondition;
 };
 
 export class Templar extends GameObjectClass {
   private head: TemplarHead;
   private frontHand: TemplarFrontHand;
   private backHand: TemplarBackHand;
-  private isOnCard: boolean = false;
+  private condition: TemplarCondition;
 
-  constructor({ x, y, isOnCard = false }: TemplarProps) {
+  constructor({ x, y, condition }: TemplarProps) {
     super({ x, y });
-    this.isOnCard = isOnCard;
-    this.setScale(isOnCard ? 0.5 : 1);
+    this.condition = condition;
+    this.setScale(condition === "b" ? 0.5 : 1);
     this.backHand = new TemplarBackHand(46, 60);
     this.head = new TemplarHead(14, 2);
     this.frontHand = new TemplarFrontHand(4, 58);
@@ -38,6 +39,7 @@ export class Templar extends GameObjectClass {
   }
 
   private async onGameOver() {
+    if (this.condition !== "d") return;
     const x = this.head.x;
     const y = this.head.y;
     await tween(this.head, { targetY: y - 12 }, 100);
@@ -49,6 +51,7 @@ export class Templar extends GameObjectClass {
   }
 
   private async onTemplarAttack() {
+    if (this.condition === "d") return;
     const { isKnight, isDefender, isWizard } = GameManager.getInstance();
     if (isKnight) {
       const fCurrX = this.frontHand.x;
@@ -82,7 +85,7 @@ export class Templar extends GameObjectClass {
 
   render(): void {
     const gm = GameManager.getInstance();
-    if (gm.state === GameState.GAME_OVER && this.isOnCard) return;
+    if (gm.state === GameState.GAME_OVER && this.condition === "b") return;
     super.render();
   }
 }

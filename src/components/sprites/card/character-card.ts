@@ -261,6 +261,7 @@ class ImpactText extends SpriteClass {
 
   public async show(text: string) {
     this._text.text = text;
+    const origY = this.y;
     await Promise.all([
       tween(this._text, { opacity: 1 }, 500),
       tween(this, { opacity: 1 }, 500),
@@ -271,7 +272,7 @@ class ImpactText extends SpriteClass {
       tween(this._text, { opacity: 0 }, 300),
       tween(this, { opacity: 0 }, 300),
     ]);
-    this.y += 10;
+    this.y = origY;
   }
   public reset() {
     this.opacity = 0;

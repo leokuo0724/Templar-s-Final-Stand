@@ -49,7 +49,7 @@ export class InfoPanel extends GameObjectClass {
 
     this.addChild([
       bg,
-      new Templar({ x: 16, y: 62 }),
+      new Templar({ x: 16, y: 62, condition: "i" }),
       new ItemPanel(120, 46),
       this.classText,
       this.infoText,

@@ -4,6 +4,7 @@ import { GameState, GameManager } from "../../managers/game-manager";
 import { EVENT } from "../../constants/event";
 import { FONT } from "../../constants/text";
 import { CustomButton } from "./shared-ui";
+import { Templar } from "../sprites/templar";
 
 export class GameOverDialog extends SpriteClass {
   private descText: Text;
@@ -14,7 +15,7 @@ export class GameOverDialog extends SpriteClass {
     super({
       width,
       height,
-      opacity: 0.5,
+      opacity: 0.8,
       color: COLOR.DARK_6,
     });
 
@@ -44,7 +45,13 @@ export class GameOverDialog extends SpriteClass {
       font: `16px ${FONT}`,
     });
     this.button = new CustomButton(width / 2, height / 2 + 50, "Restart");
-    this.addChild([wrapper, title, this.descText, this.button]);
+    this.addChild([
+      wrapper,
+      title,
+      this.descText,
+      this.button,
+      new Templar({ x: width / 2 - 32, y: height / 2 - 212, condition: "d" }),
+    ]);
 
     on(EVENT.GAME_OVER, this.show.bind(this));
   }
