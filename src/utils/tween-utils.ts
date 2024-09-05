@@ -6,6 +6,7 @@ export function tween(
     targetX?: number;
     targetY?: number;
     opacity?: number;
+    scale?: number;
   },
   duration: number,
   delay: number = 0
@@ -18,6 +19,8 @@ export function tween(
     const stepY = targetY === undefined ? 0 : (targetY - obj.y) / steps;
     const stepOpacity =
       opacity === undefined ? 0 : (opacity - obj.opacity) / steps;
+    const stepScale =
+      config.scale === undefined ? 0 : (config.scale - obj.scaleX) / steps;
     let currentStep = 0;
 
     function step() {
@@ -26,12 +29,16 @@ export function tween(
         obj.y += stepY;
         obj.opacity += stepOpacity;
         currentStep++;
+        obj.scaleX += stepScale;
+        obj.scaleY += stepScale;
         setTimeout(step, duration / steps);
       } else {
         // Ensure final positions are exact
         obj.x = targetX === undefined ? obj.x : targetX;
         obj.y = targetY === undefined ? obj.y : targetY;
         obj.opacity = opacity === undefined ? obj.opacity : opacity;
+        obj.scaleX = config.scale === undefined ? obj.scaleX : config.scale;
+        obj.scaleY = config.scale === undefined ? obj.scaleY : config.scale;
 
         // Wait for the delay period before resolving the promise
         setTimeout(resolve, delay);

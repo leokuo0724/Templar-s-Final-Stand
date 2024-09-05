@@ -1,4 +1,4 @@
-import { emit, GameObject, Sprite, SpriteClass, Text } from "kontra";
+import { emit, Sprite, SpriteClass, Text } from "kontra";
 import { SwordIcon } from "../icons/sword-icon";
 import { BaseCard } from "./base-card";
 import { Belongs, CardType } from "./type";
@@ -18,6 +18,7 @@ import { delay } from "../../../utils/time-utils";
 import { EVENT } from "../../../constants/event";
 import { GameManager } from "../../../managers/game-manager";
 import { GRID_SIZE } from "../../../constants/size";
+import { attackSFX, makeUpgradeSFX, negativeSFX } from "../../../audios/sfx";
 
 type CharacterCardProps = {
   type: CardType;
@@ -126,7 +127,7 @@ export abstract class CharacterCard extends BaseCard {
       );
     }
     if (this.type === CardType.TEMPLAR) emit(EVENT.TEMPLAR_ATTACK);
-    zzfx(...[3, , 179, , 0.03, 0.06, , 2.8, , , , , , 0.5, 25, , , 0.46, 0.05]);
+    zzfx(...attackSFX);
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
 
     const counterDirection = () => {
@@ -237,7 +238,7 @@ export abstract class CharacterCard extends BaseCard {
     this.impactText.reset();
   }
 
-  public applyBuff(buff: OptionalCharacterProps) {
+  public applyBuff(buff: OptionalCharacterProps, shouldPlay: boolean = true) {
     this.updateHealth(buff.health || 0);
     this.updateShield(buff.shield || 0);
     this.updateAttack(buff.attack || 0);
@@ -249,10 +250,25 @@ export abstract class CharacterCard extends BaseCard {
     this.attackType = buff.attackType || this.attackType;
     this.hitBackAttack += buff.hitBackAttack || 0;
 
-    if (this.type === CardType.TEMPLAR) emit(EVENT.UPDATE_TEMPLAR_INFO, this);
-
-    // TODO: show buff effect
+    if (this.type === CardType.TEMPLAR) {
+      emit(EVENT.UPDATE_TEMPLAR_INFO, this);
+      if (shouldPlay) {
+        const isBuff = checkIfBuff(buff);
+        emit(EVENT.TEMPLAR_BUFF_EFFECT, isBuff);
+        isBuff ? zzfx(...makeUpgradeSFX(true)) : zzfx(...negativeSFX);
+      }
+    }
   }
+}
+
+function checkIfBuff(buff: OptionalCharacterProps): boolean {
+  for (const [key, value] of Object.entries(buff)) {
+    if (key === "attackDirection") return value !== AttackDirection.FRONT;
+    if (key === "attackType") return value !== AttackType.NORMAL;
+    if (typeof value !== "number") throw new Error("Invalid buff");
+    return value > 0;
+  }
+  return false;
 }
 
 class ImpactText extends SpriteClass {

@@ -5,6 +5,7 @@ import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
 import { EVENT } from "../../constants/event";
 import { GameManager, GameState } from "../../managers/game-manager";
+import { Arrow } from "./particles";
 
 type TemplarCondition = "b" | "i" | "d";
 type TemplarProps = {
@@ -19,6 +20,8 @@ export class Templar extends GameObjectClass {
   private backHand: TemplarBackHand;
   private condition: TemplarCondition;
   private isPlayingGameOver: boolean = false;
+  private upArrow: Arrow;
+  private downArrow: Arrow;
 
   constructor({ x, y, condition }: TemplarProps) {
     super({ x, y });
@@ -27,16 +30,26 @@ export class Templar extends GameObjectClass {
     this.backHand = new TemplarBackHand(46, 60);
     this.head = new TemplarHead(14, 2);
     this.frontHand = new TemplarFrontHand(4, 58);
+    this.upArrow = new Arrow(24, 30);
+    this.downArrow = new Arrow(24, 30, "d");
+
     this.addChild([
       this.backHand,
       new TemplarBody(0, 32),
       new TemplarShoes(11, 101),
       this.head,
       this.frontHand,
+      this.upArrow,
+      this.downArrow,
     ]);
 
     on(EVENT.TEMPLAR_ATTACK, this.onTemplarAttack.bind(this));
     on(EVENT.GAME_OVER, this.onGameOver.bind(this));
+    on(EVENT.TEMPLAR_BUFF_EFFECT, this.onBuffEffect.bind(this));
+  }
+
+  private async onBuffEffect(isBuff: boolean) {
+    (isBuff ? this.upArrow : this.downArrow).play();
   }
 
   private async onGameOver() {

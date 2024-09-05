@@ -13,6 +13,8 @@ import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
 import { AttackDirection, AttackType } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
+import { zzfx } from "../../audios/zzfx";
+import { makeUpgradeSFX } from "../../audios/sfx";
 
 type BattleInfo = {
   attacker: CharacterCard;
@@ -189,6 +191,7 @@ export class Board extends GameObjectClass {
             if (isTemplarEquip || isItemUpgrade) {
               isTemplarEquip && card.applyBuff(occupiedCard.buff);
               isItemUpgrade && card.upgrade(occupiedCard as ItemCard);
+              isItemUpgrade && zzfx(...makeUpgradeSFX(false));
               if (
                 potionAttackEnabled &&
                 occupiedCard.type === CardType.POTION &&
@@ -420,7 +423,7 @@ export class Board extends GameObjectClass {
             debuff[key] = (value as number) * -1;
           }
         });
-        this.templarCard.applyBuff(debuff);
+        this.templarCard.applyBuff(debuff, false);
         this.templarCard.updateWeight(-item.weight);
       }
     }

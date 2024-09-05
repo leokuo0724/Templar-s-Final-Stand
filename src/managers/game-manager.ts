@@ -6,6 +6,7 @@ import { EnemyCard } from "../components/sprites/card/enemy-card";
 import { zzfx, zzfxM, zzfxP } from "../audios/zzfx";
 import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";
+import { negativeSFX, swipeSFX } from "../audios/sfx";
 
 export enum GameState {
   INIT,
@@ -76,7 +77,6 @@ export class GameManager {
   }
 
   private playBGM() {
-    // TODO: click to play music
     // @ts-ignore
     this.music = zzfxP(...zzfxM(...bgm));
     this.music.loop = true;
@@ -86,7 +86,7 @@ export class GameManager {
     if (this.state !== GameState.IDLE) return;
     this.moveCount++;
     this.state = GameState.SWIPING;
-    zzfx(...[3, , 576, , , 0.007, 1, 0.6, , , -273, , , , , , , 0.64]);
+    zzfx(...swipeSFX);
     emit(EVENT.SWIPE, direction);
   }
 
@@ -114,7 +114,7 @@ export class GameManager {
   public gameOver() {
     this.state = GameState.GAME_OVER;
     this.music?.stop();
-    zzfx(...[, 0, 350, , 0.3, 0.4, , 3, , , -65, , 0.1, , , , , 0.7]);
+    zzfx(...negativeSFX);
     emit(EVENT.GAME_OVER);
   }
 }
