@@ -75,6 +75,7 @@ export class EnemyCard extends CharacterCard {
     this.applyBuff(buff);
     this.descriptionText.text = desc;
     this.refreshText();
+    this.damageBg.opacity = 0;
   }
 }
 

@@ -1,4 +1,4 @@
-import { emit, SpriteClass, Text } from "kontra";
+import { emit, GameObject, Sprite, SpriteClass, Text } from "kontra";
 import { SwordIcon } from "../icons/sword-icon";
 import { BaseCard } from "./base-card";
 import { Belongs, CardType } from "./type";
@@ -17,6 +17,7 @@ import { zzfx } from "../../../audios/zzfx";
 import { delay } from "../../../utils/time-utils";
 import { EVENT } from "../../../constants/event";
 import { GameManager } from "../../../managers/game-manager";
+import { GRID_SIZE } from "../../../constants/size";
 
 type CharacterCardProps = {
   type: CardType;
@@ -26,6 +27,7 @@ type CharacterCardProps = {
 };
 
 export abstract class CharacterCard extends BaseCard {
+  protected damageBg: Sprite;
   protected attackText: Text;
   protected healthText: Text;
   protected shieldText: Text;
@@ -47,6 +49,15 @@ export abstract class CharacterCard extends BaseCard {
 
     this.color = COLOR.DARK_6;
 
+    this.damageBg = Sprite({
+      x: 0,
+      y: 0,
+      width: GRID_SIZE,
+      height: GRID_SIZE,
+      anchor: { x: 0.5, y: 0.5 },
+      color: COLOR.WHITE_6,
+      opacity: 0,
+    });
     this.attackText = Text({
       text: `${this.attack}`,
       x: 42,
@@ -67,6 +78,7 @@ export abstract class CharacterCard extends BaseCard {
     });
     this.impactText = new ImpactText(0);
     this.main.addChild([
+      this.damageBg,
       new SwordIcon(20, 30),
       this.attackText,
       new HeartIcon(-46, -46),
@@ -135,6 +147,14 @@ export abstract class CharacterCard extends BaseCard {
     ]);
   }
 
+  private async playDamage() {
+    for (let i = 0; i < 2; i++) {
+      await tween(this.damageBg, { opacity: 0.5 }, 80);
+      await tween(this.damageBg, { opacity: 0 }, 0);
+    }
+    this.damageBg.opacity = 0;
+  }
+
   public async applyDamage(
     attacker: CharacterCard,
     counterDirection: Direction,
@@ -150,6 +170,7 @@ export abstract class CharacterCard extends BaseCard {
         await this.execAttack(counterDirection, attacker, true, false);
       return;
     }
+    this.playDamage();
     const isCritical = Math.random() <= criticalRate;
     const damage = isHitBack
       ? hitBackAttack

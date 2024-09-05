@@ -18,6 +18,7 @@ export class Templar extends GameObjectClass {
   private frontHand: TemplarFrontHand;
   private backHand: TemplarBackHand;
   private condition: TemplarCondition;
+  private isPlayingGameOver: boolean = false;
 
   constructor({ x, y, condition }: TemplarProps) {
     super({ x, y });
@@ -39,6 +40,8 @@ export class Templar extends GameObjectClass {
   }
 
   private async onGameOver() {
+    if (this.isPlayingGameOver) return;
+    this.isPlayingGameOver = true;
     if (this.condition !== "d") return;
     const x = this.head.x;
     const y = this.head.y;
