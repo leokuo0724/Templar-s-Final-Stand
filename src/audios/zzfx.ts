@@ -1,10 +1,14 @@
 // @ts-nocheck
 
+let zzfxX;
+
 // zzfx() - the universal entry point -- returns a AudioBufferSourceNode
 export const zzfx = (...t) => zzfxP(zzfxG(...t));
 
 // zzfxP() - the sound player -- returns a AudioBufferSourceNode
 export const zzfxP = (...t) => {
+  // zzfxX - the common audio context
+  if (!zzfxX) zzfxX = new AudioContext();
   let e = zzfxX.createBufferSource(),
     f = zzfxX.createBuffer(t.length, t[0].length, zzfxR);
   t.map((d, i) => f.getChannelData(i).set(d)),
@@ -104,9 +108,6 @@ const zzfxV = 0.3;
 
 // zzfxR - global sample rate
 const zzfxR = 44100;
-
-// zzfxX - the common audio context
-const zzfxX = new (window.AudioContext || window.webkitAudioContext)();
 
 //! ZzFXM (v2.0.3) | (C) Keith Clark | MIT | https://github.com/keithclark/ZzFXM
 export const zzfxM = (n, f, t, e = 125) => {

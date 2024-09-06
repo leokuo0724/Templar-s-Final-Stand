@@ -79,7 +79,7 @@ export class GameManager {
   private playBGM() {
     // @ts-ignore
     this.music = zzfxP(...zzfxM(...bgm));
-    this.music.loop = true;
+    if (this.music) this.music.loop = true;
   }
 
   private swipe(direction: Direction) {
