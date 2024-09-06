@@ -5,7 +5,7 @@ import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
 import { EVENT } from "../../constants/event";
 import { GameManager, GameState } from "../../managers/game-manager";
-import { Arrow } from "./particles";
+import { Arrow, Drop } from "./particles";
 
 type TemplarCondition = "b" | "i" | "d";
 type TemplarProps = {
@@ -22,6 +22,7 @@ export class Templar extends GameObjectClass {
   private isPlayingGameOver: boolean = false;
   private upArrow: Arrow;
   private downArrow: Arrow;
+  private drop: Drop;
 
   constructor({ x, y, condition }: TemplarProps) {
     super({ x, y });
@@ -32,12 +33,14 @@ export class Templar extends GameObjectClass {
     this.frontHand = new TemplarFrontHand(4, 58);
     this.upArrow = new Arrow(24, 30);
     this.downArrow = new Arrow(24, 30, "d");
+    this.drop = new Drop(16, 0);
 
     this.addChild([
       this.backHand,
       new TemplarBody(0, 32),
       new TemplarShoes(11, 101),
       this.head,
+      this.drop,
       this.frontHand,
       this.upArrow,
       this.downArrow,
@@ -46,6 +49,11 @@ export class Templar extends GameObjectClass {
     on(EVENT.TEMPLAR_ATTACK, this.onTemplarAttack.bind(this));
     on(EVENT.GAME_OVER, this.onGameOver.bind(this));
     on(EVENT.TEMPLAR_BUFF_EFFECT, this.onBuffEffect.bind(this));
+    on(EVENT.UPDATE_TEMPLAR_WEIGHT, this.onOverweight.bind(this));
+  }
+
+  private async onOverweight(isOverweight: boolean) {
+    isOverweight ? this.drop.start() : this.drop.stop();
   }
 
   private async onBuffEffect(isBuff: boolean) {

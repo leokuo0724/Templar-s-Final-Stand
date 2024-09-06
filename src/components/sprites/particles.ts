@@ -46,3 +46,37 @@ export class Arrow extends GameObjectClass {
     );
   }
 }
+
+export class Drop extends GameObjectClass {
+  private started: boolean = false;
+  private isPlaying: boolean = false;
+
+  constructor(x: number, y: number) {
+    super({ x, y });
+    this.opacity = 0;
+  }
+  private async loop() {
+    while (this.started) {
+      if (this.isPlaying) return;
+      this.isPlaying = true;
+      const currY = this.y;
+      await Promise.all([
+        tween(this, { opacity: 1 }, 200),
+        tween(this, { targetY: currY + 16 }, 400),
+      ]);
+      await tween(this, { opacity: 0 }, 600);
+      this.y = currY;
+      this.isPlaying = false;
+    }
+  }
+  public start() {
+    this.started = true;
+    this.loop();
+  }
+  public stop() {
+    this.started = false;
+  }
+  draw(): void {
+    drawPolygon(this.context, "4 0 0 12 4 17 8 12 4 0", COLOR.BLUE_7);
+  }
+}

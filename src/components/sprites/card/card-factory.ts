@@ -59,7 +59,7 @@ export class CardFactory {
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: gm.isKnight ? 3 : 5,
+          weight: gm.isKnight ? 4 : 5,
         });
       case CardType.SHIELD:
         return new ItemCard({
