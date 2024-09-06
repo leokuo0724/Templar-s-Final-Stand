@@ -1,56 +1,22 @@
-import { getCanvas, on, Sprite, SpriteClass, Text } from "kontra";
-import { COLOR } from "../../constants/color";
+import { getCanvas, on } from "kontra";
 import { GameState, GameManager } from "../../managers/game-manager";
 import { EVENT } from "../../constants/event";
-import { FONT } from "../../constants/text";
-import { CustomButton } from "./shared-ui";
+import { CustomButton, OverlayDialog } from "./shared-ui";
 import { Templar } from "../sprites/templar";
 
-export class GameOverDialog extends SpriteClass {
-  private descText: Text;
+export class GameOverDialog extends OverlayDialog {
   private button: CustomButton;
 
   constructor() {
-    const { width, height } = getCanvas();
-    super({
-      width,
-      height,
-      opacity: 0.8,
-      color: COLOR.DARK_6,
-    });
+    const { width: w, height: h } = getCanvas();
+    super(280, 180);
+    this.titleText.text = "Game Over";
+    this.descText.text = "";
+    this.button = new CustomButton(w / 2, h / 2 + 50, "Restart");
 
-    const wrapper = Sprite({
-      x: width / 2,
-      y: height / 2,
-      width: 280,
-      height: 180,
-      anchor: { x: 0.5, y: 0.5 },
-      color: COLOR.YELLOW_6,
-    });
-    const title = Text({
-      text: "Game Over",
-      x: width / 2,
-      y: height / 2 - 48,
-      anchor: { x: 0.5, y: 0.5 },
-      color: COLOR.BROWN_7,
-      font: `24px ${FONT}`,
-    });
-    this.descText = Text({
-      text: "",
-      x: width / 2,
-      y: height / 2,
-      anchor: { x: 0.5, y: 0.5 },
-      textAlign: "center",
-      color: COLOR.BROWN_7,
-      font: `16px ${FONT}`,
-    });
-    this.button = new CustomButton(width / 2, height / 2 + 50, "Restart");
     this.addChild([
-      wrapper,
-      title,
-      this.descText,
       this.button,
-      new Templar({ x: width / 2 - 32, y: height / 2 - 212, condition: "d" }),
+      new Templar({ x: w / 2 - 32, y: h / 2 - 212, condition: "d" }),
     ]);
 
     on(EVENT.GAME_OVER, this.show.bind(this));

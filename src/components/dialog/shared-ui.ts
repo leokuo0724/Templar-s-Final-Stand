@@ -2,9 +2,6 @@ import { getCanvas, Sprite, SpriteClass, Text } from "kontra";
 import { COLOR } from "../../constants/color";
 import { FONT } from "../../constants/text";
 
-/**
- * @deprecated
- */
 export class OverlayDialog extends SpriteClass {
   protected titleText: Text;
   protected descText: Text;

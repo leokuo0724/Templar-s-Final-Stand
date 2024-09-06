@@ -1,58 +1,24 @@
-import { getCanvas, Sprite, SpriteClass, Text } from "kontra";
-import { COLOR } from "../../constants/color";
-import { FONT } from "../../constants/text";
-import { CustomButton } from "./shared-ui";
+import { getCanvas } from "kontra";
+import { CustomButton, OverlayDialog } from "./shared-ui";
 import {
   GameManager,
   GameState,
   TemplarClass,
 } from "../../managers/game-manager";
 
-export class GameStartDialog extends SpriteClass {
+export class GameStartDialog extends OverlayDialog {
   constructor() {
-    const { width, height } = getCanvas();
-    super({
-      width,
-      height,
-      opacity: 0.8,
-      color: COLOR.DARK_6,
-    });
+    super(360, 180);
+    this.titleText.text = "Pick a Class";
+    this.descText.text = "Pick a class to fight against enemies";
 
-    const wrapper = Sprite({
-      x: width / 2,
-      y: height / 2,
-      width: 360,
-      height: 180,
-      anchor: { x: 0.5, y: 0.5 },
-      color: COLOR.YELLOW_6,
-    });
-    const title = Text({
-      text: "Pick a Class",
-      x: width / 2,
-      y: height / 2 - 52,
-      anchor: { x: 0.5, y: 0.5 },
-      color: COLOR.BROWN_7,
-      font: `24px ${FONT}`,
-    });
-    const descText = Text({
-      text: "Pick a class to fight against enemies",
-      x: width / 2,
-      y: height / 2,
-      anchor: { x: 0.5, y: 0.5 },
-      color: COLOR.BROWN_7,
-      font: `16px ${FONT}`,
-    });
-
+    const { width: w, height: h } = getCanvas();
     const gm = GameManager.getInstance();
-    const wizardButton = new CustomButton(
-      width / 2 - 108,
-      height / 2 + 52,
-      "Wizard"
-    );
-    const knightButton = new CustomButton(width / 2, height / 2 + 52, "Knight");
+    const wizardButton = new CustomButton(w / 2 - 108, h / 2 + 52, "Wizard");
+    const knightButton = new CustomButton(w / 2, h / 2 + 52, "Knight");
     const defenderButton = new CustomButton(
-      width / 2 + 108,
-      height / 2 + 52,
+      w / 2 + 108,
+      h / 2 + 52,
       "Defender"
     );
     const removeAllEvents = () => {
@@ -74,14 +40,7 @@ export class GameStartDialog extends SpriteClass {
       removeAllEvents();
     });
 
-    this.addChild([
-      wrapper,
-      title,
-      descText,
-      wizardButton,
-      knightButton,
-      defenderButton,
-    ]);
+    this.addChild([wizardButton, knightButton, defenderButton]);
   }
 
   public render(): void {
