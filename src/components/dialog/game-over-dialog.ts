@@ -3,6 +3,7 @@ import { GameState, GameManager } from "../../managers/game-manager";
 import { EVENT } from "../../constants/event";
 import { CustomButton, OverlayDialog } from "./shared-ui";
 import { Templar } from "../sprites/templar";
+import { LOCAL_STORAGE_KEY } from "../../constants/localstorage";
 
 export class GameOverDialog extends OverlayDialog {
   private button: CustomButton;
@@ -26,6 +27,7 @@ export class GameOverDialog extends OverlayDialog {
     const gm = GameManager.getInstance();
     this.descText.text = `You did a great job!\nSurvived for ${gm.moveCount} moves!`;
     this.button.bindClick(() => window.location.reload());
+    localStorage.setItem(LOCAL_STORAGE_KEY.PLAYED, "t");
   }
 
   public render() {

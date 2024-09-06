@@ -45,10 +45,11 @@ export class OverlayDialog extends SpriteClass {
 }
 
 export class CustomButton extends SpriteClass {
+  public isDisabled: boolean = false;
   private text: Text;
   private canvasCallback: ((event: PointerEvent) => void) | null = null;
 
-  constructor(x: number, y: number, text: string) {
+  constructor(x: number, y: number, text: string, isDisabled: boolean = false) {
     super({
       x,
       y,
@@ -56,7 +57,9 @@ export class CustomButton extends SpriteClass {
       height: 28,
       color: COLOR.BROWN_7,
       anchor: { x: 0.5, y: 0.5 },
+      opacity: isDisabled ? 0.3 : 1,
     });
+    this.isDisabled = isDisabled;
     this.text = Text({
       text,
       anchor: { x: 0.5, y: 0.5 },
@@ -67,6 +70,7 @@ export class CustomButton extends SpriteClass {
   }
 
   public bindClick(callback: () => void) {
+    if (this.isDisabled) return;
     const canvas = getCanvas();
     this.canvasCallback = (event: PointerEvent) => {
       const { offsetLeft, offsetTop } = event.target as HTMLCanvasElement;
