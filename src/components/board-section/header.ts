@@ -1,23 +1,32 @@
-import { on, Sprite, Text, TextClass } from "kontra";
+import {
+  GameObjectClass,
+  getCanvas,
+  on,
+  Sprite,
+  Text,
+  TextClass,
+} from "kontra";
 import { COLOR } from "../../constants/color";
 import { EVENT } from "../../constants/event";
 import { GameManager } from "../../managers/game-manager";
 import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
 
-export class Header extends TextClass {
-  constructor(x: number, y: number) {
-    super({
+export class Header extends GameObjectClass {
+  constructor() {
+    super();
+    const { width, height } = getCanvas();
+    const title = Text({
       text: "MOVE 0",
-      x,
-      y,
+      x: width / 2,
+      y: 46,
       color: COLOR.GRAY_7,
       font: "36px Gill Sans",
       anchor: { x: 0.5, y: 0.5 },
     });
     const enemyIndicator = Sprite({
-      x: 0,
-      y: 304,
+      x: width / 2,
+      y: height / 2,
       color: COLOR.BROWN_8,
       width: 600,
       height: 100,
@@ -32,11 +41,11 @@ export class Header extends TextClass {
       opacity: 0,
     });
     enemyIndicator.addChild(enemyText);
-    this.addChild(enemyIndicator);
+    this.addChild(title, enemyIndicator);
 
     on(EVENT.SWIPE, async () => {
       const moveCount = GameManager.getInstance().moveCount;
-      this.text = `MOVE ${moveCount}`;
+      title.text = `MOVE ${moveCount}`;
       const isThirteen = moveCount % 13 === 0 || moveCount >= 78;
       if (isThirteen) {
         this.color = COLOR.RED_7;

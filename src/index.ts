@@ -24,7 +24,7 @@ function resize() {
 
 const infoPanel = new InfoPanel(0, canvas.height - INFO_PANEL_HEIGHT);
 const board = new Board((canvas.width - BOARD_SIZE) / 2, 84);
-const header = new Header(canvas.width / 2, 46);
+const header = new Header();
 const gameOverDialog = new GameOverDialog();
 const gameStartDialog = new GameStartDialog();
 
