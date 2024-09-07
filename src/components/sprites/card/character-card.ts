@@ -39,9 +39,9 @@ export abstract class CharacterCard extends BaseCard {
   public shield: number = 0;
   public attack: number = 0;
   public hitRate: number = 0;
-  public criticalRate: number = 0;
+  public critical: number = 0;
   public attackDirection: AttackDirection = AttackDirection.FRONT;
-  public hitBackAttack: number = 0;
+  public hitBack: number = 0;
   public attackType: string = AttackType.NORMAL;
 
   constructor({ type, x, y, belongs }: CharacterCardProps) {
@@ -163,18 +163,18 @@ export abstract class CharacterCard extends BaseCard {
     isPenetrate: boolean = false,
     wizardAttack: number = 0
   ) {
-    const { attack, hitBackAttack, hitRate, criticalRate } = attacker;
+    const { attack, hitBack, hitRate, critical } = attacker;
     const isHit = Math.random() <= hitRate;
     if (!isHit) {
       await this.impactText.show("Miss");
-      if (this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
+      if (this.hitBack > 0 && !isHitBack && !wizardAttack)
         await this.execAttack(counterDirection, attacker, true, false);
       return;
     }
     this.playDamage();
-    const isCritical = Math.random() <= criticalRate;
+    const isCritical = Math.random() <= critical;
     const damage = isHitBack
-      ? hitBackAttack
+      ? hitBack
       : wizardAttack > 0
       ? wizardAttack
       : attack;
@@ -189,7 +189,7 @@ export abstract class CharacterCard extends BaseCard {
       ? calculatedDamage
       : this.updateShield(-calculatedDamage);
     const isDead = await this.updateHealth(-remainingDamage);
-    if (!isDead && this.hitBackAttack > 0 && !isHitBack && !wizardAttack)
+    if (!isDead && this.hitBack > 0 && !isHitBack && !wizardAttack)
       await this.execAttack(counterDirection, attacker, true, false);
   }
 
@@ -222,7 +222,7 @@ export abstract class CharacterCard extends BaseCard {
     this.shieldText.text = `${this.shield}`;
     const { isDefender } = GameManager.getInstance();
     if (this.type === CardType.TEMPLAR && isDefender) {
-      this.hitBackAttack = this.shield;
+      this.hitBack = this.shield;
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
     }
     return remainingDamage;
@@ -244,11 +244,11 @@ export abstract class CharacterCard extends BaseCard {
     this.updateAttack(buff.attack || 0);
     this.hitRate += buff.hitRate || 0;
     this.hitRate = Math.max(Math.min(this.hitRate, 1), 0);
-    this.criticalRate += buff.criticalRate || 0;
-    this.criticalRate = Math.max(Math.min(this.criticalRate, 1), 0);
+    this.critical += buff.critical || 0;
+    this.critical = Math.max(Math.min(this.critical, 1), 0);
     this.attackDirection = buff.attackDirection || this.attackDirection;
     this.attackType = buff.attackType || this.attackType;
-    this.hitBackAttack += buff.hitBackAttack || 0;
+    this.hitBack += buff.hitBack || 0;
 
     if (this.type === CardType.TEMPLAR) {
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);

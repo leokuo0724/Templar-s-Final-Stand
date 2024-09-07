@@ -66,10 +66,10 @@ export class EnemyCard extends CharacterCard {
     this.hitRate = 0.8;
     this.attackDirection = AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;
-    this.hitBackAttack = 0;
+    this.hitBack = 0;
 
     const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 78;
-    this.criticalRate = isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
+    this.critical = isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
 
     // Add extra buff
     const { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));
@@ -104,7 +104,7 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
-          hitBackAttack: 3 * factor,
+          hitBack: 3 * factor,
           health: 2 * factor,
         },
         desc: `"Counterstriker"\nHit back: ${3 * factor}`,
@@ -137,7 +137,7 @@ const getEnemyBuffsAndDesc = (
     const buffs = [
       { shield: 2 * factor, health: -2 * factor },
       { health: 1 * factor, attack: Math.floor(-0.5 * factor) },
-      { criticalRate: 0.05 * factor, health: -2 * factor },
+      { critical: 0.05 * factor, health: -2 * factor },
       { attack: 1 * factor, hitRate: -0.2 },
     ];
     return buffs.map((buff) => ({ buff, desc: getEnemyPropsDescText(buff) }));

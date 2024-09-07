@@ -13,10 +13,10 @@ export type CharacterProps = {
   shield: number;
   attack: number;
   hitRate: number;
-  criticalRate: number;
+  critical: number;
   attackDirection: AttackDirection;
   attackType: AttackType;
-  hitBackAttack: number;
+  hitBack: number;
 };
 export type OptionalCharacterProps = {
   [P in keyof CharacterProps]?: CharacterProps[P];

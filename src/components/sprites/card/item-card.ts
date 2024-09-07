@@ -152,12 +152,12 @@ const getWeaponLevelBuff = (
     return { attack };
   } else if (level === 2) {
     return random < 0.6
-      ? { attack, criticalRate: 0.05 }
+      ? { attack, critical: 0.05 }
       : { attack, hitRate: 0.05 };
   } else if (level === 3) {
     return {
       attack,
-      criticalRate: 0.1,
+      critical: 0.1,
       attackType: AttackType.PENETRATE,
     };
   } else {
@@ -165,7 +165,7 @@ const getWeaponLevelBuff = (
     return {
       attack,
       attackDirection: dir,
-      hitBackAttack: 3 * factor,
+      hitBack: 3 * factor,
     };
   }
 };
@@ -193,7 +193,7 @@ const getPotionLevelBuff = (
         factor * (random > 0.65 - decreaseFactor * level ? baseVal : -baseVal),
     },
     {
-      criticalRate:
+      critical:
         factor * random > 0.95 - decreaseFactor * level ? baseRate : -baseRate,
     },
     {

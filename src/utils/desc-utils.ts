@@ -13,8 +13,8 @@ const getCharacterPropsDescText = (
   const buffTexts = Object.entries(buff).map(([key, value]) => {
     if (!value) return "";
     if (key === "attackDirection") return `range: ${value}`;
-    if (key === "attackType") return `type: ${value}`;
-    const percentageKeys = ["hitRate", "criticalRate"];
+    if (key === "attackType") return `${value}`;
+    const percentageKeys = ["hitRate", "critical"];
     if ((value as number) > 0) {
       if (!isAccurate) return `high ${key}`;
       if (percentageKeys.includes(key)) {

@@ -26,7 +26,7 @@ export class InfoPanel extends GameObjectClass {
     });
     const textProps = {
       text: "",
-      font: `12px ${FONT}`,
+      font: `13px ${FONT}`,
       color: COLOR.BROWN_7,
     };
     this.classText = Text({
@@ -81,8 +81,8 @@ export class InfoPanel extends GameObjectClass {
       `Attack: ${templarCard.attackType}`,
       `Range: ${templarCard.attackDirection}`,
       `Hit Rate: ${(templarCard.hitRate * 100).toFixed()}%`,
-      `Critical Rate: ${(templarCard.criticalRate * 100).toFixed()}%`,
-      `Hit Back: ${templarCard.hitBackAttack}`,
+      `Critical Rate: ${(templarCard.critical * 100).toFixed()}%`,
+      `Hit Back: ${templarCard.hitBack}`,
     ];
     this.infoText.text = texts.join(" | ");
   }
