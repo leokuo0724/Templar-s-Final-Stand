@@ -1,11 +1,4 @@
-import {
-  GameObjectClass,
-  getCanvas,
-  on,
-  Sprite,
-  Text,
-  TextClass,
-} from "kontra";
+import { GameObjectClass, getCanvas, on, Sprite, Text } from "kontra";
 import { COLOR } from "../../constants/color";
 import { EVENT } from "../../constants/event";
 import { GameManager } from "../../managers/game-manager";
@@ -19,7 +12,7 @@ export class Header extends GameObjectClass {
     const title = Text({
       text: "MOVE 0",
       x: width / 2,
-      y: 46,
+      y: 42,
       color: COLOR.GRAY_7,
       font: "36px Gill Sans",
       anchor: { x: 0.5, y: 0.5 },

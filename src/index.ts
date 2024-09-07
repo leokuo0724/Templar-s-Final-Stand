@@ -23,7 +23,7 @@ function resize() {
 (onresize = resize)();
 
 const infoPanel = new InfoPanel(0, canvas.height - INFO_PANEL_HEIGHT);
-const board = new Board((canvas.width - BOARD_SIZE) / 2, 84);
+const board = new Board((canvas.width - BOARD_SIZE) / 2, 76);
 const header = new Header();
 const gameOverDialog = new GameOverDialog();
 const gameStartDialog = new GameStartDialog();

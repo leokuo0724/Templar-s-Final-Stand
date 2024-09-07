@@ -7,11 +7,12 @@ import { TemplarCard } from "../sprites/card/templar-card";
 import { FONT } from "../../constants/text";
 import { TemplarClass } from "../../managers/game-manager";
 
-export const INFO_PANEL_HEIGHT = 200;
+export const INFO_PANEL_HEIGHT = 210;
 
 export class InfoPanel extends GameObjectClass {
   private classText: Text;
   private infoText: Text;
+  private overweight: Sprite;
   private overweightText: Text;
 
   constructor(x: number, y: number) {
@@ -26,34 +27,45 @@ export class InfoPanel extends GameObjectClass {
     });
     const textProps = {
       text: "",
-      font: `13px ${FONT}`,
+      font: `14px ${FONT}`,
       color: COLOR.BROWN_7,
     };
     this.classText = Text({
-      x: 120,
-      y: 10,
+      x: 116,
+      y: 12,
+      strokeColor: COLOR.BROWN_8,
+      lineWidth: 0.8,
       ...textProps,
     });
     this.infoText = Text({
-      x: 120,
-      y: 28,
+      x: 116,
+      y: 34,
       ...textProps,
+    });
+    const overweightConfig = { anchor: { x: 0.5, y: 0.5 }, opacity: 0 };
+    this.overweight = Sprite({
+      x: 56,
+      y: 28,
+      width: 100,
+      height: 34,
+      color: COLOR.RED_7,
+      ...overweightConfig,
     });
     this.overweightText = Text({
-      x: 56,
-      y: 34,
-      anchor: { x: 0.5, y: 0.5 },
       ...textProps,
-      color: COLOR.BROWN_8,
+      color: COLOR.WHITE_6,
+      text: "Overweight!",
+      ...overweightConfig,
     });
+    this.overweight.addChild(this.overweightText);
 
     this.addChild([
       bg,
-      new Templar({ x: 16, y: 62, condition: "i" }),
-      new ItemPanel(120, 46),
+      new Templar({ x: 16, y: 74, condition: "i" }),
+      new ItemPanel(116, 54),
       this.classText,
       this.infoText,
-      this.overweightText,
+      this.overweight,
     ]);
 
     on(EVENT.UPDATE_TEMPLAR_CLASS, this.updateClassText.bind(this));
@@ -65,7 +77,7 @@ export class InfoPanel extends GameObjectClass {
     switch (cls) {
       case TemplarClass.WIZARD:
         this.classText.text =
-          "Wizard: low attack, low hit rate, equip or combine potions to attack all enemies";
+          "Wizard: low attack and hit rate, equip/combine potions to attack all";
         break;
       case TemplarClass.KNIGHT:
         this.classText.text = "Knight: everything is normal but balanced";
@@ -78,8 +90,7 @@ export class InfoPanel extends GameObjectClass {
 
   private updateTemplarInfo(templarCard: TemplarCard) {
     const texts = [
-      `Attack: ${templarCard.attackType}`,
-      `Range: ${templarCard.attackDirection}`,
+      `Attack: ${templarCard.attackType}, ${templarCard.attackDirection}`,
       `Hit Rate: ${(templarCard.hitRate * 100).toFixed()}%`,
       `Critical Rate: ${(templarCard.critical * 100).toFixed()}%`,
       `Hit Back: ${templarCard.hitBack}`,
@@ -87,6 +98,7 @@ export class InfoPanel extends GameObjectClass {
     this.infoText.text = texts.join(" | ");
   }
   private updateOverweightText(isOverweight: boolean) {
-    this.overweightText.text = isOverweight ? "Overweight!" : "";
+    this.overweight.opacity = isOverweight ? 1 : 0;
+    this.overweightText.opacity = isOverweight ? 1 : 0;
   }
 }
