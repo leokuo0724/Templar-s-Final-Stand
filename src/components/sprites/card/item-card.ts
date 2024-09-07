@@ -138,11 +138,6 @@ const getItemWeight = (type: CardType, level: number) => {
   const { cls } = GameManager.getInstance();
   const baseWeight =
     BASE_WEIGHT_MAP[cls!][type as CardType.WEAPON | CardType.SHIELD];
-  // if (type === CardType.WEAPON) {
-  //   return (isKnight ? 1 : 3) + levelFactor;
-  // } else {
-  //   return (isWizard ? 6 : 3) + levelFactor;
-  // }
   return baseWeight + level;
 };
 
@@ -195,9 +190,7 @@ const getPotionLevelBuff = (
   const buffs: OptionalCharacterProps[] = [
     {
       health:
-        factor *
-        // (random > (isDefender ? 0.45 : 0.65) - decreaseFactor * level
-        (random > 0.65 - decreaseFactor * level ? baseVal : -baseVal),
+        factor * (random > 0.65 - decreaseFactor * level ? baseVal : -baseVal),
     },
     {
       criticalRate:

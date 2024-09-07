@@ -29,7 +29,6 @@ export class CardFactory {
       const itemOrder = [
         CardType.ENEMY,
         isDefender ? CardType.SHIELD : CardType.WEAPON,
-        // isDefender ? CardType.SHIELD : CardType.POTION,
         randomItem,
         isKnight ? CardType.WEAPON : CardType.POTION,
         isDefender ? CardType.WEAPON : randomItem,

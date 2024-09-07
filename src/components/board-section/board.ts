@@ -414,10 +414,18 @@ export class Board extends GameObjectClass {
         deprecated.push(item);
         const debuff: any = {};
         Object.entries(item.buff).forEach(([key, value]) => {
-          if (key === "attackDirection") {
-            debuff[key] = AttackDirection.FRONT;
-          } else if (key === "attackType") {
-            debuff[key] = AttackType.NORMAL;
+          const ad = "attackDirection";
+          const at = "attackType";
+          if (key === ad) {
+            const remain = gm.currentItems.filter(
+              (i) => !!i.buff[ad] && i.duration > 0
+            )[0];
+            debuff[key] = remain ? remain.buff[ad] : AttackDirection.FRONT;
+          } else if (key === at) {
+            const remain = gm.currentItems.filter(
+              (i) => !!i.buff[at] && i.duration > 0
+            )[0];
+            debuff[key] = remain ? remain.buff[at] : AttackType.NORMAL;
           } else if (key !== "shield") {
             debuff[key] = (value as number) * -1;
           }
