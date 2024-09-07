@@ -29,6 +29,7 @@ export class CardFactory {
       const itemOrder = [
         CardType.ENEMY,
         isDefender ? CardType.SHIELD : CardType.WEAPON,
+        // isDefender ? CardType.SHIELD : CardType.POTION,
         randomItem,
         isKnight ? CardType.WEAPON : CardType.POTION,
         isDefender ? CardType.WEAPON : randomItem,
@@ -48,13 +49,6 @@ export class CardFactory {
       case CardType.TEMPLAR:
         return new TemplarCard({ x, y });
       case CardType.ENEMY:
-        if (gm.reusableEnemyCards.length > 2) {
-          const card = gm.reusableEnemyCards.shift()!;
-          card.reset();
-          card.x = x;
-          card.y = y;
-          return card;
-        }
         return new EnemyCard({ x, y });
       case CardType.WEAPON:
         return new ItemCard({

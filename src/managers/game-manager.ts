@@ -31,7 +31,6 @@ export class GameManager {
 
   private music: AudioBufferSourceNode | null = null;
   public currentItems: ItemCard[] = [];
-  public reusableEnemyCards: EnemyCard[] = [];
   public cls: TemplarClass | null = null;
   public get isWizard() {
     return this.cls === TemplarClass.WIZARD;
@@ -60,7 +59,6 @@ export class GameManager {
       if (this.state === GameState.GAME_OVER) return;
       this.state = GameState.IDLE;
     });
-    on(EVENT.ENEMY_DEAD, this.onEnemyDead.bind(this));
   }
   static getInstance() {
     if (!GameManager.instance) {
@@ -104,11 +102,6 @@ export class GameManager {
     );
     this.currentItems = newCurrentItem;
     emit(EVENT.ITEMS_UPDATED, [], itemCards);
-  }
-
-  public onEnemyDead(card: EnemyCard) {
-    this.reusableEnemyCards.push(card);
-    emit(EVENT.REMOVE_ENEMY_DEAD, card);
   }
 
   public gameOver() {

@@ -70,7 +70,7 @@ export class Board extends GameObjectClass {
     this.occupiedInfo[2][2] = this.templarCard;
     this.spawnCards();
 
-    on(EVENT.REMOVE_ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
+    on(EVENT.ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
@@ -202,7 +202,6 @@ export class Board extends GameObjectClass {
               await occupiedCard.equip();
               this.occupiedInfo[nextJ][nextI] = null;
 
-              // TODO: anim effect
               if (
                 card instanceof TemplarCard &&
                 occupiedCard.type !== CardType.POTION

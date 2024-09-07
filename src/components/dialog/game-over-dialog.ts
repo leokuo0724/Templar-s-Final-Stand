@@ -25,7 +25,12 @@ export class GameOverDialog extends OverlayDialog {
 
   private show() {
     const gm = GameManager.getInstance();
-    this.descText.text = `You did a great job!\nSurvived for ${gm.moveCount} moves!`;
+    let bestScore = localStorage.getItem(LOCAL_STORAGE_KEY.BEST_SCORE);
+    if (gm.moveCount > parseInt(bestScore ?? "0")) {
+      bestScore = `${gm.moveCount}`;
+      localStorage.setItem(LOCAL_STORAGE_KEY.BEST_SCORE, bestScore);
+    }
+    this.descText.text = `Survived for ${gm.moveCount} moves!\nBest Score: ${bestScore}`;
     this.button.bindClick(() => window.location.reload());
     localStorage.setItem(LOCAL_STORAGE_KEY.PLAYED, "t");
   }

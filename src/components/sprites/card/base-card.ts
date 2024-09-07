@@ -69,7 +69,6 @@ export abstract class BaseCard extends SpriteClass {
     this.isActive = true;
   }
   public reset() {
-    // for reusing
     this.isActive = true;
     this.setChildrenOpacity(1, 0);
     this.setScale(0);
