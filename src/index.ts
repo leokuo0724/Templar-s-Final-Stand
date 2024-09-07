@@ -8,6 +8,7 @@ import { GameManager } from "./managers/game-manager";
 import { Header } from "./components/board-section/header";
 import { GameOverDialog } from "./components/dialog/game-over-dialog";
 import { GameStartDialog } from "./components/dialog/game-start-dialog";
+import { PrologueDialog } from "./components/dialog/prologue-dialog";
 
 const { canvas } = init();
 
@@ -27,6 +28,7 @@ const board = new Board((canvas.width - BOARD_SIZE) / 2, 76);
 const header = new Header();
 const gameOverDialog = new GameOverDialog();
 const gameStartDialog = new GameStartDialog();
+const prologueDialog = new PrologueDialog();
 
 const loop = GameLoop({
   update: () => {
@@ -34,6 +36,7 @@ const loop = GameLoop({
     board.update();
     header.update();
     gameOverDialog.update();
+    prologueDialog.update();
     gameStartDialog.update();
   },
   render: () => {
@@ -41,6 +44,7 @@ const loop = GameLoop({
     board.render();
     header.render();
     gameOverDialog.render();
+    prologueDialog.render();
     gameStartDialog.render();
   },
 });

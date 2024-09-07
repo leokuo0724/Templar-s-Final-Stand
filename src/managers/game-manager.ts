@@ -8,6 +8,7 @@ import { SwipeDetector } from "../utils/swipe-detector";
 import { negativeSFX, swipeSFX } from "../audios/sfx";
 
 export enum GameState {
+  PROLOGUE,
   INIT,
   IDLE,
   SWIPING,
@@ -22,7 +23,7 @@ export enum TemplarClass {
 export class GameManager {
   private static instance: GameManager;
 
-  public state: GameState = GameState.INIT;
+  public state: GameState = GameState.PROLOGUE;
   public moveCount = 0;
   public get level() {
     return Math.floor(this.moveCount / 5);
@@ -68,12 +69,11 @@ export class GameManager {
 
   public setClass(cls: TemplarClass) {
     this.cls = cls;
-    this.playBGM();
     emit(EVENT.UPDATE_TEMPLAR_CLASS, cls);
     this.state = GameState.IDLE;
   }
 
-  private playBGM() {
+  public playBGM() {
     // @ts-ignore
     this.music = zzfxP(...zzfxM(...bgm));
     if (this.music) this.music.loop = true;

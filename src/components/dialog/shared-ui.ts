@@ -3,6 +3,7 @@ import { COLOR } from "../../constants/color";
 import { FONT } from "../../constants/text";
 
 export class OverlayDialog extends SpriteClass {
+  protected wrapper: Sprite;
   protected titleText: Text;
   protected descText: Text;
 
@@ -14,7 +15,7 @@ export class OverlayDialog extends SpriteClass {
       opacity: 0.8,
       color: COLOR.DARK_6,
     });
-    const wrapper = Sprite({
+    this.wrapper = Sprite({
       x: w / 2,
       y: h / 2,
       width,
@@ -40,7 +41,7 @@ export class OverlayDialog extends SpriteClass {
       textAlign: "center",
     });
 
-    this.addChild([wrapper, this.titleText, this.descText]);
+    this.addChild([this.wrapper, this.titleText, this.descText]);
   }
 }
 
