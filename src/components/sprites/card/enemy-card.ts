@@ -65,6 +65,7 @@ export class EnemyCard extends CharacterCard {
     this.shield = 0;
     this.hitRate = 0.8;
     this.attackDirection = AttackDirection.FRONT;
+    this.attackType = AttackType.NORMAL;
     this.hitBackAttack = 0;
 
     const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 78;
