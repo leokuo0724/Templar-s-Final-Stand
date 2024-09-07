@@ -64,11 +64,11 @@ export class EnemyCard extends CharacterCard {
     this.attack = 2 + 1 * level;
     this.shield = 0;
     this.hitRate = 0.8;
-    this.criticalRate = 0.1;
     this.attackDirection = AttackDirection.FRONT;
     this.hitBackAttack = 0;
 
-    const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 130;
+    const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 78;
+    this.criticalRate = isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
 
     // Add extra buff
     const { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));

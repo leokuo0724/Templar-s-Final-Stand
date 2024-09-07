@@ -17,6 +17,7 @@ import { PotionIcon } from "../icons/potion-icon";
 import { getItemPropsDescText } from "../../../utils/desc-utils";
 import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
+import { BASE_WEIGHT_MAP } from "../../../constants/weight";
 
 export type ItemCardProps = {
   type: CardType;
@@ -134,13 +135,15 @@ export class ItemCard extends BaseCard {
 const getItemWeight = (type: CardType, level: number) => {
   if (type === CardType.POTION) return 0;
 
-  const { isWizard, isKnight } = GameManager.getInstance();
-  const levelFactor = 2 * (level - 1);
-  if (type === CardType.WEAPON) {
-    return (isKnight ? 1 : 3) + levelFactor;
-  } else {
-    return (isWizard ? 6 : 3) + levelFactor;
-  }
+  const { cls } = GameManager.getInstance();
+  const baseWeight =
+    BASE_WEIGHT_MAP[cls!][type as CardType.WEAPON | CardType.SHIELD];
+  // if (type === CardType.WEAPON) {
+  //   return (isKnight ? 1 : 3) + levelFactor;
+  // } else {
+  //   return (isWizard ? 6 : 3) + levelFactor;
+  // }
+  return baseWeight + level;
 };
 
 const getWeaponLevelBuff = (

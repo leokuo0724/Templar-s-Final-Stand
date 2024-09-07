@@ -1,3 +1,4 @@
+import { BASE_WEIGHT_MAP } from "../../../constants/weight";
 import { GameManager } from "../../../managers/game-manager";
 import { BaseCard } from "./base-card";
 import { EnemyCard } from "./enemy-card";
@@ -59,13 +60,13 @@ export class CardFactory {
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: gm.isKnight ? 4 : 5,
+          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.WEAPON],
         });
       case CardType.SHIELD:
         return new ItemCard({
           ...props,
           duration: 6,
-          weight: gm.isWizard ? 6 : 3,
+          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.SHIELD],
         });
       case CardType.POTION:
         return new ItemCard({
