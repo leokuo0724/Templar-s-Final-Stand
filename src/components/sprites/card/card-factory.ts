@@ -67,8 +67,6 @@ export class CardFactory {
           duration: 5,
           weight: 0,
         });
-      default:
-        throw new Error(`Invalid card type: ${type}`);
     }
   }
 }

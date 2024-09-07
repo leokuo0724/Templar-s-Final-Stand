@@ -80,7 +80,7 @@ export class ItemCard extends BaseCard {
       case CardType.POTION:
         return new PotionIcon(-9, -36);
       default:
-        throw new Error(`Invalid card type: ${this.type}`);
+        throw new Error();
     }
   }
 
@@ -127,7 +127,7 @@ export class ItemCard extends BaseCard {
       case CardType.POTION:
         return getPotionLevelBuff(this.level, factor, isWizard);
       default:
-        throw new Error(`Invalid card type: ${this.type}`);
+        throw new Error();
     }
   }
 }

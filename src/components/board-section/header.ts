@@ -39,7 +39,8 @@ export class Header extends GameObjectClass {
     on(EVENT.SWIPE, async () => {
       const moveCount = GameManager.getInstance().moveCount;
       title.text = `MOVE ${moveCount}`;
-      const isThirteen = moveCount % 13 === 0 || moveCount >= 78;
+      const isThirteen =
+        moveCount % 13 === 0 || (moveCount >= 78 && moveCount % 5 === 0);
       if (isThirteen) {
         this.color = COLOR.RED_7;
         enemyText.opacity = 1;

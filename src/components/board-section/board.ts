@@ -75,7 +75,7 @@ export class Board extends GameObjectClass {
 
   public getGridByCoord(coord: [number, number]): Grid {
     const grid = this.grids[coord[0] + coord[1] * GRIDS_IN_LINE];
-    if (!grid) throw new Error(`Grid not found by coord: ${coord}`);
+    if (!grid) throw new Error();
     return grid;
   }
 

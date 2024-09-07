@@ -3,8 +3,8 @@ import { TemplarClass } from "../managers/game-manager";
 
 export const BASE_WEIGHT_MAP = {
   [TemplarClass.KNIGHT]: {
-    [CardType.WEAPON]: 4,
-    [CardType.SHIELD]: 3,
+    [CardType.WEAPON]: 3,
+    [CardType.SHIELD]: 4,
   },
   [TemplarClass.WIZARD]: {
     [CardType.WEAPON]: 5,
