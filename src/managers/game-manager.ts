@@ -2,7 +2,6 @@ import { emit, on, onInput } from "kontra";
 import { EVENT } from "../constants/event";
 import { Direction } from "../types/direction";
 import { ItemCard } from "../components/sprites/card/item-card";
-import { EnemyCard } from "../components/sprites/card/enemy-card";
 import { zzfx, zzfxM, zzfxP } from "../audios/zzfx";
 import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";

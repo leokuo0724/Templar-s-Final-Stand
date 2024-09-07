@@ -87,6 +87,6 @@ export class InfoPanel extends GameObjectClass {
     this.infoText.text = texts.join(" | ");
   }
   private updateOverweightText(isOverweight: boolean) {
-    this.overweightText.text = isOverweight ? "Overweight!!!" : "";
+    this.overweightText.text = isOverweight ? "Overweight!" : "";
   }
 }
