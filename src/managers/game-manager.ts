@@ -15,9 +15,9 @@ export enum GameState {
   GAME_OVER,
 }
 export enum TemplarClass {
-  KNIGHT,
-  WIZARD,
-  DEFENDER,
+  KNIGHT = "Knight",
+  WIZARD = "Wizard",
+  DEFENDER = "Defender",
 }
 
 export class GameManager {

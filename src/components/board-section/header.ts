@@ -4,6 +4,7 @@ import { EVENT } from "../../constants/event";
 import { GameManager } from "../../managers/game-manager";
 import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
+import { FONT } from "../../constants/text";
 
 export class Header extends GameObjectClass {
   constructor() {
@@ -14,7 +15,7 @@ export class Header extends GameObjectClass {
       x: width / 2,
       y: 42,
       color: COLOR.GRAY_7,
-      font: "36px Gill Sans",
+      font: `36px ${FONT}`,
       anchor: { x: 0.5, y: 0.5 },
     });
     const enemyIndicator = Sprite({
@@ -29,7 +30,7 @@ export class Header extends GameObjectClass {
     const enemyText = Text({
       text: "Powerful Enemy Coming!",
       color: COLOR.WHITE_6,
-      font: "36px Gill Sans",
+      font: `36px ${FONT}`,
       anchor: { x: 0.5, y: 0.5 },
       opacity: 0,
     });

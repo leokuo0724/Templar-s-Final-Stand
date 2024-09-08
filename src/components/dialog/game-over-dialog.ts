@@ -6,18 +6,23 @@ import { Templar } from "../sprites/templar";
 import { LOCAL_STORAGE_KEY } from "../../constants/localstorage";
 
 export class GameOverDialog extends OverlayDialog {
-  private button: CustomButton;
+  private restartButton: CustomButton;
+  private shareButton: CustomButton;
 
   constructor() {
     const { width: w, height: h } = getCanvas();
-    super(280, 180);
+    super(300, 200);
     this.titleText.text = "Game Over";
+    this.titleText.y -= 14;
     this.descText.text = "";
-    this.button = new CustomButton(w / 2, h / 2 + 50, "Restart");
+    this.descText.y -= 14;
+    this.shareButton = new CustomButton(w / 2, h / 2 + 36, "Share");
+    this.restartButton = new CustomButton(w / 2, h / 2 + 70, "Restart");
 
     this.addChild([
-      this.button,
-      new Templar({ x: w / 2 - 32, y: h / 2 - 212, condition: "d" }),
+      this.shareButton,
+      this.restartButton,
+      new Templar({ x: w / 2 - 32, y: h / 2 - 224, condition: "d" }),
     ]);
 
     on(EVENT.GAME_OVER, this.show.bind(this));
@@ -30,9 +35,17 @@ export class GameOverDialog extends OverlayDialog {
       bestScore = `${gm.moveCount}`;
       localStorage.setItem(LOCAL_STORAGE_KEY.BEST_SCORE, bestScore);
     }
-    this.descText.text = `Survived for ${gm.moveCount} moves!\nBest Score: ${bestScore}`;
-    this.button.bindClick(() => window.location.reload());
+    const content = `Survived for ${gm.moveCount} moves as a ${gm.cls}`;
+    this.descText.text = `${content}!\nBest Score: ${bestScore}`;
+    this.restartButton.bindClick(() => location.reload());
     localStorage.setItem(LOCAL_STORAGE_KEY.PLAYED, "t");
+
+    this.shareButton.bindClick(() => {
+      const url = `https://x.com/intent/post?text=${encodeURI(
+        `${content} in Templar's Final Stand made by @leokuo0724. Play here:`
+      )}&url=https://leokuo0724.github.io/Templar-s-Final-Stand`;
+      open(url, "_blank");
+    });
   }
 
   public render() {

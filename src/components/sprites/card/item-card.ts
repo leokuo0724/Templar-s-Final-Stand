@@ -33,7 +33,7 @@ const MAX_ITEM_LEVEL = 4;
 const MAX_ITEM_COLOR_MAP = {
   [CardType.WEAPON]: COLOR.DARK_6,
   [CardType.SHIELD]: COLOR.BROWN_8,
-  [CardType.POTION]: COLOR.GREEN_6,
+  [CardType.POTION]: COLOR.GREEN_7,
 };
 
 export class ItemCard extends BaseCard {

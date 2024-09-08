@@ -39,6 +39,7 @@ export class OverlayDialog extends SpriteClass {
       color: COLOR.BROWN_7,
       font: `16px ${FONT}`,
       textAlign: "center",
+      lineHeight: 1.2,
     });
 
     this.addChild([this.wrapper, this.titleText, this.descText]);
