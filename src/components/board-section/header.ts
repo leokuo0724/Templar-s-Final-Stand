@@ -5,6 +5,7 @@ import { GameManager } from "../../managers/game-manager";
 import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
 import { FONT } from "../../constants/text";
+import { CustomButton } from "../dialog/shared-ui";
 
 export class Header extends GameObjectClass {
   constructor() {
@@ -35,7 +36,13 @@ export class Header extends GameObjectClass {
       opacity: 0,
     });
     enemyIndicator.addChild(enemyText);
-    this.addChild(title, enemyIndicator);
+    const gm = GameManager.getInstance();
+    const soundButton = new GhostButton(width - 76, 60, "Sound: ON");
+    soundButton.bindClick(() => {
+      gm.toggleBGM();
+      soundButton.text.text = `Sound: ${gm.music ? "ON" : "OFF"}`;
+    });
+    this.addChild([title, enemyIndicator, soundButton]);
 
     on(EVENT.SWIPE, async () => {
       const moveCount = GameManager.getInstance().moveCount;
@@ -53,5 +60,13 @@ export class Header extends GameObjectClass {
         this.color = COLOR.GRAY_7;
       }
     });
+  }
+}
+
+class GhostButton extends CustomButton {
+  constructor(x: number, y: number, text: string) {
+    super(x, y, text);
+    this.color = COLOR.WHITE_6;
+    this.text.color = COLOR.GRAY_7;
   }
 }

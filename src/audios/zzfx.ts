@@ -1,9 +1,15 @@
 // @ts-nocheck
 
+import { GameManager } from "../managers/game-manager";
+
 let zzfxX;
 
 // zzfx() - the universal entry point -- returns a AudioBufferSourceNode
-export const zzfx = (...t) => zzfxP(zzfxG(...t));
+export const zzfx = (...t) => {
+  const { music } = GameManager.getInstance();
+  if (!music) return;
+  zzfxP(zzfxG(...t));
+};
 
 // zzfxP() - the sound player -- returns a AudioBufferSourceNode
 export const zzfxP = (...t) => {

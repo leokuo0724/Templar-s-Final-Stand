@@ -29,7 +29,7 @@ export class GameManager {
     return Math.floor(this.moveCount / 5);
   }
 
-  private music: AudioBufferSourceNode | null = null;
+  public music: AudioBufferSourceNode | null = null;
   public currentItems: ItemCard[] = [];
   public cls: TemplarClass | null = null;
   public get isWizard() {
@@ -41,6 +41,7 @@ export class GameManager {
   public get isDefender() {
     return this.cls === TemplarClass.DEFENDER;
   }
+  public speed = 1; // 1x speed
 
   private constructor() {
     new SwipeDetector({
@@ -73,10 +74,15 @@ export class GameManager {
     this.state = GameState.IDLE;
   }
 
-  public playBGM() {
-    // @ts-ignore
-    this.music = zzfxP(...zzfxM(...bgm));
-    if (this.music) this.music.loop = true;
+  public toggleBGM() {
+    if (this.music) {
+      this.music.stop();
+      this.music = null;
+    } else {
+      // @ts-ignore
+      this.music = zzfxP(...zzfxM(...bgm));
+      this.music!.loop = true;
+    }
   }
 
   private swipe(direction: Direction) {

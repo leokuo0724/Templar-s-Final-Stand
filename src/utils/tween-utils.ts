@@ -1,4 +1,5 @@
 import { GameObject } from "kontra";
+import { GameManager } from "../managers/game-manager";
 
 export function tween(
   obj: GameObject,
@@ -12,6 +13,7 @@ export function tween(
   delay: number = 0
 ) {
   return new Promise((resolve) => {
+    const { speed } = GameManager.getInstance();
     const { targetX, targetY, opacity } = config;
     const fps = 60; // Frames per second
     const steps = fps * (duration / 1000); // Total number of steps
@@ -31,7 +33,7 @@ export function tween(
         currentStep++;
         obj.scaleX += stepScale;
         obj.scaleY += stepScale;
-        setTimeout(step, duration / steps);
+        setTimeout(step, duration / steps / speed);
       } else {
         // Ensure final positions are exact
         obj.x = targetX === undefined ? obj.x : targetX;
@@ -41,7 +43,7 @@ export function tween(
         obj.scaleY = config.scale === undefined ? obj.scaleY : config.scale;
 
         // Wait for the delay period before resolving the promise
-        setTimeout(resolve, delay);
+        setTimeout(resolve, delay / speed);
       }
     }
     step(); // Start the animation

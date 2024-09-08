@@ -48,7 +48,7 @@ export class OverlayDialog extends SpriteClass {
 
 export class CustomButton extends SpriteClass {
   public isDisabled: boolean = false;
-  private text: Text;
+  public text: Text;
   private canvasCallback: ((event: PointerEvent) => void) | null = null;
 
   constructor(x: number, y: number, text: string, isDisabled: boolean = false) {

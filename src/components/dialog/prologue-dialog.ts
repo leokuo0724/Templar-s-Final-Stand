@@ -68,7 +68,7 @@ export class PrologueDialog extends OverlayDialog {
       tween(this, { opacity: 0 }, 500),
       ...this.children.map((child) => tween(child, { opacity: 0 }, 500)),
     ]);
-    gm.playBGM();
+    gm.toggleBGM();
     getCanvas().removeEventListener("pointerdown", this.tapCallback);
   }
 
