@@ -1,6 +1,6 @@
 import { on, SpriteClass, Text } from "kontra";
 import { COLOR } from "../../constants/color";
-import { INFO_TEXT_CONFIG } from "../../constants/text";
+import { FONT } from "../../constants/text";
 import { EVENT } from "../../constants/event";
 import { GameManager } from "../../managers/game-manager";
 import { ItemCard } from "../sprites/card/item-card";
@@ -21,10 +21,11 @@ export class ItemPanel extends SpriteClass {
     });
 
     const titleText = Text({
-      text: "Items",
-      x: 12,
-      y: 9,
-      ...INFO_TEXT_CONFIG,
+      text: "Items (equip items add weight until duration ends)",
+      x: 10,
+      y: 7,
+      color: COLOR.BROWN_7,
+      font: `14px ${FONT}`,
     });
     this.addChild([titleText]);
 
