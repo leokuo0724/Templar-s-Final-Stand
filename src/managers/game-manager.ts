@@ -1,4 +1,4 @@
-import { emit, on, onInput } from "kontra";
+import { emit, on } from "kontra";
 import { EVENT } from "../constants/event";
 import { Direction } from "../types/direction";
 import { ItemCard } from "../components/sprites/card/item-card";
@@ -51,10 +51,12 @@ export class GameManager {
       onSwipeDown: this.swipe.bind(this, Direction.DOWN),
     });
 
-    onInput(["arrowleft", "a"], this.swipe.bind(this, Direction.LEFT));
-    onInput(["arrowright", "d"], this.swipe.bind(this, Direction.RIGHT));
-    onInput(["arrowup", "w"], this.swipe.bind(this, Direction.UP));
-    onInput(["arrowdown", "s"], this.swipe.bind(this, Direction.DOWN));
+    window.addEventListener("keydown", (e) => {
+      if (["ArrowLeft", "a"].includes(e.key)) this.swipe(Direction.LEFT);
+      if (["ArrowRight", "d"].includes(e.key)) this.swipe(Direction.RIGHT);
+      if (["ArrowUp", "w"].includes(e.key)) this.swipe(Direction.UP);
+      if (["ArrowDown", "s"].includes(e.key)) this.swipe(Direction.DOWN);
+    });
 
     on(EVENT.SWIPE_FINISH, () => {
       if (this.state === GameState.GAME_OVER) return;

@@ -1,4 +1,4 @@
-import { GameLoop, init, initKeys } from "kontra";
+import { GameLoop, init } from "kontra";
 import {
   INFO_PANEL_HEIGHT,
   InfoPanel,
@@ -12,7 +12,6 @@ import { PrologueDialog } from "./components/dialog/prologue-dialog";
 
 const { canvas } = init();
 
-initKeys();
 GameManager.getInstance();
 
 function resize() {

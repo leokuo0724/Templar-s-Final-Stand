@@ -8,9 +8,9 @@ import {
 import { LOCAL_STORAGE_KEY } from "../../constants/localstorage";
 
 export class GameStartDialog extends OverlayDialog {
-  private wizardButton: CustomButton;
-  private knightButton: CustomButton;
-  private defenderButton: CustomButton;
+  private wBtn: CustomButton;
+  private kBtn: CustomButton;
+  private dBtn: CustomButton;
 
   constructor() {
     super(360, 180);
@@ -21,40 +21,40 @@ export class GameStartDialog extends OverlayDialog {
       : "Knight is your only option for now";
 
     const { width: w, height: h } = getCanvas();
-    this.wizardButton = new CustomButton(
+    this.wBtn = new CustomButton(
       w / 2 - 108,
       h / 2 + 52,
-      "Wizard",
+      TemplarClass.WIZARD,
       !isPlayed
     );
-    this.knightButton = new CustomButton(w / 2, h / 2 + 52, "Knight");
-    this.defenderButton = new CustomButton(
+    this.kBtn = new CustomButton(w / 2, h / 2 + 52, TemplarClass.KNIGHT);
+    this.dBtn = new CustomButton(
       w / 2 + 108,
       h / 2 + 52,
-      "Defender",
+      TemplarClass.DEFENDER,
       !isPlayed
     );
 
-    this.wizardButton.bindClick(() => {
+    this.wBtn.bindClick(() => {
       this.onButtonClick(TemplarClass.WIZARD);
     });
-    this.knightButton.bindClick(() => {
+    this.kBtn.bindClick(() => {
       this.onButtonClick(TemplarClass.KNIGHT);
     });
-    this.defenderButton.bindClick(() => {
+    this.dBtn.bindClick(() => {
       this.onButtonClick(TemplarClass.DEFENDER);
     });
 
-    this.addChild([this.wizardButton, this.knightButton, this.defenderButton]);
+    this.addChild([this.wBtn, this.kBtn, this.dBtn]);
   }
 
   private onButtonClick(cls: TemplarClass) {
     const gm = GameManager.getInstance();
     if (gm.state !== GameState.INIT) return;
     gm.setClass(cls);
-    this.wizardButton.offClick();
-    this.knightButton.offClick();
-    this.defenderButton.offClick();
+    this.wBtn.offClick();
+    this.kBtn.offClick();
+    this.dBtn.offClick();
   }
 
   public render(): void {

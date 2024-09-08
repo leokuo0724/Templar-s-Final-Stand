@@ -55,7 +55,6 @@ export default defineConfig(({ command, mode }) => {
           opacity: true,
           scale: true,
           radius: true,
-          rotation: true,
         },
         text: {
           align: true,
