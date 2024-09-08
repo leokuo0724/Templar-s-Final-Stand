@@ -37,12 +37,17 @@ export class Header extends GameObjectClass {
     });
     enemyIndicator.addChild(enemyText);
     const gm = GameManager.getInstance();
-    const soundButton = new GhostButton(width - 76, 60, "Sound: ON");
+    const soundButton = new GhostButton(width - 78, 60, "Sound: ON");
     soundButton.bindClick(() => {
       gm.toggleBGM();
       soundButton.text.text = `Sound: ${gm.music ? "ON" : "OFF"}`;
     });
-    this.addChild([title, enemyIndicator, soundButton]);
+    const speedButton = new GhostButton(78, 60, "Speed: 1x");
+    speedButton.bindClick(() => {
+      gm.toggleSpeed();
+      speedButton.text.text = `Speed: ${gm.speed}x`;
+    });
+    this.addChild([title, enemyIndicator, soundButton, speedButton]);
 
     on(EVENT.SWIPE, async () => {
       const moveCount = GameManager.getInstance().moveCount;

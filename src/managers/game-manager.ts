@@ -85,6 +85,10 @@ export class GameManager {
     }
   }
 
+  public toggleSpeed() {
+    this.speed = this.speed === 1 ? 1.5 : this.speed === 1.5 ? 2 : 1;
+  }
+
   private swipe(direction: Direction) {
     if (this.state !== GameState.IDLE) return;
     this.moveCount++;
