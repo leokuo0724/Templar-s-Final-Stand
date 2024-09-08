@@ -15,6 +15,7 @@ import { EnemyIcon } from "../icons/enemy-icon";
 import { getEnemyPropsDescText } from "../../../utils/desc-utils";
 import { TemplarCard } from "./templar-card";
 import { Direction } from "../../../types/direction";
+import { COLOR } from "../../../constants/color";
 
 export class EnemyCard extends CharacterCard {
   protected descriptionText: Text;
@@ -69,6 +70,7 @@ export class EnemyCard extends CharacterCard {
     this.hitBack = 0;
 
     const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 78;
+    if (isElite) this.circle.color = COLOR.BROWN_8;
     this.critical = isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
 
     // Add extra buff
