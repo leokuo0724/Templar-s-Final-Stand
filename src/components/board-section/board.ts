@@ -11,7 +11,11 @@ import { CharacterCard } from "../sprites/card/character-card";
 import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
-import { AttackDirection, AttackType } from "../../types/character";
+import {
+  AttackDirection,
+  AttackType,
+  DIRECTION_TIER_MAP,
+} from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
 import { zzfx } from "../../audios/zzfx";
 import { makeUpgradeSFX } from "../../audios/sfx";
@@ -283,7 +287,7 @@ export class Board extends GameObjectClass {
         const { attackDirection } = card;
         const isNormalCase = attackDirection === AttackDirection.FRONT;
         const isAroundCase = attackDirection === AttackDirection.AROUND;
-        const isLineCase = attackDirection === AttackDirection.LINE;
+        const isCrossCase = attackDirection === AttackDirection.CROSS;
 
         if (isNormalCase) {
           const targetJ =
@@ -343,37 +347,35 @@ export class Board extends GameObjectClass {
               });
             }
           }
-        } else if (isLineCase) {
-          // check the same direction of the card
-          const isVertical =
-            direction === Direction.UP || direction === Direction.DOWN;
-          const fixedIndex = isVertical ? i : j;
-          const variableIndex = isVertical ? j : i;
+        } else if (isCrossCase) {
+          [true, false].forEach((isVertical) => {
+            const fixedIndex = isVertical ? i : j;
+            const variableIndex = isVertical ? j : i;
+            for (let k = 0; k < GRIDS_IN_LINE; k++) {
+              if (k === variableIndex) continue;
+              const targetCard = isVertical
+                ? this.occupiedInfo[k][fixedIndex]
+                : this.occupiedInfo[fixedIndex][k];
 
-          for (let k = 0; k < GRIDS_IN_LINE; k++) {
-            if (k === variableIndex) continue;
-            const targetCard = isVertical
-              ? this.occupiedInfo[k][fixedIndex]
-              : this.occupiedInfo[fixedIndex][k];
-
-            if (
-              targetCard instanceof CharacterCard &&
-              targetCard.belongs !== card.belongs
-            ) {
-              battleInfos.push({
-                attacker: card,
-                target: targetCard,
-                direction:
-                  k < variableIndex && isVertical
-                    ? Direction.UP
-                    : k < variableIndex && !isVertical
-                    ? Direction.LEFT
-                    : k > variableIndex && isVertical
-                    ? Direction.DOWN
-                    : Direction.RIGHT,
-              });
+              if (
+                targetCard instanceof CharacterCard &&
+                targetCard.belongs !== card.belongs
+              ) {
+                battleInfos.push({
+                  attacker: card,
+                  target: targetCard,
+                  direction:
+                    k < variableIndex && isVertical
+                      ? Direction.UP
+                      : k < variableIndex && !isVertical
+                      ? Direction.LEFT
+                      : k > variableIndex && isVertical
+                      ? Direction.DOWN
+                      : Direction.RIGHT,
+                });
+              }
             }
-          }
+          });
         }
       }
     }
@@ -417,9 +419,13 @@ export class Board extends GameObjectClass {
           const ad = "attackDirection";
           const at = "attackType";
           if (key === ad) {
-            const remain = gm.currentItems.filter(
-              (i) => !!i.buff[ad] && i.duration > 0
-            )[0];
+            const remain = gm.currentItems
+              .filter((i) => !!i.buff[ad] && i.duration > 0)
+              .sort(
+                (a, b) =>
+                  DIRECTION_TIER_MAP[a.buff[ad]!] -
+                  DIRECTION_TIER_MAP[b.buff[ad]!]
+              )[0];
             debuff[key] = remain ? remain.buff[ad] : AttackDirection.FRONT;
           } else if (key === at) {
             const remain = gm.currentItems.filter(
@@ -430,7 +436,7 @@ export class Board extends GameObjectClass {
             debuff[key] = (value as number) * -1;
           }
         });
-        this.templarCard.applyBuff(debuff, false);
+        this.templarCard.applyBuff(debuff, true);
         this.templarCard.updateWeight(-item.weight);
       }
     }

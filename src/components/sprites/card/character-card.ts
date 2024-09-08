@@ -238,7 +238,7 @@ export abstract class CharacterCard extends BaseCard {
     this.impactText.reset();
   }
 
-  public applyBuff(buff: OptionalCharacterProps, shouldPlay: boolean = true) {
+  public applyBuff(buff: OptionalCharacterProps, isDebuff: boolean = false) {
     this.updateHealth(buff.health || 0);
     this.updateShield(buff.shield || 0);
     this.updateAttack(buff.attack || 0);
@@ -246,13 +246,15 @@ export abstract class CharacterCard extends BaseCard {
     this.hitRate = Math.max(Math.min(this.hitRate, 1), 0);
     this.critical += buff.critical || 0;
     this.critical = Math.max(Math.min(this.critical, 1), 0);
-    this.attackDirection = buff.attackDirection || this.attackDirection;
+    if (this.attackDirection !== AttackDirection.CROSS || isDebuff) {
+      this.attackDirection = buff.attackDirection || this.attackDirection;
+    }
     this.attackType = buff.attackType || this.attackType;
     this.hitBack += buff.hitBack || 0;
 
     if (this.type === CardType.TEMPLAR) {
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
-      if (shouldPlay) {
+      if (!isDebuff) {
         const isBuff = checkIfBuff(buff);
         emit(EVENT.TEMPLAR_BUFF_EFFECT, isBuff);
         isBuff ? zzfx(...makeUpgradeSFX(true)) : zzfx(...negativeSFX);

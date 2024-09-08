@@ -96,11 +96,11 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
-          attackDirection: AttackDirection.LINE,
+          attackDirection: AttackDirection.CROSS,
           attack: 2 * factor,
           health: 1 * factor,
         },
-        desc: `"Spearman"\nRange: line`,
+        desc: `"Spearman"\nRange: cross`,
       },
       {
         buff: {

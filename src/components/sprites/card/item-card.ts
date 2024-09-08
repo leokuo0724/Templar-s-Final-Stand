@@ -2,7 +2,6 @@ import { BaseCard } from "./base-card";
 import { CardType } from "./type";
 import {
   AttackDirection,
-  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { ClockIcon } from "../icons/clock-icon";
@@ -157,14 +156,13 @@ const getWeaponLevelBuff = (
   } else if (level === 3) {
     return {
       attack,
-      critical: 0.1,
-      attackType: AttackType.PENETRATE,
+      attackDirection: AttackDirection.AROUND,
+      hitBack: 1 * factor,
     };
   } else {
-    const dir = random < 0.5 ? AttackDirection.AROUND : AttackDirection.LINE;
     return {
       attack,
-      attackDirection: dir,
+      attackDirection: AttackDirection.CROSS,
       hitBack: 3 * factor,
     };
   }
