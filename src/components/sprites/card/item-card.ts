@@ -6,7 +6,7 @@ import {
 } from "../../../types/character";
 import { ClockIcon } from "../icons/clock-icon";
 import { Text } from "kontra";
-import { COMMON_TEXT_CONFIG } from "../../../constants/text";
+import { COMMON_TEXT_CONFIG, FONT } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
 import { tween } from "../../../utils/tween-utils";
 import { SwordIcon } from "../icons/sword-icon";
@@ -27,6 +27,13 @@ export type ItemCardProps = {
   // props
   duration: number;
   weight: number;
+};
+
+const MAX_ITEM_LEVEL = 4;
+const MAX_ITEM_COLOR_MAP = {
+  [CardType.WEAPON]: COLOR.DARK_6,
+  [CardType.SHIELD]: COLOR.BROWN_8,
+  [CardType.POTION]: COLOR.GREEN_6,
 };
 
 export class ItemCard extends BaseCard {
@@ -107,6 +114,10 @@ export class ItemCard extends BaseCard {
       const isBuff = checkIfBuff(this.buff);
       this.warningIcon.opacity = isBuff ? 0 : 1;
     }
+    if (this.level === MAX_ITEM_LEVEL) {
+      // @ts-ignore
+      this.circle.color = MAX_ITEM_COLOR_MAP[this.type];
+    }
   }
 
   public updateDuration(value: number): boolean {
@@ -118,13 +129,18 @@ export class ItemCard extends BaseCard {
 
   public upgrade(card: ItemCard) {
     this.level += card.level;
-    this.level = Math.min(this.level, 4);
+    this.level = Math.min(this.level, MAX_ITEM_LEVEL);
     this.duration += card.duration;
     this.duration = Math.min(this.duration, 10);
     this.weight = getItemWeight(this.type, this.level);
 
     this.buff = this.pickBuff();
-    this.descriptionText.text = getItemPropsDescText(this.buff);
+    const description = getItemPropsDescText(this.buff);
+    this.descriptionText.text = description;
+    if (description.split("\n").length > 2) {
+      this.descriptionText.font = `12px ${FONT}`;
+      this.descriptionText.y = 14;
+    }
     this.resetProps();
   }
 
@@ -186,7 +202,7 @@ const getShieldLevelBuff = (
   isDefender: boolean
 ): OptionalCharacterProps => {
   return {
-    shield: Math.floor(factor / 2 + (isDefender ? 3.5 : 2) * level),
+    shield: Math.floor(factor / 2 + (isDefender ? 3.7 : 2) * level),
   };
 };
 const getPotionLevelBuff = (

@@ -21,6 +21,7 @@ export abstract class BaseCard extends SpriteClass {
   protected main: Sprite;
   public isActive: boolean = true;
   protected mainIcon: GameObject;
+  protected circle: Sprite;
 
   constructor({ type, x, y }: CardProps) {
     super({
@@ -42,14 +43,14 @@ export abstract class BaseCard extends SpriteClass {
     this.addChild(this.main);
 
     const isTemplar = type === CardType.TEMPLAR;
-    const circle = Sprite({
+    this.circle = Sprite({
       radius: isTemplar ? 28 : 24,
       color: getCardColor(type, CardPart.CIRCLE),
       anchor: { x: 0.5, y: 0.5 },
       y: isTemplar ? 0 : this.type === CardType.ENEMY ? -14 : -20,
     });
     this.mainIcon = this.getMainIcon();
-    this.main.addChild([circle, this.mainIcon]);
+    this.main.addChild([this.circle, this.mainIcon]);
   }
 
   protected abstract getMainIcon(): GameObject;
