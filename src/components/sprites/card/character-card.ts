@@ -19,6 +19,7 @@ import { EVENT } from "../../../constants/event";
 import { GameManager } from "../../../managers/game-manager";
 import { GRID_SIZE } from "../../../constants/size";
 import { attackSFX, makeUpgradeSFX, negativeSFX } from "../../../audios/sfx";
+import { checkIfBuff } from "../../../utils/buff-utils";
 
 type CharacterCardProps = {
   type: CardType;
@@ -261,16 +262,6 @@ export abstract class CharacterCard extends BaseCard {
       }
     }
   }
-}
-
-function checkIfBuff(buff: OptionalCharacterProps): boolean {
-  for (const [key, value] of Object.entries(buff)) {
-    if (key === "attackDirection") return value !== AttackDirection.FRONT;
-    if (key === "attackType") return value !== AttackType.NORMAL;
-    if (typeof value !== "number") throw new Error();
-    return value > 0;
-  }
-  return false;
 }
 
 class ImpactText extends SpriteClass {

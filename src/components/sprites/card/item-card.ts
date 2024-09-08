@@ -17,6 +17,8 @@ import { getItemPropsDescText } from "../../../utils/desc-utils";
 import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 import { BASE_WEIGHT_MAP } from "../../../constants/weight";
+import { WarningIcon } from "../icons/warning-icon";
+import { checkIfBuff } from "../../../utils/buff-utils";
 
 export type ItemCardProps = {
   type: CardType;
@@ -35,6 +37,7 @@ export class ItemCard extends BaseCard {
   public duration: number;
   public weight: number;
   public level: number = 1;
+  private warningIcon: WarningIcon | null = null;
 
   constructor({ type, x, y, duration, weight }: ItemCardProps) {
     super({ type, x, y });
@@ -68,6 +71,7 @@ export class ItemCard extends BaseCard {
       new WeightIcon(-46, 32),
       this.weightText,
     ]);
+    this.resetProps();
   }
 
   protected getMainIcon() {
@@ -95,6 +99,14 @@ export class ItemCard extends BaseCard {
   protected resetProps(): void {
     this.durationText.text = `${this.duration}`;
     this.weightText.text = `${this.weight}`;
+    if (this.type === CardType.POTION) {
+      if (!this.warningIcon) {
+        this.warningIcon = new WarningIcon(6, -14);
+        this.addChild(this.warningIcon);
+      }
+      const isBuff = checkIfBuff(this.buff);
+      this.warningIcon.opacity = isBuff ? 0 : 1;
+    }
   }
 
   public updateDuration(value: number): boolean {
