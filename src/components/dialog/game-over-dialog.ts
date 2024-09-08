@@ -8,6 +8,7 @@ import { LOCAL_STORAGE_KEY } from "../../constants/localstorage";
 export class GameOverDialog extends OverlayDialog {
   private restartButton: CustomButton;
   private shareButton: CustomButton;
+  private isShown: boolean = false;
 
   constructor() {
     const { width: w, height: h } = getCanvas();
@@ -29,6 +30,8 @@ export class GameOverDialog extends OverlayDialog {
   }
 
   private show() {
+    if (this.isShown) return;
+    this.isShown = true;
     const gm = GameManager.getInstance();
     let bestScore = localStorage.getItem(LOCAL_STORAGE_KEY.BEST_SCORE);
     if (gm.moveCount > parseInt(bestScore ?? "0")) {

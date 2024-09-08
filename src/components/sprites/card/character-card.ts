@@ -83,7 +83,7 @@ export abstract class CharacterCard extends BaseCard {
       this.damageBg,
       new SwordIcon(20, 30),
       this.attackText,
-      new HeartIcon(-46, -46),
+      new HeartIcon(-45.5, -45.5),
       this.healthText,
       new ShieldIcon(28, -46),
       this.shieldText,
