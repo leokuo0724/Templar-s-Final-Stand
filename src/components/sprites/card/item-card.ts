@@ -120,6 +120,7 @@ export class ItemCard extends BaseCard {
     this.level += card.level;
     this.level = Math.min(this.level, 4);
     this.duration += card.duration;
+    this.duration = Math.min(this.duration, 10);
     this.weight = getItemWeight(this.type, this.level);
 
     this.buff = this.pickBuff();

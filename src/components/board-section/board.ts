@@ -155,7 +155,8 @@ export class Board extends GameObjectClass {
         }
 
         const targetGrid = this.getGridByCoord([currJ, currI]);
-        moveInfos.push({ card, x: targetGrid.x, y: targetGrid.y });
+        if (card.x !== targetGrid.x || card.y !== targetGrid.y)
+          moveInfos.push({ card, x: targetGrid.x, y: targetGrid.y });
         this.occupiedInfo[j][i] = null;
         this.occupiedInfo[currJ][currI] = card;
       }
