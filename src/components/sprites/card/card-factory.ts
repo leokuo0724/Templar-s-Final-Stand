@@ -15,8 +15,8 @@ type CreateCardProps = {
 
 export class CardFactory {
   static createCard(x: number, y: number): BaseCard {
-    const { moveCount, isDefender, isKnight } = GameManager.getInstance();
-    const isSpawnEliteEnemy = moveCount % 13 === 0;
+    const { move, isDefender, isKnight } = GameManager.getInstance();
+    const isSpawnEliteEnemy = move % 13 === 0;
     if (isSpawnEliteEnemy) {
       return CardFactory.factory({
         type: CardType.ENEMY,
@@ -34,7 +34,7 @@ export class CardFactory {
         isDefender ? CardType.WEAPON : randomItem,
       ];
       return CardFactory.factory({
-        type: itemOrder[moveCount % itemOrder.length],
+        type: itemOrder[move % itemOrder.length],
         x,
         y,
       });

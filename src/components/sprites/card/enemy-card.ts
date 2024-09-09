@@ -18,7 +18,7 @@ import { Direction } from "../../../types/direction";
 import { COLOR } from "../../../constants/color";
 
 export class EnemyCard extends CharacterCard {
-  protected descriptionText: Text;
+  protected descText: Text;
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
@@ -28,14 +28,14 @@ export class EnemyCard extends CharacterCard {
       belongs: Belongs.ENEMY,
     });
 
-    this.descriptionText = Text({
+    this.descText = Text({
       x: 0,
       y: 18,
       text: "",
       ...COMMON_TEXT_CONFIG,
       textAlign: "center",
     });
-    this.main.addChild(this.descriptionText);
+    this.main.addChild(this.descText);
     this.resetProps();
   }
 
@@ -60,7 +60,7 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const { level, moveCount } = GameManager.getInstance();
+    const { level, move } = GameManager.getInstance();
     this.health = 5 + 2 * level;
     this.attack = 2 + 1 * level;
     this.shield = 0;
@@ -69,14 +69,14 @@ export class EnemyCard extends CharacterCard {
     this.attackType = AttackType.NORMAL;
     this.hitBack = 0;
 
-    const isElite = (moveCount > 0 && moveCount % 13 === 0) || moveCount >= 78;
+    const isElite = (move > 0 && move % 13 === 0) || move >= 78;
     if (isElite) this.circle.color = COLOR.BROWN_8;
     this.critical = isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
 
     // Add extra buff
     const { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));
     this.applyBuff(buff);
-    this.descriptionText.text = desc;
+    this.descText.text = desc;
     this.refreshText();
     this.damageBg.opacity = 0;
   }

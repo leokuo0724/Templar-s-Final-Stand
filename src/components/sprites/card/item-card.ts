@@ -37,7 +37,7 @@ const MAX_ITEM_COLOR_MAP = {
 };
 
 export class ItemCard extends BaseCard {
-  protected descriptionText: Text;
+  protected descText: Text;
   protected durationText: Text;
   protected weightText: Text;
   public buff: OptionalCharacterProps;
@@ -52,7 +52,7 @@ export class ItemCard extends BaseCard {
     this.weight = weight;
 
     this.buff = this.pickBuff();
-    this.descriptionText = Text({
+    this.descText = Text({
       x: 0,
       y: 18,
       text: getItemPropsDescText(this.buff),
@@ -72,7 +72,7 @@ export class ItemCard extends BaseCard {
       ...COMMON_TEXT_CONFIG,
     });
     this.main.addChild([
-      this.descriptionText,
+      this.descText,
       new ClockIcon(22, 32),
       this.durationText,
       new WeightIcon(-46, 32),
@@ -136,10 +136,10 @@ export class ItemCard extends BaseCard {
 
     this.buff = this.pickBuff();
     const description = getItemPropsDescText(this.buff);
-    this.descriptionText.text = description;
+    this.descText.text = description;
     if (description.split("\n").length > 2) {
-      this.descriptionText.font = `12px ${FONT}`;
-      this.descriptionText.y = 14;
+      this.descText.font = `12px ${FONT}`;
+      this.descText.y = 14;
     }
     this.resetProps();
   }

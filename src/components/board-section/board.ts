@@ -35,7 +35,7 @@ export const BOARD_SIZE =
 
 export class Board extends GameObjectClass {
   private grids: Grid[] = [];
-  private occupiedInfo: (BaseCard | null)[][] = Array.from({ length: 5 }, () =>
+  private occuInfo: (BaseCard | null)[][] = Array.from({ length: 5 }, () =>
     Array.from({ length: 5 }, () => null)
   );
   private templarCard: TemplarCard;
@@ -72,7 +72,7 @@ export class Board extends GameObjectClass {
       y: centerGrid.y,
     }) as TemplarCard;
     this.addChild(this.templarCard);
-    this.occupiedInfo[2][2] = this.templarCard;
+    this.occuInfo[2][2] = this.templarCard;
     this.spawnCards();
 
     on(EVENT.ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
@@ -96,9 +96,9 @@ export class Board extends GameObjectClass {
     for (let i = 0; i < GRIDS_IN_LINE; i++) {
       let found = false;
       for (let j = 0; j < GRIDS_IN_LINE; j++) {
-        const c = this.occupiedInfo[j][i];
+        const c = this.occuInfo[j][i];
         if (c === card) {
-          this.occupiedInfo[j][i] = null;
+          this.occuInfo[j][i] = null;
           found = true;
           break;
         }
@@ -140,7 +140,7 @@ export class Board extends GameObjectClass {
     const moveInfos: { card: BaseCard; x: number; y: number }[] = [];
     for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
       for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
-        const card = this.occupiedInfo[j][i];
+        const card = this.occuInfo[j][i];
         if (!card) continue;
 
         let currI = i,
@@ -150,7 +150,7 @@ export class Board extends GameObjectClass {
           const nextI = currI + (moveRight ? 1 : moveLeft ? -1 : 0);
           const nextJ = currJ + (moveDown ? 1 : moveUp ? -1 : 0);
 
-          const occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
+          const occupiedCard = this.occuInfo?.[nextJ]?.[nextI];
           if (
             nextI < 0 ||
             nextI >= GRIDS_IN_LINE ||
@@ -166,8 +166,8 @@ export class Board extends GameObjectClass {
         const targetGrid = this.getGridByCoord([currJ, currI]);
         if (card.x !== targetGrid.x || card.y !== targetGrid.y)
           moveInfos.push({ card, x: targetGrid.x, y: targetGrid.y });
-        this.occupiedInfo[j][i] = null;
-        this.occupiedInfo[currJ][currI] = card;
+        this.occuInfo[j][i] = null;
+        this.occuInfo[currJ][currI] = card;
       }
     }
     await Promise.all(moveInfos.map(({ card, x, y }) => card.moveTo(x, y)));
@@ -177,7 +177,7 @@ export class Board extends GameObjectClass {
     const potionLevels: number[] = [];
     for (let i = moveUp || moveDown ? 0 : startI; i !== endI; i += stepI) {
       for (let j = moveLeft || moveRight ? 0 : startJ; j !== endJ; j += stepJ) {
-        const card = this.occupiedInfo[j][i];
+        const card = this.occuInfo[j][i];
         if (!card) continue;
 
         let currI = i,
@@ -193,7 +193,7 @@ export class Board extends GameObjectClass {
             nextJ >= GRIDS_IN_LINE
           )
             break;
-          const occupiedCard = this.occupiedInfo?.[nextJ]?.[nextI];
+          const occupiedCard = this.occuInfo?.[nextJ]?.[nextI];
           if (occupiedCard) {
             const isTemplarEquip =
               card.type === CardType.TEMPLAR &&
@@ -214,7 +214,7 @@ export class Board extends GameObjectClass {
                 potionLevels.push(1);
 
               await occupiedCard.equip();
-              this.occupiedInfo[nextJ][nextI] = null;
+              this.occuInfo[nextJ][nextI] = null;
 
               if (
                 card instanceof TemplarCard &&
@@ -242,14 +242,14 @@ export class Board extends GameObjectClass {
         }
         const targetGrid = this.getGridByCoord([currJ, currI]);
         await card.moveTo(targetGrid.x, targetGrid.y);
-        this.occupiedInfo[j][i] = null;
+        this.occuInfo[j][i] = null;
         if (card instanceof CharacterCard && card.health <= 0) continue;
-        this.occupiedInfo[currJ][currI] = card;
+        this.occuInfo[currJ][currI] = card;
       }
     }
     if (potionLevels.length) {
       // attack all enemies
-      const allEnemies = this.occupiedInfo
+      const allEnemies = this.occuInfo
         .flat()
         .filter((card) => card instanceof EnemyCard);
       for (const potionLevel of potionLevels) {
@@ -268,12 +268,12 @@ export class Board extends GameObjectClass {
 
   private spawnCards() {
     const gm = GameManager.getInstance();
-    const isDual = gm.moveCount % 5 === 1 || gm.moveCount % 5 === 3;
+    const isDual = gm.move % 5 === 1 || gm.move % 5 === 3;
     for (let i = 0; i < (isDual ? 2 : 1); i++) {
       const emptyIndices = [];
       for (let i = 0; i < GRIDS_IN_LINE; i++) {
         for (let j = 0; j < GRIDS_IN_LINE; j++) {
-          if (!this.occupiedInfo[j][i]) {
+          if (!this.occuInfo[j][i]) {
             emptyIndices.push([j, i]);
           }
         }
@@ -284,7 +284,7 @@ export class Board extends GameObjectClass {
       const grid = this.getGridByCoord([j, i]);
       const card = CardFactory.createCard(grid.x, grid.y);
       this.addChild(card);
-      this.occupiedInfo[j][i] = card;
+      this.occuInfo[j][i] = card;
     }
   }
 
@@ -292,7 +292,7 @@ export class Board extends GameObjectClass {
     const battleInfos: BattleInfo[] = [];
     for (let i = 0; i < GRIDS_IN_LINE; i++) {
       for (let j = 0; j < GRIDS_IN_LINE; j++) {
-        const card = this.occupiedInfo[j][i];
+        const card = this.occuInfo[j][i];
         if (!(card instanceof CharacterCard)) continue;
         const { attackDirection } = card;
         const isNormalCase = attackDirection === AttackDirection.FRONT;
@@ -314,7 +314,7 @@ export class Board extends GameObjectClass {
               : direction === Direction.RIGHT
               ? 1
               : 0);
-          const targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
+          const targetCard = this.occuInfo?.[targetJ]?.[targetI];
           if (
             targetI < 0 ||
             targetI >= GRIDS_IN_LINE ||
@@ -337,7 +337,7 @@ export class Board extends GameObjectClass {
           for (const [di, dj] of directions) {
             const targetJ = j + di;
             const targetI = i + dj;
-            const targetCard = this.occupiedInfo?.[targetJ]?.[targetI];
+            const targetCard = this.occuInfo?.[targetJ]?.[targetI];
             if (
               targetCard instanceof CharacterCard &&
               targetCard.belongs !== card.belongs
@@ -364,8 +364,8 @@ export class Board extends GameObjectClass {
             for (let k = 0; k < GRIDS_IN_LINE; k++) {
               if (k === variableIndex) continue;
               const targetCard = isVertical
-                ? this.occupiedInfo[k][fixedIndex]
-                : this.occupiedInfo[fixedIndex][k];
+                ? this.occuInfo[k][fixedIndex]
+                : this.occuInfo[fixedIndex][k];
 
               if (
                 targetCard instanceof CharacterCard &&
@@ -407,12 +407,12 @@ export class Board extends GameObjectClass {
     // items on board
     for (let i = 0; i < GRIDS_IN_LINE; i++) {
       for (let j = 0; j < GRIDS_IN_LINE; j++) {
-        const card = this.occupiedInfo[j][i];
+        const card = this.occuInfo[j][i];
         if (card instanceof ItemCard) {
           const isAlive = card.updateDuration(-1);
           if (!isAlive) {
             deprecated.push(card);
-            this.occupiedInfo[j][i] = null;
+            this.occuInfo[j][i] = null;
           }
         }
       }

@@ -25,9 +25,9 @@ export class GameManager {
   private static instance: GameManager;
 
   public state: GameState = GameState.PROLOGUE;
-  public moveCount = 0;
+  public move = 0;
   public get level() {
-    return Math.floor(this.moveCount / 5);
+    return Math.floor(this.move / 5);
   }
 
   public music: AudioBufferSourceNode | null = null;
@@ -94,7 +94,7 @@ export class GameManager {
 
   private swipe(direction: Direction) {
     if (this.state !== GameState.IDLE) return;
-    this.moveCount++;
+    this.move++;
     this.state = GameState.SWIPING;
     zzfx(...swipeSFX);
     emit(EVENT.SWIPE, direction);

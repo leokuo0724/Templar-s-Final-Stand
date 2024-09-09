@@ -6,7 +6,7 @@ import { tween } from "../../utils/tween-utils";
 type ArrowType = "u" | "d";
 
 export class Arrow extends GameObjectClass {
-  private isPlaying: boolean = false;
+  private ing: boolean = false;
   private type: ArrowType;
 
   constructor(x: number, y: number, type: ArrowType = "u") {
@@ -15,8 +15,8 @@ export class Arrow extends GameObjectClass {
     this.type = type;
   }
   public async play() {
-    if (this.isPlaying) return;
-    this.isPlaying = true;
+    if (this.ing) return;
+    this.ing = true;
     const currY = this.y;
     const currX = this.x;
     await tween(
@@ -33,7 +33,7 @@ export class Arrow extends GameObjectClass {
     this.x = currX;
     this.y = currY;
     this.opacity = 0;
-    this.isPlaying = false;
+    this.ing = false;
   }
 
   draw(): void {
@@ -49,7 +49,7 @@ export class Arrow extends GameObjectClass {
 
 export class Drop extends GameObjectClass {
   private started: boolean = false;
-  private isPlaying: boolean = false;
+  private ing: boolean = false;
 
   constructor(x: number, y: number) {
     super({ x, y });
@@ -57,8 +57,8 @@ export class Drop extends GameObjectClass {
   }
   private async loop() {
     while (this.started) {
-      if (this.isPlaying) return;
-      this.isPlaying = true;
+      if (this.ing) return;
+      this.ing = true;
       const currY = this.y;
       await Promise.all([
         tween(this, { opacity: 1 }, 200),
@@ -66,7 +66,7 @@ export class Drop extends GameObjectClass {
       ]);
       await tween(this, { opacity: 0 }, 600);
       this.y = currY;
-      this.isPlaying = false;
+      this.ing = false;
     }
   }
   public start() {
