@@ -1,5 +1,10 @@
 import { GameObjectClass, on } from "kontra";
-import { drawPolygon, drawRect } from "../../utils/draw-utils";
+import {
+  drawPolygon,
+  drawRect,
+  drawShield,
+  drawSword,
+} from "../../utils/draw-utils";
 import { COLOR } from "../../constants/color";
 import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
@@ -187,15 +192,7 @@ class TemplarFrontHand extends GameObjectClass {
   }
   draw(): void {
     const { isKnight } = GameManager.getInstance();
-    if (isKnight) {
-      drawPolygon(
-        this.context,
-        "66 1 50 0 0 19 1 23 3 27 54 11 66 1",
-        COLOR.WHITE_6,
-        16,
-        -20
-      );
-    }
+    if (isKnight) drawSword(this.context, COLOR.WHITE_6, 16, -20);
 
     drawPolygon(this.context, "2 2 0 10 13 12 19 7 16 0 10 0 2 2", COLOR.RED_7);
   }
@@ -208,13 +205,7 @@ class TemplarBackHand extends GameObjectClass {
   draw(): void {
     const { isDefender, isWizard } = GameManager.getInstance();
     if (isDefender) {
-      drawPolygon(
-        this.context,
-        "28 0 0 7 0 42 7 54 28 68 48 54 55 42 55 7 28 0",
-        COLOR.BROWN_7,
-        -14,
-        -28
-      );
+      drawShield(this.context, COLOR.BROWN_7, -14, -28);
     }
     if (isWizard) {
       drawPolygon(
@@ -232,7 +223,6 @@ class TemplarBackHand extends GameObjectClass {
         -54
       );
     }
-    // shield
     drawPolygon(this.context, "6 0 19 0 19 8 12 11 0 11 6 0", COLOR.RED_7);
   }
 }

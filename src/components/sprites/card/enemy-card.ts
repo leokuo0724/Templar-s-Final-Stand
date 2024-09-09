@@ -11,11 +11,11 @@ import { emit, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
-import { EnemyIcon } from "../icons/enemy-icon";
 import { getEnemyPropsDescText } from "../../../utils/desc-utils";
 import { TemplarCard } from "./templar-card";
 import { Direction } from "../../../types/direction";
 import { COLOR } from "../../../constants/color";
+import { Enemy } from "../enemy";
 
 export class EnemyCard extends CharacterCard {
   protected descText: Text;
@@ -52,7 +52,8 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected getMainIcon() {
-    return new EnemyIcon(-8, -29);
+    const gm = GameManager.getInstance();
+    return new Enemy(-18, -36, gm.isElite);
   }
 
   protected deathCallback(): void {
@@ -60,7 +61,8 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const { level, move } = GameManager.getInstance();
+    const gm = GameManager.getInstance();
+    const level = gm.level;
     this.health = 5 + 2 * level;
     this.attack = 2 + 1 * level;
     this.shield = 0;
@@ -69,12 +71,13 @@ export class EnemyCard extends CharacterCard {
     this.attackType = AttackType.NORMAL;
     this.hitBack = 0;
 
-    const isElite = (move > 0 && move % 13 === 0) || move >= 78;
-    if (isElite) this.circle.color = COLOR.BROWN_8;
-    this.critical = isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
+    if (gm.isElite) this.circle.color = COLOR.BROWN_8;
+    this.critical = gm.isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
 
     // Add extra buff
-    const { buff, desc } = randomPick(getEnemyBuffsAndDesc(level + 1, isElite));
+    const { buff, desc } = randomPick(
+      getEnemyBuffsAndDesc(level + 1, gm.isElite)
+    );
     this.applyBuff(buff);
     this.descText.text = desc;
     this.refreshText();

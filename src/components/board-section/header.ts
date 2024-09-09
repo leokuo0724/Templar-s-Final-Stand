@@ -50,10 +50,10 @@ export class Header extends GameObjectClass {
     this.addChild([title, enemyIndicator, soundButton, speedButton]);
 
     on(EVENT.SWIPE, async () => {
-      const move = GameManager.getInstance().move;
+      const gm = GameManager.getInstance();
+      const move = gm.move;
       title.text = `MOVE ${move}`;
-      const isThirteen = move % 13 === 0 || (move >= 78 && move % 5 === 0);
-      if (isThirteen) {
+      if (gm.isElite) {
         this.color = COLOR.RED_7;
         enemyText.opacity = 1;
         await tween(enemyIndicator, { opacity: 0.9 }, 500);

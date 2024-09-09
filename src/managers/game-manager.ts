@@ -29,6 +29,12 @@ export class GameManager {
   public get level() {
     return Math.floor(this.move / 5);
   }
+  public get isElite() {
+    return (
+      (this.move > 0 && this.move % 13 === 0) ||
+      (this.move >= 78 && this.move % 5 === 0)
+    );
+  }
 
   public music: AudioBufferSourceNode | null = null;
   public currentItems: ItemCard[] = [];

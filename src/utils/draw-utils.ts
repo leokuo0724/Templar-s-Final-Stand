@@ -50,3 +50,27 @@ export function drawRect(
   ctx.fill();
   ctx.closePath();
 }
+
+export function drawShield(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  x: number,
+  y: number
+) {
+  drawPolygon(
+    ctx,
+    "28 0 0 7 0 42 7 54 28 68 48 54 55 42 55 7 28 0",
+    color,
+    x,
+    y
+  );
+}
+
+export function drawSword(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  x: number,
+  y: number
+) {
+  drawPolygon(ctx, "66 1 50 0 0 19 1 23 3 27 54 11 66 1", color, x, y);
+}
