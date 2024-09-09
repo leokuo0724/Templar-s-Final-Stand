@@ -117,6 +117,7 @@ export class GameManager {
   }
 
   public gameOver() {
+    if (this.state === GameState.GAME_OVER) return;
     this.state = GameState.GAME_OVER;
     this.music?.stop();
     zzfx(...negativeSFX);

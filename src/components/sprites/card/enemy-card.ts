@@ -47,7 +47,7 @@ export class EnemyCard extends CharacterCard {
       Direction.UP,
       false,
       wizard.attackType === AttackType.PENETRATE,
-      level * factor
+      Math.floor(level * factor * 0.8)
     );
   }
 
@@ -99,7 +99,7 @@ const getEnemyBuffsAndDesc = (
       {
         buff: {
           attackDirection: AttackDirection.CROSS,
-          attack: 2 * factor,
+          attack: 1 * factor,
           health: 1 * factor,
         },
         desc: `"Spearman"\nRange: cross`,
