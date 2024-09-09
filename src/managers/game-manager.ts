@@ -10,6 +10,7 @@ import { negativeSFX, swipeSFX } from "../audios/sfx";
 export enum GameState {
   PROLOGUE,
   INIT,
+  INTRO,
   IDLE,
   SWIPING,
   GAME_OVER,
@@ -73,7 +74,7 @@ export class GameManager {
   public setClass(cls: TemplarClass) {
     this.cls = cls;
     emit(EVENT.UPDATE_TEMPLAR_CLASS, cls);
-    this.state = GameState.IDLE;
+    this.state = GameState.INTRO;
   }
 
   public toggleBGM() {

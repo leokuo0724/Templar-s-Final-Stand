@@ -75,20 +75,8 @@ export class CustomButton extends SpriteClass {
     if (this.isDisabled) return;
     const canvas = getCanvas();
     this.canvasCallback = (event: PointerEvent) => {
-      const { offsetLeft, offsetTop } = event.target as HTMLCanvasElement;
-      const { world } = this;
-      const minX = world.x - world.width / 2;
-      const maxX = world.x + world.width / 2;
-      const minY = world.y - world.height / 2;
-      const maxY = world.y + world.height / 2;
-
-      const { width: w, height: h } = canvas;
-      const scale = Math.min(innerWidth / w, innerHeight / h, devicePixelRatio);
-      const x = (event.x - offsetLeft) / scale;
-      const y = (event.y - offsetTop) / scale;
-      if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-        callback();
-      }
+      const isClicked = detectCanvasClick(event, this);
+      if (isClicked) callback();
     };
     canvas.addEventListener("pointerdown", this.canvasCallback);
   }
@@ -97,4 +85,22 @@ export class CustomButton extends SpriteClass {
       getCanvas().removeEventListener("pointerdown", this.canvasCallback);
     }
   }
+}
+
+export function detectCanvasClick(
+  event: PointerEvent,
+  sprite: Sprite
+): boolean {
+  const { offsetLeft, offsetTop } = event.target as HTMLCanvasElement;
+  const { world } = sprite;
+  const minX = world.x - world.width / 2;
+  const maxX = world.x + world.width / 2;
+  const minY = world.y - world.height / 2;
+  const maxY = world.y + world.height / 2;
+
+  const { width: w, height: h } = getCanvas();
+  const scale = Math.min(innerWidth / w, innerHeight / h, devicePixelRatio);
+  const x = (event.x - offsetLeft) / scale;
+  const y = (event.y - offsetTop) / scale;
+  return x >= minX && x <= maxX && y >= minY && y <= maxY;
 }

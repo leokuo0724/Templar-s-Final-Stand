@@ -9,4 +9,5 @@ export const EVENT = {
   GAME_OVER: "g_o",
   TEMPLAR_ATTACK: "t_a",
   TEMPLAR_BUFF_EFFECT: "t_b_e",
+  GAME_START: "g_s",
 };

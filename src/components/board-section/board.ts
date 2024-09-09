@@ -19,6 +19,7 @@ import {
 import { EnemyCard } from "../sprites/card/enemy-card";
 import { zzfx } from "../../audios/zzfx";
 import { makeUpgradeSFX } from "../../audios/sfx";
+import { tween } from "../../utils/tween-utils";
 
 type BattleInfo = {
   attacker: CharacterCard;
@@ -40,12 +41,12 @@ export class Board extends GameObjectClass {
   private templarCard: TemplarCard;
 
   constructor(x: number, y: number) {
-    super({ x, y });
+    super({ x, y, anchor: { x: 0.5, y: 0.5 } });
     on(EVENT.SWIPE, this.onSwipe.bind(this));
 
     const bg = Sprite({
-      x: 0,
-      y: 0,
+      x: 0 - BOARD_SIZE / 2,
+      y: 0 - BOARD_SIZE / 2,
       width: BOARD_SIZE,
       height: BOARD_SIZE,
       color: COLOR.GRAY_7,
@@ -55,8 +56,8 @@ export class Board extends GameObjectClass {
     for (let i = 0; i < GRIDS_IN_LINE; i++) {
       for (let j = 0; j < GRIDS_IN_LINE; j++) {
         const grid = new Grid({
-          x: PADDING + i * (GRID_SIZE + GAP) + GRID_SIZE / 2,
-          y: PADDING + j * (GRID_SIZE + GAP) + GRID_SIZE / 2,
+          x: PADDING + i * (GRID_SIZE + GAP) + GRID_SIZE / 2 - BOARD_SIZE / 2,
+          y: PADDING + j * (GRID_SIZE + GAP) + GRID_SIZE / 2 - BOARD_SIZE / 2,
           coord: [j, i],
         });
         this.grids.push(grid);
@@ -75,6 +76,14 @@ export class Board extends GameObjectClass {
     this.spawnCards();
 
     on(EVENT.ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
+    on(EVENT.UPDATE_TEMPLAR_CLASS, this.onClsUpdated.bind(this));
+    on(EVENT.GAME_START, this.onGameStart.bind(this));
+  }
+  private async onClsUpdated() {
+    await tween(this, { scale: 4 }, 200);
+  }
+  private async onGameStart() {
+    await tween(this, { scale: 1 }, 200);
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
