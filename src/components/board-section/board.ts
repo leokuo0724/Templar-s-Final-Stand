@@ -231,7 +231,8 @@ export class Board extends GameObjectClass {
               }
               this.removeChild(occupiedCard);
               const targetGrid = this.getGridByCoord([nextJ, nextI]);
-              await card.moveTo(targetGrid.x, targetGrid.y);
+              if (card.x !== targetGrid.x || card.y !== targetGrid.y)
+                await card.moveTo(targetGrid.x, targetGrid.y);
               continue;
             } else {
               break;
@@ -241,7 +242,8 @@ export class Board extends GameObjectClass {
           currJ = nextJ;
         }
         const targetGrid = this.getGridByCoord([currJ, currI]);
-        await card.moveTo(targetGrid.x, targetGrid.y);
+        if (card.x !== targetGrid.x || card.y !== targetGrid.y)
+          await card.moveTo(targetGrid.x, targetGrid.y);
         this.occuInfo[j][i] = null;
         if (card instanceof CharacterCard && card.health <= 0) continue;
         this.occuInfo[currJ][currI] = card;
