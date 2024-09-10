@@ -27,9 +27,9 @@ export class CardFactory {
       const randomItem = Math.random() > 0.5 ? CardType.P : CardType.S;
       const itemOrder = [
         CardType.E,
-        isD ? CardType.S : CardType.W,
+        isD ? CardType.S : CardType.W, // dual
         randomItem,
-        isK ? CardType.W : CardType.P,
+        isK ? CardType.W : CardType.P, // dual
         isD ? CardType.W : randomItem,
       ];
       return CardFactory.factory({
