@@ -96,23 +96,9 @@ const getEnemyBuffsAndDesc = (
         buff: {
           attackDirection: AttackDirection.AROUND,
           health: 2 * factor,
+          attack: 1 * factor,
         },
         desc: `"Whirlstriker"\nRange: around`,
-      },
-      {
-        buff: {
-          attackDirection: AttackDirection.CROSS,
-          attack: 1 * factor,
-          health: 1 * factor,
-        },
-        desc: `"Spearman"\nRange: cross`,
-      },
-      {
-        buff: {
-          hitBack: 3 * factor,
-          health: 2 * factor,
-        },
-        desc: `"Counterstriker"\nHit back: ${3 * factor}`,
       },
       {
         buff: {
@@ -122,10 +108,24 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
+          hitBack: 2 * factor,
+          health: 2 * factor,
+        },
+        desc: `"Counterstriker"\nHit back: ${2 * factor}`,
+      },
+      {
+        buff: {
           attackType: AttackType.PENETRATE,
           attack: 2 * factor,
         },
         desc: `"Penetrator"\nPenetrate shield`,
+      },
+      {
+        buff: {
+          attackDirection: AttackDirection.CROSS,
+          health: 1 * factor,
+        },
+        desc: `"Spearman"\nRange: cross`,
       },
       {
         buff: {
