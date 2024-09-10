@@ -46,7 +46,7 @@ export class EnemyCard extends CharacterCard {
       wizard,
       Direction.UP,
       false,
-      wizard.attackType === AttackType.PENETRATE,
+      wizard.attackType === AttackType.P,
       Math.floor(level * factor * 0.8)
     );
   }
@@ -66,8 +66,8 @@ export class EnemyCard extends CharacterCard {
     this.attack = 2 + 1 * level;
     this.shield = 0;
     this.hitRate = 0.8;
-    this.attackDirection = AttackDirection.FRONT;
-    this.attackType = AttackType.NORMAL;
+    this.attackDirection = AttackDirection.F;
+    this.attackType = AttackType.N;
     this.hitBack = 0;
 
     if (gm.isElite) this.circle.color = COLOR.BROWN_8;
@@ -111,7 +111,7 @@ const getEnemyBuffsAndDesc = (
     const elites = [
       {
         buff: {
-          attackDirection: AttackDirection.AROUND,
+          attackDirection: AttackDirection.A,
           health: 2 * factor,
           attack: 1 * factor,
         },
@@ -135,7 +135,7 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
-          attackType: AttackType.PENETRATE,
+          attackType: AttackType.P,
           attack: 2 * factor,
         },
         desc: `"Spearman"\nPenetrate shield`,
@@ -143,7 +143,7 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
-          attackDirection: AttackDirection.CROSS,
+          attackDirection: AttackDirection.C,
           health: 1 * factor,
         },
         desc: `"Crossblade"\nRange: cross`,
@@ -151,8 +151,8 @@ const getEnemyBuffsAndDesc = (
       },
       {
         buff: {
-          attackDirection: AttackDirection.AROUND,
-          attackType: AttackType.PENETRATE,
+          attackDirection: AttackDirection.A,
+          attackType: AttackType.P,
           shield: 5 * factor,
         },
         desc: `"Lancepiercer"\nPenetrate, around`,

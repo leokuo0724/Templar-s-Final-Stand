@@ -184,13 +184,13 @@ const getWeaponLevelBuff = (
   } else if (level === 3) {
     return {
       attack,
-      attackDirection: AttackDirection.AROUND,
+      attackDirection: AttackDirection.A,
       hitBack: 1 * factor,
     };
   } else {
     return {
       attack,
-      attackDirection: AttackDirection.CROSS,
+      attackDirection: AttackDirection.C,
       hitBack: 3 * factor,
     };
   }

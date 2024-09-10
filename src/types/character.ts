@@ -1,17 +1,17 @@
 export enum AttackDirection {
-  FRONT = "front", // 1 grid
-  AROUND = "around", // 4 grid
-  CROSS = "cross", // 8 grid
+  F = "front", // 1 grid
+  A = "around", // 4 grid
+  C = "cross", // 8 grid
 }
 export const DIRECTION_TIER_MAP = {
-  [AttackDirection.FRONT]: 2,
-  [AttackDirection.AROUND]: 1,
-  [AttackDirection.CROSS]: 0,
+  [AttackDirection.F]: 2,
+  [AttackDirection.A]: 1,
+  [AttackDirection.C]: 0,
 };
 
 export enum AttackType {
-  NORMAL = "normal",
-  PENETRATE = "penetrate",
+  N = "normal",
+  P = "penetrate",
 }
 
 export type CharacterProps = {

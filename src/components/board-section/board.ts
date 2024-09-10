@@ -296,9 +296,9 @@ export class Board extends GameObjectClass {
         const card = this.occuInfo[j][i];
         if (!(card instanceof CharacterCard)) continue;
         const { attackDirection } = card;
-        const isNormalCase = attackDirection === AttackDirection.FRONT;
-        const isAroundCase = attackDirection === AttackDirection.AROUND;
-        const isCrossCase = attackDirection === AttackDirection.CROSS;
+        const isNormalCase = attackDirection === AttackDirection.F;
+        const isAroundCase = attackDirection === AttackDirection.A;
+        const isCrossCase = attackDirection === AttackDirection.C;
 
         if (isNormalCase) {
           const targetJ =
@@ -396,7 +396,7 @@ export class Board extends GameObjectClass {
         direction,
         target,
         false,
-        attacker.attackType === AttackType.PENETRATE
+        attacker.attackType === AttackType.P
       );
     }
   }
@@ -437,12 +437,12 @@ export class Board extends GameObjectClass {
                   DIRECTION_TIER_MAP[a.buff[ad]!] -
                   DIRECTION_TIER_MAP[b.buff[ad]!]
               )[0];
-            debuff[key] = remain ? remain.buff[ad] : AttackDirection.FRONT;
+            debuff[key] = remain ? remain.buff[ad] : AttackDirection.F;
           } else if (key === at) {
             const remain = gm.currentItems.filter(
               (i) => !!i.buff[at] && i.duration > 0
             )[0];
-            debuff[key] = remain ? remain.buff[at] : AttackType.NORMAL;
+            debuff[key] = remain ? remain.buff[at] : AttackType.N;
           } else if (key !== "shield") {
             debuff[key] = (value as number) * -1;
           }

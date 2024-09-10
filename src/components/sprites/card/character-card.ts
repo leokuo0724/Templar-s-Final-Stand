@@ -41,9 +41,9 @@ export abstract class CharacterCard extends BaseCard {
   public attack: number = 0;
   public hitRate: number = 0;
   public critical: number = 0;
-  public attackDirection: AttackDirection = AttackDirection.FRONT;
+  public attackDirection: AttackDirection = AttackDirection.F;
   public hitBack: number = 0;
-  public attackType: string = AttackType.NORMAL;
+  public attackType: string = AttackType.N;
 
   constructor({ type, x, y, belongs }: CharacterCardProps) {
     super({ type, x, y });
@@ -244,7 +244,7 @@ export abstract class CharacterCard extends BaseCard {
     this.hitRate = Math.max(Math.min(this.hitRate, 1), 0);
     this.critical += buff.critical || 0;
     this.critical = Math.max(Math.min(this.critical, 1), 0);
-    if (this.attackDirection !== AttackDirection.CROSS || isDebuff) {
+    if (this.attackDirection !== AttackDirection.C || isDebuff) {
       this.attackDirection = buff.attackDirection || this.attackDirection;
     }
     this.attackType = buff.attackType || this.attackType;

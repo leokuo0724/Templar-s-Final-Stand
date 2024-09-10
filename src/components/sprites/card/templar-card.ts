@@ -58,8 +58,8 @@ export class TemplarCard extends CharacterCard {
     this.attack = isK ? 4 : 1;
     this.hitRate = isW ? 0.65 : 0.8;
     this.critical = 0.1;
-    this.attackDirection = AttackDirection.FRONT;
-    this.attackType = AttackType.NORMAL;
+    this.attackDirection = AttackDirection.F;
+    this.attackType = AttackType.N;
     this.hitBack = isD ? this.shield : 0;
     if (isD) this.updateWeight(3);
     this.refreshText();
