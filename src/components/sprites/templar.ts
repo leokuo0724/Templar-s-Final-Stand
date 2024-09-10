@@ -32,7 +32,7 @@ export class Templar extends GameObjectClass {
   constructor({ x, y, condition }: TemplarProps) {
     super({ x, y });
     this.condition = condition;
-    this.setScale(condition === "b" ? 0.5 : 1);
+    this.setScale(condition === "b" ? 0.6 : 1);
     this.backHand = new TemplarBackHand(46, 60);
     this.head = new TemplarHead(14, 2);
     this.frontHand = new TemplarFrontHand(4, 58);

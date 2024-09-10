@@ -7,7 +7,7 @@ import {
   OptionalCharacterProps,
 } from "../../../types/character";
 import { EVENT } from "../../../constants/event";
-import { emit, Text } from "kontra";
+import { emit, Sprite, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
@@ -52,8 +52,7 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected getMainIcon() {
-    const gm = GameManager.getInstance();
-    return new Enemy(-18, -36, gm.isElite);
+    return Sprite();
   }
 
   protected deathCallback(): void {
@@ -75,21 +74,39 @@ export class EnemyCard extends CharacterCard {
     this.critical = gm.isElite ? 0 : 0.1; // Prevent elite enemy from critical (overpower)
 
     // Add extra buff
-    const { buff, desc } = randomPick(
+    const { buff, desc, character } = randomPick(
       getEnemyBuffsAndDesc(level + 1, gm.isElite)
     );
     this.applyBuff(buff);
     this.descText.text = desc;
     this.refreshText();
     this.damageBg.opacity = 0;
+
+    // reset icon
+    const mainIcon = new Enemy(-23, -36, character);
+    // const mainIcon = new Enemy(-18, -36, EnemyCharacter.CROSSBLADE);
+    this.main.children[1] = mainIcon; // FIXME: This is a hacky way to replace the icon
   }
+}
+
+export enum EnemyCharacter {
+  WHIRLSTRIKER,
+  GUARDIAN,
+  COUNTERSTRIKER,
+  SPEARMAN,
+  CROSSBLADE,
+  LANCEPIERCER,
 }
 
 let eliteCount = -1;
 const getEnemyBuffsAndDesc = (
   factor: number,
   isElite: boolean
-): { buff: OptionalCharacterProps; desc: string }[] => {
+): {
+  buff: OptionalCharacterProps;
+  desc: string;
+  character: EnemyCharacter | null;
+}[] => {
   if (isElite) {
     const elites = [
       {
@@ -99,12 +116,14 @@ const getEnemyBuffsAndDesc = (
           attack: 1 * factor,
         },
         desc: `"Whirlstriker"\nRange: around`,
+        character: EnemyCharacter.WHIRLSTRIKER,
       },
       {
         buff: {
           shield: 4 * factor,
         },
         desc: `"Guardian"\nShield: ${4 * factor}`,
+        character: EnemyCharacter.GUARDIAN,
       },
       {
         buff: {
@@ -112,20 +131,23 @@ const getEnemyBuffsAndDesc = (
           health: 2 * factor,
         },
         desc: `"Counterstriker"\nHit back: ${2 * factor}`,
+        character: EnemyCharacter.COUNTERSTRIKER,
       },
       {
         buff: {
           attackType: AttackType.PENETRATE,
           attack: 2 * factor,
         },
-        desc: `"Penetrator"\nPenetrate shield`,
+        desc: `"Spearman"\nPenetrate shield`,
+        character: EnemyCharacter.SPEARMAN,
       },
       {
         buff: {
           attackDirection: AttackDirection.CROSS,
           health: 1 * factor,
         },
-        desc: `"Spearman"\nRange: cross`,
+        desc: `"Crossblade"\nRange: cross`,
+        character: EnemyCharacter.CROSSBLADE,
       },
       {
         buff: {
@@ -133,7 +155,8 @@ const getEnemyBuffsAndDesc = (
           attackType: AttackType.PENETRATE,
           shield: 5 * factor,
         },
-        desc: `"Stormpiercer"\nPenetrate, around`,
+        desc: `"Lancepiercer"\nPenetrate, around`,
+        character: EnemyCharacter.LANCEPIERCER,
       },
     ];
     eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);
@@ -145,6 +168,10 @@ const getEnemyBuffsAndDesc = (
       { critical: 0.05 * factor, health: -2 * factor },
       { attack: 1 * factor, hitRate: -0.2 },
     ];
-    return buffs.map((buff) => ({ buff, desc: getEnemyPropsDescText(buff) }));
+    return buffs.map((buff) => ({
+      buff,
+      desc: getEnemyPropsDescText(buff),
+      character: null,
+    }));
   }
 };

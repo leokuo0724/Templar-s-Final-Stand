@@ -20,7 +20,6 @@ export abstract class BaseCard extends SpriteClass {
   public type: CardType;
   protected main: Sprite;
   public isActive: boolean = true;
-  protected mainIcon: GameObject;
   protected circle: Sprite;
 
   constructor({ type, x, y }: CardProps) {
@@ -47,10 +46,10 @@ export abstract class BaseCard extends SpriteClass {
       radius: isTemplar ? 28 : 24,
       color: getCardColor(type, CardPart.CIRCLE),
       anchor: { x: 0.5, y: 0.5 },
-      y: isTemplar ? 0 : this.type === CardType.ENEMY ? -14 : -20,
+      y: isTemplar ? -4 : this.type === CardType.ENEMY ? -14 : -20,
     });
-    this.mainIcon = this.getMainIcon();
-    this.main.addChild([this.circle, this.mainIcon]);
+    const mainIcon = this.getMainIcon();
+    this.main.addChild([this.circle, mainIcon]);
   }
 
   protected abstract getMainIcon(): GameObject;
