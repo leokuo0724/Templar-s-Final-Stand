@@ -12,8 +12,8 @@ type CardProps = {
 };
 
 enum CardPart {
-  BACKGROUND,
-  CIRCLE,
+  B, // Background
+  C, // Circle
 }
 
 export abstract class BaseCard extends SpriteClass {
@@ -36,7 +36,7 @@ export abstract class BaseCard extends SpriteClass {
     this.main = Sprite({
       width: GRID_SIZE,
       height: GRID_SIZE,
-      color: getCardColor(type, CardPart.BACKGROUND),
+      color: getCardColor(type, CardPart.B),
       anchor: { x: 0.5, y: 0.5 },
     });
     this.addChild(this.main);
@@ -44,7 +44,7 @@ export abstract class BaseCard extends SpriteClass {
     const isTemplar = type === CardType.T;
     this.circle = Sprite({
       radius: isTemplar ? 28 : 24,
-      color: getCardColor(type, CardPart.CIRCLE),
+      color: getCardColor(type, CardPart.C),
       anchor: { x: 0.5, y: 0.5 },
       y: isTemplar ? -4 : this.type === CardType.E ? -14 : -20,
     });
@@ -105,37 +105,37 @@ function getCardColor(type: CardType, part: CardPart) {
   switch (type) {
     case CardType.T:
       switch (part) {
-        case CardPart.BACKGROUND:
+        case CardPart.B:
           return COLOR.YELLOW_7;
-        case CardPart.CIRCLE:
+        case CardPart.C:
           return COLOR.YELLOW_6;
       }
     case CardType.E:
       switch (part) {
-        case CardPart.BACKGROUND:
+        case CardPart.B:
           return COLOR.RED_7;
-        case CardPart.CIRCLE:
+        case CardPart.C:
           return COLOR.RED_6;
       }
     case CardType.W:
       switch (part) {
-        case CardPart.BACKGROUND:
+        case CardPart.B:
           return COLOR.BLUE_7;
-        case CardPart.CIRCLE:
+        case CardPart.C:
           return COLOR.BLUE_6;
       }
     case CardType.S:
       switch (part) {
-        case CardPart.BACKGROUND:
+        case CardPart.B:
           return COLOR.BROWN_7;
-        case CardPart.CIRCLE:
+        case CardPart.C:
           return COLOR.BROWN_6;
       }
     case CardType.P:
       switch (part) {
-        case CardPart.BACKGROUND:
+        case CardPart.B:
           return COLOR.GREEN_6;
-        case CardPart.CIRCLE:
+        case CardPart.C:
           return COLOR.GREEN_5;
       }
   }

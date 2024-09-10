@@ -124,10 +124,10 @@ export class Board extends GameObjectClass {
 
   private async moveCards(direction: Direction) {
     const gm = GameManager.gI();
-    const moveRight = direction === Direction.RIGHT;
-    const moveLeft = direction === Direction.LEFT;
-    const moveUp = direction === Direction.UP;
-    const moveDown = direction === Direction.DOWN;
+    const moveRight = direction === Direction.R;
+    const moveLeft = direction === Direction.L;
+    const moveUp = direction === Direction.U;
+    const moveDown = direction === Direction.D;
 
     const startI = moveRight ? GRIDS_IN_LINE - 2 : 1;
     const startJ = moveDown ? GRIDS_IN_LINE - 2 : 1;
@@ -303,16 +303,16 @@ export class Board extends GameObjectClass {
         if (isNormalCase) {
           const targetJ =
             j +
-            (direction === Direction.UP
+            (direction === Direction.U
               ? -1
-              : direction === Direction.DOWN
+              : direction === Direction.D
               ? 1
               : 0);
           const targetI =
             i +
-            (direction === Direction.LEFT
+            (direction === Direction.L
               ? -1
-              : direction === Direction.RIGHT
+              : direction === Direction.R
               ? 1
               : 0);
           const targetCard = this.occuInfo?.[targetJ]?.[targetI];
@@ -345,12 +345,12 @@ export class Board extends GameObjectClass {
             ) {
               const direction =
                 di === 0 && dj === 1
-                  ? Direction.RIGHT
+                  ? Direction.R
                   : di === 1 && dj === 0
-                  ? Direction.DOWN
+                  ? Direction.D
                   : di === 0 && dj === -1
-                  ? Direction.LEFT
-                  : Direction.UP;
+                  ? Direction.L
+                  : Direction.U;
               battleInfos.push({
                 attacker: card,
                 target: targetCard,
@@ -377,12 +377,12 @@ export class Board extends GameObjectClass {
                   target: targetCard,
                   direction:
                     k < variableIndex && isVertical
-                      ? Direction.UP
+                      ? Direction.U
                       : k < variableIndex && !isVertical
-                      ? Direction.LEFT
+                      ? Direction.L
                       : k > variableIndex && isVertical
-                      ? Direction.DOWN
-                      : Direction.RIGHT,
+                      ? Direction.D
+                      : Direction.R,
                 });
               }
             }

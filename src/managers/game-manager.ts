@@ -52,17 +52,17 @@ export class GameManager {
 
   private constructor() {
     new SwipeDetector({
-      onSwipeLeft: this.swipe.bind(this, Direction.LEFT),
-      onSwipeRight: this.swipe.bind(this, Direction.RIGHT),
-      onSwipeUp: this.swipe.bind(this, Direction.UP),
-      onSwipeDown: this.swipe.bind(this, Direction.DOWN),
+      onSwipeLeft: this.swipe.bind(this, Direction.L),
+      onSwipeRight: this.swipe.bind(this, Direction.R),
+      onSwipeUp: this.swipe.bind(this, Direction.U),
+      onSwipeDown: this.swipe.bind(this, Direction.D),
     });
 
     window.addEventListener("keydown", (e) => {
-      if (["ArrowLeft", "a"].includes(e.key)) this.swipe(Direction.LEFT);
-      if (["ArrowRight", "d"].includes(e.key)) this.swipe(Direction.RIGHT);
-      if (["ArrowUp", "w"].includes(e.key)) this.swipe(Direction.UP);
-      if (["ArrowDown", "s"].includes(e.key)) this.swipe(Direction.DOWN);
+      if (["ArrowLeft", "a"].includes(e.key)) this.swipe(Direction.L);
+      if (["ArrowRight", "d"].includes(e.key)) this.swipe(Direction.R);
+      if (["ArrowUp", "w"].includes(e.key)) this.swipe(Direction.U);
+      if (["ArrowDown", "s"].includes(e.key)) this.swipe(Direction.D);
     });
 
     on(EVENT.SWIPE_FINISH, () => {

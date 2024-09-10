@@ -44,7 +44,7 @@ export class EnemyCard extends CharacterCard {
     const factor = gm.level;
     await this.applyDamage(
       wizard,
-      Direction.UP,
+      Direction.U,
       false,
       wizard.attackType === AttackType.P,
       Math.floor(level * factor * 0.8)

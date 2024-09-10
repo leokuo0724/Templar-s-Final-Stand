@@ -102,8 +102,8 @@ export abstract class CharacterCard extends BaseCard {
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
 
-    if ([Direction.RIGHT, Direction.LEFT].includes(direction)) {
-      const xFactor = direction === Direction.RIGHT ? -1 : 1;
+    if ([Direction.R, Direction.L].includes(direction)) {
+      const xFactor = direction === Direction.R ? -1 : 1;
       await tween(
         this,
         { targetX: this.x + 10 * xFactor, targetY: this.y },
@@ -115,7 +115,7 @@ export abstract class CharacterCard extends BaseCard {
         40
       );
     } else {
-      const yFactor = direction === Direction.DOWN ? -1 : 1;
+      const yFactor = direction === Direction.D ? -1 : 1;
       await tween(
         this,
         { targetX: this.x, targetY: this.y + 10 * yFactor },
@@ -133,14 +133,14 @@ export abstract class CharacterCard extends BaseCard {
 
     const counterDirection = () => {
       switch (direction) {
-        case Direction.RIGHT:
-          return Direction.LEFT;
-        case Direction.LEFT:
-          return Direction.RIGHT;
-        case Direction.UP:
-          return Direction.DOWN;
-        case Direction.DOWN:
-          return Direction.UP;
+        case Direction.R:
+          return Direction.L;
+        case Direction.L:
+          return Direction.R;
+        case Direction.U:
+          return Direction.D;
+        case Direction.D:
+          return Direction.U;
       }
     };
     await Promise.all([
