@@ -145,7 +145,7 @@ export class ItemCard extends BaseCard {
   }
 
   public pickBuff() {
-    const { isK, isW, isD, level } = GameManager.getInstance();
+    const { isK, isW, isD, level } = GameManager.gI();
     const factor = level + 1;
     switch (this.type) {
       case CardType.W:
@@ -163,7 +163,7 @@ export class ItemCard extends BaseCard {
 const getItemWeight = (type: CardType, level: number) => {
   if (type === CardType.P) return 0;
 
-  const { cls } = GameManager.getInstance();
+  const { cls } = GameManager.gI();
   const baseWeight = BASE_WEIGHT_MAP[cls!][type as CardType.W | CardType.S];
   return baseWeight + level;
 };

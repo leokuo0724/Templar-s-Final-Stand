@@ -123,7 +123,7 @@ export class Board extends GameObjectClass {
   }
 
   private async moveCards(direction: Direction) {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     const moveRight = direction === Direction.RIGHT;
     const moveLeft = direction === Direction.LEFT;
     const moveUp = direction === Direction.UP;
@@ -268,7 +268,7 @@ export class Board extends GameObjectClass {
   }
 
   private spawnCards() {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     const isDual = gm.move % 5 === 1 || gm.move % 5 === 3;
     for (let i = 0; i < (isDual ? 2 : 1); i++) {
       const emptyIndices = [];
@@ -402,7 +402,7 @@ export class Board extends GameObjectClass {
   }
 
   private async checkDuration() {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
 
     const deprecated = [];
     // items on board

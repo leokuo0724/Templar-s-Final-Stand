@@ -15,7 +15,7 @@ type CreateCardProps = {
 
 export class CardFactory {
   static createCard(x: number, y: number): BaseCard {
-    const { move, isD, isK } = GameManager.getInstance();
+    const { move, isD, isK } = GameManager.gI();
     const isSpawnEliteEnemy = move % 13 === 0;
     if (isSpawnEliteEnemy) {
       return CardFactory.factory({
@@ -42,7 +42,7 @@ export class CardFactory {
 
   static factory(props: CreateCardProps): BaseCard {
     const { type, x, y } = props;
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     switch (type) {
       case CardType.T:
         return new TemplarCard({ x, y });

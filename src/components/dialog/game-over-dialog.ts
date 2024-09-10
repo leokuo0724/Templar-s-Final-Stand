@@ -32,7 +32,7 @@ export class GameOverDialog extends OverlayDialog {
   private show() {
     if (this.isShown) return;
     this.isShown = true;
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     let bestScore = localStorage.getItem(LOCAL_STORAGE_KEY.BEST_SCORE);
     if (gm.move > parseInt(bestScore ?? "0")) {
       bestScore = `${gm.move}`;
@@ -52,7 +52,7 @@ export class GameOverDialog extends OverlayDialog {
   }
 
   public render() {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.GAME_OVER) return;
     super.render();
   }

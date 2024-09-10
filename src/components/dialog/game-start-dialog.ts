@@ -49,7 +49,7 @@ export class GameStartDialog extends OverlayDialog {
   }
 
   private onButtonClick(cls: TemplarClass) {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.INIT) return;
     gm.setClass(cls);
     this.wBtn.offClick();
@@ -58,7 +58,7 @@ export class GameStartDialog extends OverlayDialog {
   }
 
   public render(): void {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.INIT) return;
     super.render();
   }

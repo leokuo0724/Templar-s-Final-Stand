@@ -81,7 +81,7 @@ export class Templar extends GameObjectClass {
 
   private async onTemplarAttack() {
     if (this.condition === "d") return;
-    const { isK, isD, isW } = GameManager.getInstance();
+    const { isK, isD, isW } = GameManager.gI();
     if (isK) {
       const fCurrX = this.frontHand.x;
       const fCurrY = this.frontHand.y;
@@ -113,7 +113,7 @@ export class Templar extends GameObjectClass {
   }
 
   render(): void {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state === GameState.GAME_OVER && this.condition === "b") return;
     super.render();
   }
@@ -191,7 +191,7 @@ class TemplarFrontHand extends GameObjectClass {
     super({ x, y });
   }
   draw(): void {
-    const { isK } = GameManager.getInstance();
+    const { isK } = GameManager.gI();
     if (isK) drawSword(this.context, COLOR.WHITE_6, 16, -20);
 
     drawPolygon(this.context, "2 2 0 10 13 12 19 7 16 0 10 0 2 2", COLOR.RED_7);
@@ -203,7 +203,7 @@ class TemplarBackHand extends GameObjectClass {
     super({ x, y });
   }
   draw(): void {
-    const { isD, isW } = GameManager.getInstance();
+    const { isD, isW } = GameManager.gI();
     if (isD) {
       drawShield(this.context, COLOR.BROWN_7, -14, -28);
     }

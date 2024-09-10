@@ -13,7 +13,7 @@ export function tween(
   delay: number = 0
 ) {
   return new Promise((resolve) => {
-    const { speed } = GameManager.getInstance();
+    const { speed } = GameManager.gI();
     const { targetX, targetY, opacity } = config;
     const fps = 60; // Frames per second
     const steps = fps * (duration / 1000); // Total number of steps

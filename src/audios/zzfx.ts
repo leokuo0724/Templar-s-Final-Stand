@@ -6,7 +6,7 @@ let zzfxX;
 
 // zzfx() - the universal entry point -- returns a AudioBufferSourceNode
 export const zzfx = (...t) => {
-  const { music } = GameManager.getInstance();
+  const { music } = GameManager.gI();
   if (!music) return;
   zzfxP(zzfxG(...t));
 };

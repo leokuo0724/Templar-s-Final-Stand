@@ -29,11 +29,11 @@ type CharacterCardProps = {
 };
 
 export abstract class CharacterCard extends BaseCard {
-  protected damageBg: Sprite;
-  protected attackText: Text;
-  protected healthText: Text;
-  protected shieldText: Text;
-  protected impactText: ImpactText;
+  protected dmBg: Sprite;
+  protected aT: Text; // attack text
+  protected hT: Text; // health text
+  protected sT: Text; // shield text
+  protected iT: ImpactText; // impact text
 
   public belongs: Belongs;
   public health: number = 0;
@@ -51,7 +51,7 @@ export abstract class CharacterCard extends BaseCard {
 
     this.color = COLOR.DARK_6;
 
-    this.damageBg = Sprite({
+    this.dmBg = Sprite({
       x: 0,
       y: 0,
       width: GRID_SIZE,
@@ -60,34 +60,34 @@ export abstract class CharacterCard extends BaseCard {
       color: COLOR.WHITE_6,
       opacity: 0,
     });
-    this.attackText = Text({
+    this.aT = Text({
       text: `${this.attack}`,
       x: 42,
       y: 39,
       ...COMMON_TEXT_CONFIG,
     });
-    this.healthText = Text({
+    this.hT = Text({
       text: `${this.health}`,
       x: -33,
       y: -34,
       ...COMMON_TEXT_CONFIG,
     });
-    this.shieldText = Text({
+    this.sT = Text({
       text: `${this.shield}`,
       x: 37,
       y: -34,
       ...COMMON_TEXT_CONFIG,
     });
-    this.impactText = new ImpactText(0);
+    this.iT = new ImpactText(0);
     this.main.addChild([
-      this.damageBg,
+      this.dmBg,
       new SwordIcon(20, 30),
-      this.attackText,
+      this.aT,
       new HeartIcon(-45.5, -45.5),
-      this.healthText,
+      this.hT,
       new ShieldIcon(28, -46),
-      this.shieldText,
-      this.impactText,
+      this.sT,
+      this.iT,
     ]);
   }
 
@@ -151,10 +151,10 @@ export abstract class CharacterCard extends BaseCard {
 
   private async playDamage() {
     for (let i = 0; i < 2; i++) {
-      await tween(this.damageBg, { opacity: 0.5 }, 80);
-      await tween(this.damageBg, { opacity: 0 }, 0);
+      await tween(this.dmBg, { opacity: 0.5 }, 80);
+      await tween(this.dmBg, { opacity: 0 }, 0);
     }
-    this.damageBg.opacity = 0;
+    this.dmBg.opacity = 0;
   }
 
   public async applyDamage(
@@ -167,7 +167,7 @@ export abstract class CharacterCard extends BaseCard {
     const { attack, hitBack, hitRate, critical } = attacker;
     const isHit = Math.random() <= hitRate;
     if (!isHit) {
-      await this.impactText.show("Miss");
+      await this.iT.show("Miss");
       if (this.hitBack > 0 && !isHitBack && !wizardAttack)
         await this.execAttack(counterDirection, attacker, true, false);
       return;
@@ -181,9 +181,9 @@ export abstract class CharacterCard extends BaseCard {
       : attack;
     const calculatedDamage = isCritical ? damage * 2 : damage;
     if (isCritical) {
-      await this.impactText.show(`Critical -${calculatedDamage}`);
+      await this.iT.show(`Critical -${calculatedDamage}`);
     } else {
-      await this.impactText.show(`-${calculatedDamage}`);
+      await this.iT.show(`-${calculatedDamage}`);
     }
 
     const remainingDamage = isPenetrate
@@ -195,10 +195,7 @@ export abstract class CharacterCard extends BaseCard {
   }
 
   public async applyOverweightDamage() {
-    await Promise.all([
-      this.impactText.show(`Overweight -1`),
-      this.updateHealth(-1),
-    ]);
+    await Promise.all([this.iT.show(`Overweight -1`), this.updateHealth(-1)]);
   }
 
   // return true if the card is dead
@@ -209,7 +206,7 @@ export abstract class CharacterCard extends BaseCard {
       this.deathCallback();
       return true;
     }
-    this.healthText.text = `${this.health}`;
+    this.hT.text = `${this.health}`;
   }
   protected abstract deathCallback(): void;
 
@@ -220,8 +217,8 @@ export abstract class CharacterCard extends BaseCard {
       remainingDamage = -this.shield;
       this.shield = 0;
     }
-    this.shieldText.text = `${this.shield}`;
-    const { isD } = GameManager.getInstance();
+    this.sT.text = `${this.shield}`;
+    const { isD } = GameManager.gI();
     if (this.type === CardType.T && isD) {
       this.hitBack = this.shield;
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
@@ -230,13 +227,13 @@ export abstract class CharacterCard extends BaseCard {
   }
   protected updateAttack(value: number) {
     this.attack += value;
-    this.attackText.text = `${this.attack}`;
+    this.aT.text = `${this.attack}`;
   }
   protected refreshText() {
-    this.attackText.text = `${this.attack}`;
-    this.healthText.text = `${this.health}`;
-    this.shieldText.text = `${this.shield}`;
-    this.impactText.reset();
+    this.aT.text = `${this.attack}`;
+    this.hT.text = `${this.health}`;
+    this.sT.text = `${this.shield}`;
+    this.iT.reset();
   }
 
   public applyBuff(buff: OptionalCharacterProps, isDebuff: boolean = false) {

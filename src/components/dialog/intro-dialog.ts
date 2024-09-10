@@ -63,7 +63,7 @@ export class IntroDialog extends SpriteClass {
   }
 
   onClick(event: PointerEvent) {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.INTRO) return;
     const canvas = getCanvas();
     const isClicked = detectCanvasClick(event, this);
@@ -82,7 +82,7 @@ export class IntroDialog extends SpriteClass {
   }
 
   render(): void {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.INTRO) return;
     super.render();
   }

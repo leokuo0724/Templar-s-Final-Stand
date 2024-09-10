@@ -42,7 +42,7 @@ export class TemplarCard extends CharacterCard {
   }
 
   protected deathCallback() {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     gm.gameOver();
   }
 
@@ -52,7 +52,7 @@ export class TemplarCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const { isD, isK, isW } = GameManager.getInstance();
+    const { isD, isK, isW } = GameManager.gI();
     this.health = isW ? 6 : 10;
     this.shield = isD ? 10 : 0;
     this.attack = isK ? 4 : 1;

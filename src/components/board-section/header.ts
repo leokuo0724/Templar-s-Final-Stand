@@ -36,7 +36,7 @@ export class Header extends GameObjectClass {
       opacity: 0,
     });
     enemyIndicator.addChild(enemyText);
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     const soundButton = new GhostButton(width - 78, 60, "Sound: ON");
     soundButton.bindClick(() => {
       gm.toggleBGM();
@@ -50,7 +50,7 @@ export class Header extends GameObjectClass {
     this.addChild([title, enemyIndicator, soundButton, speedButton]);
 
     on(EVENT.SWIPE, async () => {
-      const gm = GameManager.getInstance();
+      const gm = GameManager.gI();
       const move = gm.move;
       title.text = `MOVE ${move}`;
       if (gm.isElite) {

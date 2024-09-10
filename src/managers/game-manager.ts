@@ -70,7 +70,8 @@ export class GameManager {
       this.state = GameState.IDLE;
     });
   }
-  static getInstance() {
+  static gI() {
+    // get instance
     if (!GameManager.instance) {
       GameManager.instance = new GameManager();
     }

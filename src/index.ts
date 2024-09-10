@@ -13,7 +13,7 @@ import { IntroDialog } from "./components/dialog/intro-dialog";
 
 const { canvas } = init();
 
-GameManager.getInstance();
+GameManager.gI();
 
 function resize() {
   const { width: w, height: h } = canvas;

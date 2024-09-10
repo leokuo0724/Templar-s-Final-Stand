@@ -61,7 +61,7 @@ export class PrologueDialog extends OverlayDialog {
   }
 
   private async onTapStart() {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.PROLOGUE) return;
     gm.state = GameState.INIT;
     await Promise.all([
@@ -73,7 +73,7 @@ export class PrologueDialog extends OverlayDialog {
   }
 
   public render(): void {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     if (gm.state !== GameState.PROLOGUE && gm.state !== GameState.INIT) return;
     super.render();
   }

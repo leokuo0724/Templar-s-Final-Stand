@@ -36,7 +36,7 @@ export class ItemPanel extends SpriteClass {
     if (added.length > 0) this.addChild(added);
     if (removed.length > 0) this.removeChild(removed);
 
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     // mark all items as invisible
     await Promise.all(gm.currentItems.map((item) => item.setInactive(0)));
     await Promise.all(

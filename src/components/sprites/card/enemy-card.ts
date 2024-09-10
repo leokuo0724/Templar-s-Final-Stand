@@ -40,7 +40,7 @@ export class EnemyCard extends CharacterCard {
   }
 
   public async onWizardAttack(wizard: TemplarCard, level: number) {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     const factor = gm.level;
     await this.applyDamage(
       wizard,
@@ -60,7 +60,7 @@ export class EnemyCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const gm = GameManager.getInstance();
+    const gm = GameManager.gI();
     const level = gm.level;
     this.health = 5 + 2 * level;
     this.attack = 2 + 1 * level;
@@ -80,7 +80,7 @@ export class EnemyCard extends CharacterCard {
     this.applyBuff(buff);
     this.dT.text = desc;
     this.refreshText();
-    this.damageBg.opacity = 0;
+    this.dmBg.opacity = 0;
 
     // reset icon
     const mainIcon = new Enemy(-23, -36, character);
