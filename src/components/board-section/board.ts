@@ -67,7 +67,7 @@ export class Board extends GameObjectClass {
 
     const centerGrid = this.getGridByCoord([2, 2]);
     this.templarCard = CardFactory.factory({
-      type: CardType.TEMPLAR,
+      type: CardType.T,
       x: centerGrid.x,
       y: centerGrid.y,
     }) as TemplarCard;
@@ -196,11 +196,10 @@ export class Board extends GameObjectClass {
           const occupiedCard = this.occuInfo?.[nextJ]?.[nextI];
           if (occupiedCard) {
             const isTemplarEquip =
-              card.type === CardType.TEMPLAR &&
-              occupiedCard instanceof ItemCard;
+              card.type === CardType.T && occupiedCard instanceof ItemCard;
             const isItemUpgrade =
               card.type === occupiedCard.type && card instanceof ItemCard;
-            const potionAttackEnabled = gm.isWizard;
+            const potionAttackEnabled = gm.isW;
 
             if (isTemplarEquip || isItemUpgrade) {
               isTemplarEquip && card.applyBuff(occupiedCard.buff);
@@ -208,8 +207,8 @@ export class Board extends GameObjectClass {
               isItemUpgrade && zzfx(...makeUpgradeSFX(false));
               if (
                 potionAttackEnabled &&
-                occupiedCard.type === CardType.POTION &&
-                card.type === CardType.POTION
+                occupiedCard.type === CardType.P &&
+                card.type === CardType.P
               )
                 potionLevels.push(1);
 
@@ -218,13 +217,13 @@ export class Board extends GameObjectClass {
 
               if (
                 card instanceof TemplarCard &&
-                occupiedCard.type !== CardType.POTION
+                occupiedCard.type !== CardType.P
               ) {
                 card.updateWeight(occupiedCard.weight);
                 // @ts-ignore
                 equippedItems.push(occupiedCard);
               } else {
-                if (potionAttackEnabled && card.type === CardType.TEMPLAR)
+                if (potionAttackEnabled && card.type === CardType.T)
                   potionLevels.push(occupiedCard.level);
 
                 await occupiedCard.setInactive();

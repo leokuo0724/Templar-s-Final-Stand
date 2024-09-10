@@ -16,9 +16,9 @@ export enum GameState {
   GAME_OVER,
 }
 export enum TemplarClass {
-  KNIGHT = "Knight",
-  WIZARD = "Wizard",
-  DEFENDER = "Defender",
+  K = "Knight",
+  W = "Wizard",
+  D = "Defender",
 }
 
 export class GameManager {
@@ -39,14 +39,14 @@ export class GameManager {
   public music: AudioBufferSourceNode | null = null;
   public currentItems: ItemCard[] = [];
   public cls: TemplarClass | null = null;
-  public get isWizard() {
-    return this.cls === TemplarClass.WIZARD;
+  public get isW() {
+    return this.cls === TemplarClass.W;
   }
-  public get isKnight() {
-    return this.cls === TemplarClass.KNIGHT;
+  public get isK() {
+    return this.cls === TemplarClass.K;
   }
-  public get isDefender() {
-    return this.cls === TemplarClass.DEFENDER;
+  public get isD() {
+    return this.cls === TemplarClass.D;
   }
   public speed = 1; // 1x speed
 
@@ -108,7 +108,7 @@ export class GameManager {
 
   public addItems(itemCards: ItemCard[]) {
     itemCards.forEach((item) => {
-      if (this.isDefender) item.duration = Math.min(6, item.duration);
+      if (this.isD) item.duration = Math.min(6, item.duration);
       this.currentItems.push(item);
     });
     emit(EVENT.ITEMS_UPDATED, itemCards, []);

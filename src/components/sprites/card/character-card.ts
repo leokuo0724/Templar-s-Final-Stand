@@ -127,7 +127,7 @@ export abstract class CharacterCard extends BaseCard {
         40
       );
     }
-    if (this.type === CardType.TEMPLAR) emit(EVENT.TEMPLAR_ATTACK);
+    if (this.type === CardType.T) emit(EVENT.TEMPLAR_ATTACK);
     zzfx(...attackSFX);
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
 
@@ -221,8 +221,8 @@ export abstract class CharacterCard extends BaseCard {
       this.shield = 0;
     }
     this.shieldText.text = `${this.shield}`;
-    const { isDefender } = GameManager.getInstance();
-    if (this.type === CardType.TEMPLAR && isDefender) {
+    const { isD } = GameManager.getInstance();
+    if (this.type === CardType.T && isD) {
       this.hitBack = this.shield;
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
     }
@@ -253,7 +253,7 @@ export abstract class CharacterCard extends BaseCard {
     this.attackType = buff.attackType || this.attackType;
     this.hitBack += buff.hitBack || 0;
 
-    if (this.type === CardType.TEMPLAR) {
+    if (this.type === CardType.T) {
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
       if (!isDebuff) {
         const isBuff = checkIfBuff(buff);

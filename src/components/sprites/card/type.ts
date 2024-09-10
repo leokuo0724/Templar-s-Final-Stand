@@ -1,9 +1,9 @@
 export enum CardType {
-  TEMPLAR,
-  ENEMY,
-  WEAPON,
-  SHIELD,
-  POTION,
+  T, // Templar
+  E, // Enemy
+  W, // Weapon
+  S, // Shield
+  P, // Potion
 }
 
 export enum Belongs {

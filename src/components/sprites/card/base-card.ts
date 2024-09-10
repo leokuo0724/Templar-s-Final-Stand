@@ -41,12 +41,12 @@ export abstract class BaseCard extends SpriteClass {
     });
     this.addChild(this.main);
 
-    const isTemplar = type === CardType.TEMPLAR;
+    const isTemplar = type === CardType.T;
     this.circle = Sprite({
       radius: isTemplar ? 28 : 24,
       color: getCardColor(type, CardPart.CIRCLE),
       anchor: { x: 0.5, y: 0.5 },
-      y: isTemplar ? -4 : this.type === CardType.ENEMY ? -14 : -20,
+      y: isTemplar ? -4 : this.type === CardType.E ? -14 : -20,
     });
     const mainIcon = this.getMainIcon();
     this.main.addChild([this.circle, mainIcon]);
@@ -103,35 +103,35 @@ export abstract class BaseCard extends SpriteClass {
 // Utils
 function getCardColor(type: CardType, part: CardPart) {
   switch (type) {
-    case CardType.TEMPLAR:
+    case CardType.T:
       switch (part) {
         case CardPart.BACKGROUND:
           return COLOR.YELLOW_7;
         case CardPart.CIRCLE:
           return COLOR.YELLOW_6;
       }
-    case CardType.ENEMY:
+    case CardType.E:
       switch (part) {
         case CardPart.BACKGROUND:
           return COLOR.RED_7;
         case CardPart.CIRCLE:
           return COLOR.RED_6;
       }
-    case CardType.WEAPON:
+    case CardType.W:
       switch (part) {
         case CardPart.BACKGROUND:
           return COLOR.BLUE_7;
         case CardPart.CIRCLE:
           return COLOR.BLUE_6;
       }
-    case CardType.SHIELD:
+    case CardType.S:
       switch (part) {
         case CardPart.BACKGROUND:
           return COLOR.BROWN_7;
         case CardPart.CIRCLE:
           return COLOR.BROWN_6;
       }
-    case CardType.POTION:
+    case CardType.P:
       switch (part) {
         case CardPart.BACKGROUND:
           return COLOR.GREEN_6;

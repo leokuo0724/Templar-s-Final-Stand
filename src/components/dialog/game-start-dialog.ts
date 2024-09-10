@@ -24,25 +24,25 @@ export class GameStartDialog extends OverlayDialog {
     this.wBtn = new CustomButton(
       w / 2 - 108,
       h / 2 + 52,
-      TemplarClass.WIZARD,
+      TemplarClass.W,
       !isPlayed
     );
-    this.kBtn = new CustomButton(w / 2, h / 2 + 52, TemplarClass.KNIGHT);
+    this.kBtn = new CustomButton(w / 2, h / 2 + 52, TemplarClass.K);
     this.dBtn = new CustomButton(
       w / 2 + 108,
       h / 2 + 52,
-      TemplarClass.DEFENDER,
+      TemplarClass.D,
       !isPlayed
     );
 
     this.wBtn.bindClick(() => {
-      this.onButtonClick(TemplarClass.WIZARD);
+      this.onButtonClick(TemplarClass.W);
     });
     this.kBtn.bindClick(() => {
-      this.onButtonClick(TemplarClass.KNIGHT);
+      this.onButtonClick(TemplarClass.K);
     });
     this.dBtn.bindClick(() => {
-      this.onButtonClick(TemplarClass.DEFENDER);
+      this.onButtonClick(TemplarClass.D);
     });
 
     this.addChild([this.wBtn, this.kBtn, this.dBtn]);

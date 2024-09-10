@@ -16,7 +16,7 @@ export class TemplarCard extends CharacterCard {
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
-      type: CardType.TEMPLAR,
+      type: CardType.T,
       x,
       y,
       belongs: Belongs.PLAYER,
@@ -52,16 +52,16 @@ export class TemplarCard extends CharacterCard {
   }
 
   protected resetProps(): void {
-    const { isDefender, isKnight, isWizard } = GameManager.getInstance();
-    this.health = isWizard ? 6 : 10;
-    this.shield = isDefender ? 10 : 0;
-    this.attack = isKnight ? 4 : 1;
-    this.hitRate = isWizard ? 0.65 : 0.8;
+    const { isD, isK, isW } = GameManager.getInstance();
+    this.health = isW ? 6 : 10;
+    this.shield = isD ? 10 : 0;
+    this.attack = isK ? 4 : 1;
+    this.hitRate = isW ? 0.65 : 0.8;
     this.critical = 0.1;
     this.attackDirection = AttackDirection.FRONT;
     this.attackType = AttackType.NORMAL;
-    this.hitBack = isDefender ? this.shield : 0;
-    if (isDefender) this.updateWeight(3);
+    this.hitBack = isD ? this.shield : 0;
+    if (isD) this.updateWeight(3);
     this.refreshText();
     emit(EVENT.UPDATE_TEMPLAR_INFO, this);
   }

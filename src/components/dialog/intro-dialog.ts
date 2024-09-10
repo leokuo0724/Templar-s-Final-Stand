@@ -55,9 +55,9 @@ export class IntroDialog extends SpriteClass {
 
   onCls(cls: TemplarClass) {
     const map = {
-      [TemplarClass.KNIGHT]: `I'm nothing fancy\n—just balanced and ready to fight!`,
-      [TemplarClass.WIZARD]: "I'm weak\nbut can attack all foes with potions!",
-      [TemplarClass.DEFENDER]: "I get hit\nand hit back harder!",
+      [TemplarClass.K]: `I'm nothing fancy\n—just balanced and ready to fight!`,
+      [TemplarClass.W]: "I'm weak\nbut can attack all foes with potions!",
+      [TemplarClass.D]: "I get hit\nand hit back harder!",
     };
     this.paragraphs.push(`As a ${cls}\n` + map[cls]);
   }

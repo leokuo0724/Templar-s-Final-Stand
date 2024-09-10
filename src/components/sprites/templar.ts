@@ -81,8 +81,8 @@ export class Templar extends GameObjectClass {
 
   private async onTemplarAttack() {
     if (this.condition === "d") return;
-    const { isKnight, isDefender, isWizard } = GameManager.getInstance();
-    if (isKnight) {
+    const { isK, isD, isW } = GameManager.getInstance();
+    if (isK) {
       const fCurrX = this.frontHand.x;
       const fCurrY = this.frontHand.y;
       await tween(
@@ -96,12 +96,12 @@ export class Templar extends GameObjectClass {
 
     const bCurrX = this.backHand.x;
     const bCurrY = this.backHand.y;
-    if (isDefender) {
+    if (isD) {
       await tween(this.backHand, { targetX: bCurrX + 12 }, 50);
       await delay(200);
       await tween(this.backHand, { targetX: bCurrX }, 400);
     }
-    if (isWizard) {
+    if (isW) {
       await tween(
         this.backHand,
         { targetX: bCurrX + 6, targetY: bCurrY - 10 },
@@ -191,8 +191,8 @@ class TemplarFrontHand extends GameObjectClass {
     super({ x, y });
   }
   draw(): void {
-    const { isKnight } = GameManager.getInstance();
-    if (isKnight) drawSword(this.context, COLOR.WHITE_6, 16, -20);
+    const { isK } = GameManager.getInstance();
+    if (isK) drawSword(this.context, COLOR.WHITE_6, 16, -20);
 
     drawPolygon(this.context, "2 2 0 10 13 12 19 7 16 0 10 0 2 2", COLOR.RED_7);
   }
@@ -203,11 +203,11 @@ class TemplarBackHand extends GameObjectClass {
     super({ x, y });
   }
   draw(): void {
-    const { isDefender, isWizard } = GameManager.getInstance();
-    if (isDefender) {
+    const { isD, isW } = GameManager.getInstance();
+    if (isD) {
       drawShield(this.context, COLOR.BROWN_7, -14, -28);
     }
-    if (isWizard) {
+    if (isW) {
       drawPolygon(
         this.context,
         "3 95 0 94 25 0 32 2 3 95",

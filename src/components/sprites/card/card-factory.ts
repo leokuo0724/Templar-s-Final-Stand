@@ -15,23 +15,22 @@ type CreateCardProps = {
 
 export class CardFactory {
   static createCard(x: number, y: number): BaseCard {
-    const { move, isDefender, isKnight } = GameManager.getInstance();
+    const { move, isD, isK } = GameManager.getInstance();
     const isSpawnEliteEnemy = move % 13 === 0;
     if (isSpawnEliteEnemy) {
       return CardFactory.factory({
-        type: CardType.ENEMY,
+        type: CardType.E,
         x,
         y,
       });
     } else {
-      const randomItem =
-        Math.random() > 0.5 ? CardType.POTION : CardType.SHIELD;
+      const randomItem = Math.random() > 0.5 ? CardType.P : CardType.S;
       const itemOrder = [
-        CardType.ENEMY,
-        isDefender ? CardType.SHIELD : CardType.WEAPON,
+        CardType.E,
+        isD ? CardType.S : CardType.W,
         randomItem,
-        isKnight ? CardType.WEAPON : CardType.POTION,
-        isDefender ? CardType.WEAPON : randomItem,
+        isK ? CardType.W : CardType.P,
+        isD ? CardType.W : randomItem,
       ];
       return CardFactory.factory({
         type: itemOrder[move % itemOrder.length],
@@ -45,23 +44,23 @@ export class CardFactory {
     const { type, x, y } = props;
     const gm = GameManager.getInstance();
     switch (type) {
-      case CardType.TEMPLAR:
+      case CardType.T:
         return new TemplarCard({ x, y });
-      case CardType.ENEMY:
+      case CardType.E:
         return new EnemyCard({ x, y });
-      case CardType.WEAPON:
+      case CardType.W:
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.WEAPON],
+          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.W],
         });
-      case CardType.SHIELD:
+      case CardType.S:
         return new ItemCard({
           ...props,
           duration: 6,
-          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.SHIELD],
+          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.S],
         });
-      case CardType.POTION:
+      case CardType.P:
         return new ItemCard({
           ...props,
           duration: 5,

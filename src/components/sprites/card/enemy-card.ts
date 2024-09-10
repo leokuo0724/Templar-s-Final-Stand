@@ -22,7 +22,7 @@ export class EnemyCard extends CharacterCard {
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
-      type: CardType.ENEMY,
+      type: CardType.E,
       x,
       y,
       belongs: Belongs.ENEMY,

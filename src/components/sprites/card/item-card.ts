@@ -31,9 +31,9 @@ export type ItemCardProps = {
 
 const MAX_ITEM_LEVEL = 4;
 const MAX_ITEM_COLOR_MAP = {
-  [CardType.WEAPON]: COLOR.DARK_6,
-  [CardType.SHIELD]: COLOR.BROWN_8,
-  [CardType.POTION]: COLOR.GREEN_7,
+  [CardType.W]: COLOR.DARK_6,
+  [CardType.S]: COLOR.BROWN_8,
+  [CardType.P]: COLOR.GREEN_7,
 };
 
 export class ItemCard extends BaseCard {
@@ -83,11 +83,11 @@ export class ItemCard extends BaseCard {
 
   protected getMainIcon() {
     switch (this.type) {
-      case CardType.WEAPON:
+      case CardType.W:
         return new SwordIcon(-11, -32, 1);
-      case CardType.SHIELD:
+      case CardType.S:
         return new ShieldIcon(-10, -31, 1, COLOR.WHITE_6);
-      case CardType.POTION:
+      case CardType.P:
         return new PotionIcon(-9, -36);
       default:
         throw new Error();
@@ -106,7 +106,7 @@ export class ItemCard extends BaseCard {
   protected resetProps(): void {
     this.drT.text = `${this.duration}`;
     this.wT.text = `${this.weight}`;
-    if (this.type === CardType.POTION) {
+    if (this.type === CardType.P) {
       if (!this.wIcon) {
         this.wIcon = new WarningIcon(6, -14);
         this.addChild(this.wIcon);
@@ -145,15 +145,15 @@ export class ItemCard extends BaseCard {
   }
 
   public pickBuff() {
-    const { isKnight, isWizard, isDefender, level } = GameManager.getInstance();
+    const { isK, isW, isD, level } = GameManager.getInstance();
     const factor = level + 1;
     switch (this.type) {
-      case CardType.WEAPON:
-        return getWeaponLevelBuff(this.level, factor, isKnight);
-      case CardType.SHIELD:
-        return getShieldLevelBuff(this.level, factor, isDefender);
-      case CardType.POTION:
-        return getPotionLevelBuff(this.level, factor, isWizard);
+      case CardType.W:
+        return getWeaponLevelBuff(this.level, factor, isK);
+      case CardType.S:
+        return getShieldLevelBuff(this.level, factor, isD);
+      case CardType.P:
+        return getPotionLevelBuff(this.level, factor, isW);
       default:
         throw new Error();
     }
@@ -161,11 +161,10 @@ export class ItemCard extends BaseCard {
 }
 
 const getItemWeight = (type: CardType, level: number) => {
-  if (type === CardType.POTION) return 0;
+  if (type === CardType.P) return 0;
 
   const { cls } = GameManager.getInstance();
-  const baseWeight =
-    BASE_WEIGHT_MAP[cls!][type as CardType.WEAPON | CardType.SHIELD];
+  const baseWeight = BASE_WEIGHT_MAP[cls!][type as CardType.W | CardType.S];
   return baseWeight + level;
 };
 
