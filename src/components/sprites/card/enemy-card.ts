@@ -84,7 +84,6 @@ export class EnemyCard extends CharacterCard {
 
     // reset icon
     const mainIcon = new Enemy(-23, -36, character);
-    // const mainIcon = new Enemy(-18, -36, EnemyCharacter.CROSSBLADE);
     this.main.children[1] = mainIcon; // FIXME: This is a hacky way to replace the icon
   }
 }

@@ -90,10 +90,10 @@ export class Enemy extends GameObjectClass {
         // spear
         drawPolygon(
           this.context,
-          "0 11 7 4 29 0 13 15 3 17 0 11",
+          "0 12 7 4 28 0 13 16 3 17 0 12",
           COLOR.DARK_6,
           68,
-          30
+          28
         );
       }
       if (isLancer) {
