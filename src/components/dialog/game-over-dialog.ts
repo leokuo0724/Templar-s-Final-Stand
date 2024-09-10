@@ -13,10 +13,10 @@ export class GameOverDialog extends OverlayDialog {
   constructor() {
     const { width: w, height: h } = getCanvas();
     super(300, 200);
-    this.titleText.text = "Game Over";
-    this.titleText.y -= 14;
-    this.descText.text = "";
-    this.descText.y -= 14;
+    this.tT.text = "Game Over";
+    this.tT.y -= 14;
+    this.dT.text = "";
+    this.dT.y -= 14;
     this.sBtn = new CustomButton(w / 2, h / 2 + 36, "Share");
     this.rBtn = new CustomButton(w / 2, h / 2 + 70, "Restart");
 
@@ -39,7 +39,7 @@ export class GameOverDialog extends OverlayDialog {
       localStorage.setItem(LOCAL_STORAGE_KEY.BEST_SCORE, bestScore);
     }
     const content = `Survived for ${gm.move} moves as a ${gm.cls}`;
-    this.descText.text = `${content}!\nBest Score: ${bestScore}`;
+    this.dT.text = `${content}!\nBest Score: ${bestScore}`;
     this.rBtn.bindClick(() => location.reload());
     localStorage.setItem(LOCAL_STORAGE_KEY.PLAYED, "t");
 

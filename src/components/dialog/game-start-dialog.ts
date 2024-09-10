@@ -15,8 +15,8 @@ export class GameStartDialog extends OverlayDialog {
   constructor() {
     super(360, 180);
     const isPlayed = localStorage.getItem(LOCAL_STORAGE_KEY.PLAYED) === "t";
-    this.titleText.text = "Pick a Class";
-    this.descText.text = isPlayed
+    this.tT.text = "Pick a Class";
+    this.dT.text = isPlayed
       ? "Time to check out new classes!"
       : "Knight is your only option for now";
 

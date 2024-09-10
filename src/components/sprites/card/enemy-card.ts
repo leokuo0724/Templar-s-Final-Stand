@@ -18,7 +18,7 @@ import { COLOR } from "../../../constants/color";
 import { Enemy } from "../enemy";
 
 export class EnemyCard extends CharacterCard {
-  protected descText: Text;
+  protected dT: Text;
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
@@ -28,14 +28,14 @@ export class EnemyCard extends CharacterCard {
       belongs: Belongs.ENEMY,
     });
 
-    this.descText = Text({
+    this.dT = Text({
       x: 0,
       y: 18,
       text: "",
       ...COMMON_TEXT_CONFIG,
       textAlign: "center",
     });
-    this.main.addChild(this.descText);
+    this.main.addChild(this.dT);
     this.resetProps();
   }
 
@@ -78,7 +78,7 @@ export class EnemyCard extends CharacterCard {
       getEnemyBuffsAndDesc(level + 1, gm.isElite)
     );
     this.applyBuff(buff);
-    this.descText.text = desc;
+    this.dT.text = desc;
     this.refreshText();
     this.damageBg.opacity = 0;
 
@@ -90,12 +90,12 @@ export class EnemyCard extends CharacterCard {
 }
 
 export enum EnemyCharacter {
-  WHIRLSTRIKER,
-  GUARDIAN,
-  COUNTERSTRIKER,
-  SPEARMAN,
-  CROSSBLADE,
-  LANCEPIERCER,
+  W,
+  G,
+  CS,
+  S,
+  CB,
+  L,
 }
 
 let eliteCount = -1;
@@ -116,14 +116,14 @@ const getEnemyBuffsAndDesc = (
           attack: 1 * factor,
         },
         desc: `"Whirlstriker"\nRange: around`,
-        character: EnemyCharacter.WHIRLSTRIKER,
+        character: EnemyCharacter.W,
       },
       {
         buff: {
           shield: 4 * factor,
         },
         desc: `"Guardian"\nShield: ${4 * factor}`,
-        character: EnemyCharacter.GUARDIAN,
+        character: EnemyCharacter.G,
       },
       {
         buff: {
@@ -131,7 +131,7 @@ const getEnemyBuffsAndDesc = (
           health: 2 * factor,
         },
         desc: `"Counterstriker"\nHit back: ${2 * factor}`,
-        character: EnemyCharacter.COUNTERSTRIKER,
+        character: EnemyCharacter.CS,
       },
       {
         buff: {
@@ -139,7 +139,7 @@ const getEnemyBuffsAndDesc = (
           attack: 2 * factor,
         },
         desc: `"Spearman"\nPenetrate shield`,
-        character: EnemyCharacter.SPEARMAN,
+        character: EnemyCharacter.S,
       },
       {
         buff: {
@@ -147,7 +147,7 @@ const getEnemyBuffsAndDesc = (
           health: 1 * factor,
         },
         desc: `"Crossblade"\nRange: cross`,
-        character: EnemyCharacter.CROSSBLADE,
+        character: EnemyCharacter.CB,
       },
       {
         buff: {
@@ -156,7 +156,7 @@ const getEnemyBuffsAndDesc = (
           shield: 5 * factor,
         },
         desc: `"Lancepiercer"\nPenetrate, around`,
-        character: EnemyCharacter.LANCEPIERCER,
+        character: EnemyCharacter.L,
       },
     ];
     eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);

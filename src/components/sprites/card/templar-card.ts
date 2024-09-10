@@ -12,7 +12,7 @@ import { GameManager, TemplarClass } from "../../../managers/game-manager";
 
 export class TemplarCard extends CharacterCard {
   public weight = 0;
-  protected weightText: Text;
+  protected wT: Text; // weight text
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
@@ -22,13 +22,13 @@ export class TemplarCard extends CharacterCard {
       belongs: Belongs.PLAYER,
     });
     this.resetProps();
-    this.weightText = Text({
+    this.wT = Text({
       text: `${this.weight}`,
       x: -24,
       y: 40,
       ...COMMON_TEXT_CONFIG,
     });
-    this.main.addChild([new WeightIcon(-46, 32), this.weightText]);
+    this.main.addChild([new WeightIcon(-46, 32), this.wT]);
     on(EVENT.UPDATE_TEMPLAR_CLASS, this.updateCls.bind(this));
   }
 
@@ -68,9 +68,9 @@ export class TemplarCard extends CharacterCard {
 
   public updateWeight(value: number): void {
     this.weight += value;
-    this.weightText.text = `${this.weight}`;
+    this.wT.text = `${this.weight}`;
     const isOverweight = this.weight >= 13;
-    this.weightText.color = isOverweight ? COLOR.BROWN_8 : COLOR.WHITE_6;
+    this.wT.color = isOverweight ? COLOR.BROWN_8 : COLOR.WHITE_6;
     emit(EVENT.UPDATE_TEMPLAR_WEIGHT, isOverweight);
   }
 }

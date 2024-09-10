@@ -37,14 +37,14 @@ const MAX_ITEM_COLOR_MAP = {
 };
 
 export class ItemCard extends BaseCard {
-  protected descText: Text;
-  protected durationText: Text;
-  protected weightText: Text;
+  protected dT: Text;
+  protected drT: Text; // duration text
+  protected wT: Text; // weight text
   public buff: OptionalCharacterProps;
   public duration: number;
   public weight: number;
   public level: number = 1;
-  private warningIcon: WarningIcon | null = null;
+  private wIcon: WarningIcon | null = null; // warning icon, only for potion
 
   constructor({ type, x, y, duration, weight }: ItemCardProps) {
     super({ type, x, y });
@@ -52,31 +52,31 @@ export class ItemCard extends BaseCard {
     this.weight = weight;
 
     this.buff = this.pickBuff();
-    this.descText = Text({
+    this.dT = Text({
       x: 0,
       y: 18,
       text: getItemPropsDescText(this.buff),
       ...COMMON_TEXT_CONFIG,
       textAlign: "center",
     });
-    this.durationText = Text({
+    this.drT = Text({
       text: `${duration}`,
       x: 42,
       y: 40,
       ...COMMON_TEXT_CONFIG,
     });
-    this.weightText = Text({
+    this.wT = Text({
       text: `${weight}`,
       x: -24,
       y: 40,
       ...COMMON_TEXT_CONFIG,
     });
     this.main.addChild([
-      this.descText,
+      this.dT,
       new ClockIcon(22, 32),
-      this.durationText,
+      this.drT,
       new WeightIcon(-46, 32),
-      this.weightText,
+      this.wT,
     ]);
     this.resetProps();
   }
@@ -104,15 +104,15 @@ export class ItemCard extends BaseCard {
   }
 
   protected resetProps(): void {
-    this.durationText.text = `${this.duration}`;
-    this.weightText.text = `${this.weight}`;
+    this.drT.text = `${this.duration}`;
+    this.wT.text = `${this.weight}`;
     if (this.type === CardType.POTION) {
-      if (!this.warningIcon) {
-        this.warningIcon = new WarningIcon(6, -14);
-        this.addChild(this.warningIcon);
+      if (!this.wIcon) {
+        this.wIcon = new WarningIcon(6, -14);
+        this.addChild(this.wIcon);
       }
       const isBuff = checkIfBuff(this.buff);
-      this.warningIcon.opacity = isBuff ? 0 : 1;
+      this.wIcon.opacity = isBuff ? 0 : 1;
     }
     if (this.level === MAX_ITEM_LEVEL) {
       // @ts-ignore
@@ -123,7 +123,7 @@ export class ItemCard extends BaseCard {
   public updateDuration(value: number): boolean {
     this.duration += value;
     if (this.duration <= 0) return false;
-    this.durationText.text = `${this.duration}`;
+    this.drT.text = `${this.duration}`;
     return true;
   }
 
@@ -136,10 +136,10 @@ export class ItemCard extends BaseCard {
 
     this.buff = this.pickBuff();
     const description = getItemPropsDescText(this.buff);
-    this.descText.text = description;
+    this.dT.text = description;
     if (description.split("\n").length > 2) {
-      this.descText.font = `12px ${FONT}`;
-      this.descText.y = 14;
+      this.dT.font = `12px ${FONT}`;
+      this.dT.y = 14;
     }
     this.resetProps();
   }

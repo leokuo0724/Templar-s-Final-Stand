@@ -4,8 +4,8 @@ import { FONT } from "../../constants/text";
 
 export class OverlayDialog extends SpriteClass {
   protected wrapper: Sprite;
-  protected titleText: Text;
-  protected descText: Text;
+  protected tT: Text; // title text
+  protected dT: Text; // description text
 
   constructor(width: number, height: number) {
     const { width: w, height: h } = getCanvas();
@@ -23,7 +23,7 @@ export class OverlayDialog extends SpriteClass {
       anchor: { x: 0.5, y: 0.5 },
       color: COLOR.YELLOW_6,
     });
-    this.titleText = Text({
+    this.tT = Text({
       text: "",
       x: w / 2,
       y: h / 2 - 52,
@@ -31,7 +31,7 @@ export class OverlayDialog extends SpriteClass {
       color: COLOR.BROWN_7,
       font: `24px ${FONT}`,
     });
-    this.descText = Text({
+    this.dT = Text({
       text: "",
       x: w / 2,
       y: h / 2,
@@ -42,7 +42,7 @@ export class OverlayDialog extends SpriteClass {
       lineHeight: 1.2,
     });
 
-    this.addChild([this.wrapper, this.titleText, this.descText]);
+    this.addChild([this.wrapper, this.tT, this.dT]);
   }
 }
 

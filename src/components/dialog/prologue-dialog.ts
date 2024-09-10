@@ -27,9 +27,9 @@ export class PrologueDialog extends OverlayDialog {
   private async initialize() {
     const paragraphs = [
       "It’s 1307.",
-      "As a Templar, you’ve just learned King Philip IV isn’t exactly a fan.",
+      "As a Templar, you’ve learned King Philip IV isn’t a fan.",
       "Now his army is after you, and survival is your only goal.",
-      "Sword ready? Good. Let’s see how long you last.",
+      "Sword ready? Let’s see how long you last.",
       "Tap to start",
     ];
     const canvas = getCanvas();

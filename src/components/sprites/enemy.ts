@@ -49,12 +49,12 @@ export class Enemy extends GameObjectClass {
         61
       );
     } else {
-      const isWhirlstriker = this.c === EnemyCharacter.WHIRLSTRIKER;
-      const isSpearman = this.c === EnemyCharacter.SPEARMAN;
-      const isLancer = this.c === EnemyCharacter.LANCEPIERCER;
-      const isGuardian = this.c === EnemyCharacter.GUARDIAN;
-      const isCounterstriker = this.c === EnemyCharacter.COUNTERSTRIKER;
-      const isCrossblade = this.c === EnemyCharacter.CROSSBLADE;
+      const isWhirlstriker = this.c === EnemyCharacter.W;
+      const isSpearman = this.c === EnemyCharacter.S;
+      const isLancer = this.c === EnemyCharacter.L;
+      const isGuardian = this.c === EnemyCharacter.G;
+      const isCounterstriker = this.c === EnemyCharacter.CS;
+      const isCrossblade = this.c === EnemyCharacter.CB;
 
       if (isWhirlstriker || isSpearman || isLancer) {
         // stick
@@ -82,29 +82,9 @@ export class Enemy extends GameObjectClass {
       }
       if (isCounterstriker) {
         // spikes
-        const xOffset = 64;
-        const yOffset = 36;
-        drawPolygon(
-          this.context,
-          "0 16 16 0 9 21 0 16",
-          COLOR.DARK_6,
-          0 + xOffset,
-          0 + yOffset
-        );
-        drawPolygon(
-          this.context,
-          "0 0 20 5 0 10 0 0",
-          COLOR.DARK_6,
-          9 + xOffset,
-          28 + yOffset
-        );
-        drawPolygon(
-          this.context,
-          "8 0 0 8 17 16 8 0",
-          COLOR.DARK_6,
-          1 + xOffset,
-          48 + yOffset
-        );
+        drawPolygon(this.context, "0 16 16 0 9 21 0 16", COLOR.DARK_6, 64, 36);
+        drawPolygon(this.context, "0 0 20 5 0 10 0 0", COLOR.DARK_6, 73, 64);
+        drawPolygon(this.context, "8 0 0 8 17 16 8 0", COLOR.DARK_6, 65, 84);
       }
       if (isSpearman) {
         // spear
