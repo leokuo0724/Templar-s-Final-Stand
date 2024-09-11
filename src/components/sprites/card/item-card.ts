@@ -211,7 +211,7 @@ const getPotionLevelBuff = (
 ): OptionalCharacterProps => {
   const random = Math.random();
   const baseVal = Math.ceil(level / 3);
-  const baseRate = 0.025 + 0.025 * level;
+  const baseRate = 0.025 + (isWizard ? 0.015 : 0.025) * level;
   const decreaseFactor = isWizard ? 0.05 : 0.1;
   const buffs: OptionalCharacterProps[] = [
     {
