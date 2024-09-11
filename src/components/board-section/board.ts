@@ -73,7 +73,6 @@ export class Board extends GameObjectClass {
     }) as TemplarCard;
     this.addChild(this.templarCard);
     this.occuInfo[2][2] = this.templarCard;
-    this.spawnCards();
 
     on(EVENT.ENEMY_DEAD, this.onRemoveEnemyDead.bind(this));
     on(EVENT.UPDATE_TEMPLAR_CLASS, this.onClsUpdated.bind(this));
@@ -84,6 +83,7 @@ export class Board extends GameObjectClass {
   }
   private async onGameStart() {
     await tween(this, { scale: 1 }, 200);
+    this.spawnCards();
   }
 
   public getGridByCoord(coord: [number, number]): Grid {
