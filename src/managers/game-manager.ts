@@ -109,7 +109,7 @@ export class GameManager {
 
   public addItems(itemCards: ItemCard[]) {
     itemCards.forEach((item) => {
-      if (this.isD) item.duration = Math.min(6, item.duration);
+      if (this.isD) item.duration = Math.min(5, item.duration); // defender can only have 5 duration
       this.currentItems.push(item);
     });
     emit(EVENT.ITEMS_UPDATED, itemCards, []);
