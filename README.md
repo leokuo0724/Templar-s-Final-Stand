@@ -1,6 +1,6 @@
 # Templar's Final Stand
 
-![Cover](/public/cover-v2.png)
+![Cover](/docs/cover-v2.png)
 
 ![Kontra](https://img.shields.io/badge/kontra-10.0.0-red?style=for-the-badge)
 
