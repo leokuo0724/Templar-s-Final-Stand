@@ -9,7 +9,14 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "isolatedModules": true,
+    /* EXPERIMENTAL -- deliberately off, do not switch back on without measuring.
+       With isolatedModules on, tsc silently downgrades every `const enum` to a
+       regular enum object: no error, no benefit. Off, const enums inline across
+       files and vanish from the bundle (~380 bytes of zip). The production build
+       runs real tsc over the whole program (see `esbuild: false` in
+       vite.config.ts), so cross-file inlining is available; `vite dev` still
+       transpiles per-file with esbuild and just emits plain enum objects. */
+    // "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
 

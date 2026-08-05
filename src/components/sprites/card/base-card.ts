@@ -11,7 +11,7 @@ type CardProps = {
   y: number;
 };
 
-enum CardPart {
+const enum CardPart {
   B, // Background
   C, // Circle
 }

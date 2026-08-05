@@ -7,7 +7,7 @@ import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";
 import { negativeSFX, swipeSFX } from "../audios/sfx";
 
-export enum GameState {
+export const enum GameState {
   PROLOGUE,
   INIT,
   INTRO,
@@ -15,7 +15,7 @@ export enum GameState {
   SWIPING,
   GAME_OVER,
 }
-export enum TemplarClass {
+export const enum TemplarClass {
   K = "Knight",
   W = "Wizard",
   D = "Defender",

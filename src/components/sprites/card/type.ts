@@ -1,4 +1,4 @@
-export enum CardType {
+export const enum CardType {
   T, // Templar
   E, // Enemy
   W, // Weapon
@@ -6,7 +6,7 @@ export enum CardType {
   P, // Potion
 }
 
-export enum Belongs {
+export const enum Belongs {
   PLAYER,
   ENEMY,
 }

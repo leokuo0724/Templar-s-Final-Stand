@@ -88,7 +88,7 @@ export class EnemyCard extends CharacterCard {
   }
 }
 
-export enum EnemyCharacter {
+export const enum EnemyCharacter {
   W,
   G,
   CS,

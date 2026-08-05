@@ -1,4 +1,4 @@
-export enum AttackDirection {
+export const enum AttackDirection {
   F = "front", // 1 grid
   A = "around", // 4 grid
   C = "cross", // 8 grid
@@ -9,7 +9,7 @@ export const DIRECTION_TIER_MAP = {
   [AttackDirection.C]: 0,
 };
 
-export enum AttackType {
+export const enum AttackType {
   N = "normal",
   P = "penetrate",
 }
