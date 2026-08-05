@@ -180,8 +180,13 @@ async function embedJs(html: string, chunk: OutputChunk): Promise<string> {
   }
 
   const packer = new Packer(inputs, options);
+  // This runs during transformIndexHtml, before Vite has written anything to
+  // disk -- so on a clean checkout dist/ does not exist yet and the write below
+  // fails with ENOENT.
+  const distDir = path.join(__dirname, "dist");
+  await fs.mkdir(distDir, { recursive: true });
   await Promise.all([
-    fs.writeFile(`${path.join(__dirname, "dist")}/output.js`, htmlInJs),
+    fs.writeFile(`${distDir}/output.js`, htmlInJs),
     packer.optimize(2), // Regular builds use level 2
   ]);
   const { firstLine, secondLine } = packer.makeDecoder();
