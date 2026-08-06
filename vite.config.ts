@@ -32,6 +32,9 @@ export default defineConfig(({ command, mode }) => {
     // @ts-ignore
     config.build = {
       minify: "terser",
+      // Vite 會在 spread 之後覆寫最外層的 module/toplevel，但巢狀的 compress
+      // 不受影響。多跑幾輪才拆得掉 `as const` 物件這類的間接常數。
+      terserOptions: { compress: { passes: 3 } },
       target: "es2020",
       modulePreload: { polyfill: false },
       assetsInlineLimit: 800,
