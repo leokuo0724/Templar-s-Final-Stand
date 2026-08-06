@@ -1,12 +1,10 @@
-export enum CardType {
-  T, // Templar
-  E, // Enemy
-  W, // Weapon
-  S, // Shield
-  P, // Potion
-}
+export type CardType =
+  | 0
+  | 1
+  | 2
+  | 3
+  | 4;
 
-export enum Belongs {
-  PLAYER,
-  ENEMY,
-}
+export type Belongs =
+  | 0
+  | 1;

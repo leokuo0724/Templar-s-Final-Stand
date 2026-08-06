@@ -1,8 +1,6 @@
-import { Belongs, CardType } from "./type";
 
 import { Templar } from "../templar";
 import { CharacterCard } from "./character-card";
-import { AttackDirection, AttackType } from "../../../types/character";
 import { emit, on, Text } from "kontra";
 import { COMMON_TEXT_CONFIG } from "../../../constants/text";
 import { WeightIcon } from "../icons/weight-icon";
@@ -16,10 +14,10 @@ export class TemplarCard extends CharacterCard {
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
-      type: CardType.T,
+      type: 0,
       x,
       y,
-      belongs: Belongs.PLAYER,
+      belongs: 0,
     });
     this.resetProps();
     this.wT = Text({
@@ -58,8 +56,8 @@ export class TemplarCard extends CharacterCard {
     this.attack = isK ? 4 : 1;
     this.hitRate = isW ? 0.65 : 0.8;
     this.critical = 0.1;
-    this.attackDirection = AttackDirection.F;
-    this.attackType = AttackType.N;
+    this.attackDirection = "front";
+    this.attackType = "normal";
     this.hitBack = isD ? this.shield : 0;
     if (isD) this.updateWeight(3);
     this.refreshText();

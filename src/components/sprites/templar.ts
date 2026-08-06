@@ -9,7 +9,7 @@ import { COLOR } from "../../constants/color";
 import { tween } from "../../utils/tween-utils";
 import { delay } from "../../utils/time-utils";
 import { EVENT } from "../../constants/event";
-import { GameManager, GameState } from "../../managers/game-manager";
+import { GameManager } from "../../managers/game-manager";
 import { Arrow, Drop } from "./particles";
 
 type TemplarCondition = "b" | "i" | "d";
@@ -114,7 +114,7 @@ export class Templar extends GameObjectClass {
 
   render(): void {
     const gm = GameManager.gI();
-    if (gm.state === GameState.GAME_OVER && this.condition === "b") return;
+    if (gm.state === 5 && this.condition === "b") return;
     super.render();
   }
 }

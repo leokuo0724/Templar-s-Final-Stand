@@ -3,7 +3,6 @@ import { Grid } from "./grid";
 import { COLOR } from "../../constants/color";
 import { GRID_SIZE } from "../../constants/size";
 import { CardFactory } from "../sprites/card/card-factory";
-import { CardType } from "../sprites/card/type";
 import { BaseCard } from "../sprites/card/base-card";
 import { EVENT } from "../../constants/event";
 import { Direction } from "../../types/direction";
@@ -12,8 +11,6 @@ import { ItemCard } from "../sprites/card/item-card";
 import { TemplarCard } from "../sprites/card/templar-card";
 import { GameManager } from "../../managers/game-manager";
 import {
-  AttackDirection,
-  AttackType,
   DIRECTION_TIER_MAP,
 } from "../../types/character";
 import { EnemyCard } from "../sprites/card/enemy-card";
@@ -67,7 +64,7 @@ export class Board extends GameObjectClass {
 
     const centerGrid = this.getGridByCoord([2, 2]);
     this.templarCard = CardFactory.factory({
-      type: CardType.T,
+      type: 0,
       x: centerGrid.x,
       y: centerGrid.y,
     }) as TemplarCard;
@@ -124,10 +121,10 @@ export class Board extends GameObjectClass {
 
   private async moveCards(direction: Direction) {
     const gm = GameManager.gI();
-    const moveRight = direction === Direction.R;
-    const moveLeft = direction === Direction.L;
-    const moveUp = direction === Direction.U;
-    const moveDown = direction === Direction.D;
+    const moveRight = direction === 3;
+    const moveLeft = direction === 2;
+    const moveUp = direction === 0;
+    const moveDown = direction === 1;
 
     const startI = moveRight ? GRIDS_IN_LINE - 2 : 1;
     const startJ = moveDown ? GRIDS_IN_LINE - 2 : 1;
@@ -196,7 +193,7 @@ export class Board extends GameObjectClass {
           const occupiedCard = this.occuInfo?.[nextJ]?.[nextI];
           if (occupiedCard) {
             const isTemplarEquip =
-              card.type === CardType.T && occupiedCard instanceof ItemCard;
+              card.type === 0 && occupiedCard instanceof ItemCard;
             const isItemUpgrade =
               card.type === occupiedCard.type && card instanceof ItemCard;
             const potionAttackEnabled = gm.isW;
@@ -207,8 +204,8 @@ export class Board extends GameObjectClass {
               isItemUpgrade && zzfx(...makeUpgradeSFX(false));
               if (
                 potionAttackEnabled &&
-                occupiedCard.type === CardType.P &&
-                card.type === CardType.P
+                occupiedCard.type === 4 &&
+                card.type === 4
               )
                 potionLevels.push(1);
 
@@ -217,13 +214,13 @@ export class Board extends GameObjectClass {
 
               if (
                 card instanceof TemplarCard &&
-                occupiedCard.type !== CardType.P
+                occupiedCard.type !== 4
               ) {
                 card.updateWeight(occupiedCard.weight);
                 // @ts-ignore
                 equippedItems.push(occupiedCard);
               } else {
-                if (potionAttackEnabled && card.type === CardType.T)
+                if (potionAttackEnabled && card.type === 0)
                   potionLevels.push(occupiedCard.level);
 
                 await occupiedCard.setInactive();
@@ -296,23 +293,23 @@ export class Board extends GameObjectClass {
         const card = this.occuInfo[j][i];
         if (!(card instanceof CharacterCard)) continue;
         const { attackDirection } = card;
-        const isNormalCase = attackDirection === AttackDirection.F;
-        const isAroundCase = attackDirection === AttackDirection.A;
-        const isCrossCase = attackDirection === AttackDirection.C;
+        const isNormalCase = attackDirection === "front";
+        const isAroundCase = attackDirection === "around";
+        const isCrossCase = attackDirection === "cross";
 
         if (isNormalCase) {
           const targetJ =
             j +
-            (direction === Direction.U
+            (direction === 0
               ? -1
-              : direction === Direction.D
+              : direction === 1
               ? 1
               : 0);
           const targetI =
             i +
-            (direction === Direction.L
+            (direction === 2
               ? -1
-              : direction === Direction.R
+              : direction === 3
               ? 1
               : 0);
           const targetCard = this.occuInfo?.[targetJ]?.[targetI];
@@ -345,12 +342,12 @@ export class Board extends GameObjectClass {
             ) {
               const direction =
                 di === 0 && dj === 1
-                  ? Direction.R
+                  ? 3
                   : di === 1 && dj === 0
-                  ? Direction.D
+                  ? 1
                   : di === 0 && dj === -1
-                  ? Direction.L
-                  : Direction.U;
+                  ? 2
+                  : 0;
               battleInfos.push({
                 attacker: card,
                 target: targetCard,
@@ -377,12 +374,12 @@ export class Board extends GameObjectClass {
                   target: targetCard,
                   direction:
                     k < variableIndex && isVertical
-                      ? Direction.U
+                      ? 0
                       : k < variableIndex && !isVertical
-                      ? Direction.L
+                      ? 2
                       : k > variableIndex && isVertical
-                      ? Direction.D
-                      : Direction.R,
+                      ? 1
+                      : 3,
                 });
               }
             }
@@ -396,7 +393,7 @@ export class Board extends GameObjectClass {
         direction,
         target,
         false,
-        attacker.attackType === AttackType.P
+        attacker.attackType === "penetrate"
       );
     }
   }
@@ -437,12 +434,12 @@ export class Board extends GameObjectClass {
                   DIRECTION_TIER_MAP[a.buff[ad]!] -
                   DIRECTION_TIER_MAP[b.buff[ad]!]
               )[0];
-            debuff[key] = remain ? remain.buff[ad] : AttackDirection.F;
+            debuff[key] = remain ? remain.buff[ad] : "front";
           } else if (key === at) {
             const remain = gm.currentItems.filter(
               (i) => !!i.buff[at] && i.duration > 0
             )[0];
-            debuff[key] = remain ? remain.buff[at] : AttackType.N;
+            debuff[key] = remain ? remain.buff[at] : "normal";
           } else if (key !== "shield") {
             debuff[key] = (value as number) * -1;
           }

@@ -5,7 +5,7 @@ import { PhillippeIV } from "../sprites/philippe-iv";
 import { COMMON_TEXT_CONFIG, FONT } from "../../constants/text";
 import { delay } from "../../utils/time-utils";
 import { tween } from "../../utils/tween-utils";
-import { GameManager, GameState } from "../../managers/game-manager";
+import { GameManager } from "../../managers/game-manager";
 
 export class PrologueDialog extends OverlayDialog {
   private isClicked: boolean = false;
@@ -62,8 +62,8 @@ export class PrologueDialog extends OverlayDialog {
 
   private async onTapStart() {
     const gm = GameManager.gI();
-    if (gm.state !== GameState.PROLOGUE) return;
-    gm.state = GameState.INIT;
+    if (gm.state !== 0) return;
+    gm.state = 1;
     await Promise.all([
       tween(this, { opacity: 0 }, 500),
       ...this.children.map((child) => tween(child, { opacity: 0 }, 500)),
@@ -74,7 +74,7 @@ export class PrologueDialog extends OverlayDialog {
 
   public render(): void {
     const gm = GameManager.gI();
-    if (gm.state !== GameState.PROLOGUE && gm.state !== GameState.INIT) return;
+    if (gm.state !== 0 && gm.state !== 1) return;
     super.render();
   }
 }

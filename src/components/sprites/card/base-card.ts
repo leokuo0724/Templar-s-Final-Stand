@@ -11,10 +11,9 @@ type CardProps = {
   y: number;
 };
 
-enum CardPart {
-  B, // Background
-  C, // Circle
-}
+type CardPart =
+  | 0
+  | 1;
 
 export abstract class BaseCard extends SpriteClass {
   public type: CardType;
@@ -36,17 +35,17 @@ export abstract class BaseCard extends SpriteClass {
     this.main = Sprite({
       width: GRID_SIZE,
       height: GRID_SIZE,
-      color: getCardColor(type, CardPart.B),
+      color: getCardColor(type, 0),
       anchor: { x: 0.5, y: 0.5 },
     });
     this.addChild(this.main);
 
-    const isTemplar = type === CardType.T;
+    const isTemplar = type === 0;
     this.circle = Sprite({
       radius: isTemplar ? 28 : 24,
-      color: getCardColor(type, CardPart.C),
+      color: getCardColor(type, 1),
       anchor: { x: 0.5, y: 0.5 },
-      y: isTemplar ? -4 : this.type === CardType.E ? -14 : -20,
+      y: isTemplar ? -4 : this.type === 1 ? -14 : -20,
     });
     const mainIcon = this.getMainIcon();
     this.main.addChild([this.circle, mainIcon]);
@@ -103,39 +102,39 @@ export abstract class BaseCard extends SpriteClass {
 // Utils
 function getCardColor(type: CardType, part: CardPart) {
   switch (type) {
-    case CardType.T:
+    case 0:
       switch (part) {
-        case CardPart.B:
+        case 0:
           return COLOR.YELLOW_7;
-        case CardPart.C:
+        case 1:
           return COLOR.YELLOW_6;
       }
-    case CardType.E:
+    case 1:
       switch (part) {
-        case CardPart.B:
+        case 0:
           return COLOR.RED_7;
-        case CardPart.C:
+        case 1:
           return COLOR.RED_6;
       }
-    case CardType.W:
+    case 2:
       switch (part) {
-        case CardPart.B:
+        case 0:
           return COLOR.BLUE_7;
-        case CardPart.C:
+        case 1:
           return COLOR.BLUE_6;
       }
-    case CardType.S:
+    case 3:
       switch (part) {
-        case CardPart.B:
+        case 0:
           return COLOR.BROWN_7;
-        case CardPart.C:
+        case 1:
           return COLOR.BROWN_6;
       }
-    case CardType.P:
+    case 4:
       switch (part) {
-        case CardPart.B:
+        case 0:
           return COLOR.GREEN_6;
-        case CardPart.C:
+        case 1:
           return COLOR.GREEN_5;
       }
   }

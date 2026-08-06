@@ -49,12 +49,12 @@ export class Enemy extends GameObjectClass {
         61
       );
     } else {
-      const isWhirlstriker = this.c === EnemyCharacter.W;
-      const isSpearman = this.c === EnemyCharacter.S;
-      const isLancer = this.c === EnemyCharacter.L;
-      const isGuardian = this.c === EnemyCharacter.G;
-      const isCounterstriker = this.c === EnemyCharacter.CS;
-      const isCrossblade = this.c === EnemyCharacter.CB;
+      const isWhirlstriker = this.c === 0;
+      const isSpearman = this.c === 3;
+      const isLancer = this.c === 5;
+      const isGuardian = this.c === 1;
+      const isCounterstriker = this.c === 2;
+      const isCrossblade = this.c === 4;
 
       if (isWhirlstriker || isSpearman || isLancer) {
         // stick

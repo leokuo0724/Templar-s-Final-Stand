@@ -19,18 +19,18 @@ export class CardFactory {
     const isSpawnEliteEnemy = move % 13 === 0;
     if (isSpawnEliteEnemy) {
       return CardFactory.factory({
-        type: CardType.E,
+        type: 1,
         x,
         y,
       });
     } else {
-      const randomItem = Math.random() > 0.5 ? CardType.P : CardType.S;
-      const itemOrder = [
-        CardType.E,
-        isD ? CardType.S : CardType.W, // dual
+      const randomItem = Math.random() > 0.5 ? 4 : 3;
+      const itemOrder: CardType[] = [
+        1,
+        isD ? 3 : 2, // dual
         randomItem,
-        isK ? CardType.W : CardType.P, // dual
-        isD ? CardType.W : randomItem,
+        isK ? 2 : 4, // dual
+        isD ? 2 : randomItem,
       ];
       return CardFactory.factory({
         type: itemOrder[move % itemOrder.length],
@@ -44,23 +44,23 @@ export class CardFactory {
     const { type, x, y } = props;
     const gm = GameManager.gI();
     switch (type) {
-      case CardType.T:
+      case 0:
         return new TemplarCard({ x, y });
-      case CardType.E:
+      case 1:
         return new EnemyCard({ x, y });
-      case CardType.W:
+      case 2:
         return new ItemCard({
           ...props,
           duration: 4,
-          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.W],
+          weight: BASE_WEIGHT_MAP[gm.cls!][2],
         });
-      case CardType.S:
+      case 3:
         return new ItemCard({
           ...props,
           duration: 6,
-          weight: BASE_WEIGHT_MAP[gm.cls!][CardType.S],
+          weight: BASE_WEIGHT_MAP[gm.cls!][3],
         });
-      case CardType.P:
+      case 4:
         return new ItemCard({
           ...props,
           duration: 5,

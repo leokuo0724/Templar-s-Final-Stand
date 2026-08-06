@@ -1,5 +1,5 @@
 import { getCanvas, on } from "kontra";
-import { GameState, GameManager } from "../../managers/game-manager";
+import { GameManager } from "../../managers/game-manager";
 import { EVENT } from "../../constants/event";
 import { CustomButton, OverlayDialog } from "./shared-ui";
 import { Templar } from "../sprites/templar";
@@ -53,7 +53,7 @@ export class GameOverDialog extends OverlayDialog {
 
   public render() {
     const gm = GameManager.gI();
-    if (gm.state !== GameState.GAME_OVER) return;
+    if (gm.state !== 5) return;
     super.render();
   }
 }

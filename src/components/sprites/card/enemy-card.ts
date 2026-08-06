@@ -1,9 +1,6 @@
-import { Belongs, CardType } from "./type";
 
 import { CharacterCard } from "./character-card";
 import {
-  AttackDirection,
-  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { EVENT } from "../../../constants/event";
@@ -13,7 +10,6 @@ import { GameManager } from "../../../managers/game-manager";
 import { randomPick } from "../../../utils/random-utils";
 import { getEnemyPropsDescText } from "../../../utils/desc-utils";
 import { TemplarCard } from "./templar-card";
-import { Direction } from "../../../types/direction";
 import { COLOR } from "../../../constants/color";
 import { Enemy } from "../enemy";
 
@@ -22,10 +18,10 @@ export class EnemyCard extends CharacterCard {
 
   constructor({ x, y }: { x: number; y: number }) {
     super({
-      type: CardType.E,
+      type: 1,
       x,
       y,
-      belongs: Belongs.ENEMY,
+      belongs: 1,
     });
 
     this.dT = Text({
@@ -44,9 +40,9 @@ export class EnemyCard extends CharacterCard {
     const factor = gm.level;
     await this.applyDamage(
       wizard,
-      Direction.U,
+      0,
       false,
-      wizard.attackType === AttackType.P,
+      wizard.attackType === "penetrate",
       Math.floor(level * factor * 0.8)
     );
   }
@@ -66,8 +62,8 @@ export class EnemyCard extends CharacterCard {
     this.attack = 2 + 1 * level;
     this.shield = 0;
     this.hitRate = 0.8;
-    this.attackDirection = AttackDirection.F;
-    this.attackType = AttackType.N;
+    this.attackDirection = "front";
+    this.attackType = "normal";
     this.hitBack = 0;
 
     if (gm.isElite) this.circle.color = COLOR.BROWN_8;
@@ -88,14 +84,13 @@ export class EnemyCard extends CharacterCard {
   }
 }
 
-export enum EnemyCharacter {
-  W,
-  G,
-  CS,
-  S,
-  CB,
-  L,
-}
+export type EnemyCharacter =
+  | 0
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5;
 
 let eliteCount = -1;
 const getEnemyBuffsAndDesc = (
@@ -107,22 +102,26 @@ const getEnemyBuffsAndDesc = (
   character: EnemyCharacter | null;
 }[] => {
   if (isElite) {
-    const elites = [
+    const elites: {
+      buff: OptionalCharacterProps;
+      desc: string;
+      character: EnemyCharacter | null;
+    }[] = [
       {
         buff: {
-          attackDirection: AttackDirection.A,
+          attackDirection: "around",
           health: 2 * factor,
           attack: 1 * factor,
         },
         desc: `"Whirlstriker"\nRange: around`,
-        character: EnemyCharacter.W,
+        character: 0,
       },
       {
         buff: {
           shield: 4 * factor,
         },
         desc: `"Guardian"\nShield: ${4 * factor}`,
-        character: EnemyCharacter.G,
+        character: 1,
       },
       {
         buff: {
@@ -130,32 +129,32 @@ const getEnemyBuffsAndDesc = (
           health: 2 * factor,
         },
         desc: `"Counterstriker"\nHit back: ${2 * factor}`,
-        character: EnemyCharacter.CS,
+        character: 2,
       },
       {
         buff: {
-          attackType: AttackType.P,
+          attackType: "penetrate",
           attack: 2 * factor,
         },
         desc: `"Spearman"\nPenetrate shield`,
-        character: EnemyCharacter.S,
+        character: 3,
       },
       {
         buff: {
-          attackDirection: AttackDirection.C,
+          attackDirection: "cross",
           health: 1 * factor,
         },
         desc: `"Crossblade"\nRange: cross`,
-        character: EnemyCharacter.CB,
+        character: 4,
       },
       {
         buff: {
-          attackDirection: AttackDirection.A,
-          attackType: AttackType.P,
+          attackDirection: "around",
+          attackType: "penetrate",
           shield: 5 * factor,
         },
         desc: `"Lancepiercer"\nPenetrate, around`,
-        character: EnemyCharacter.L,
+        character: 5,
       },
     ];
     eliteCount < elites.length - 1 ? eliteCount++ : (eliteCount = 0);

@@ -1,6 +1,5 @@
-export enum Direction {
-  U,
-  D,
-  L,
-  R,
-}
+export type Direction =
+  | 0
+  | 1
+  | 2
+  | 3;

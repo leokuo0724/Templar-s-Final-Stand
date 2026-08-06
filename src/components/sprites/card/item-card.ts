@@ -1,7 +1,6 @@
 import { BaseCard } from "./base-card";
 import { CardType } from "./type";
 import {
-  AttackDirection,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { ClockIcon } from "../icons/clock-icon";
@@ -31,9 +30,9 @@ export type ItemCardProps = {
 
 const MAX_ITEM_LEVEL = 4;
 const MAX_ITEM_COLOR_MAP = {
-  [CardType.W]: COLOR.DARK_6,
-  [CardType.S]: COLOR.BROWN_8,
-  [CardType.P]: COLOR.GREEN_7,
+  [2]: COLOR.DARK_6,
+  [3]: COLOR.BROWN_8,
+  [4]: COLOR.GREEN_7,
 };
 
 export class ItemCard extends BaseCard {
@@ -83,11 +82,11 @@ export class ItemCard extends BaseCard {
 
   protected getMainIcon() {
     switch (this.type) {
-      case CardType.W:
+      case 2:
         return new SwordIcon(-11, -32, 1);
-      case CardType.S:
+      case 3:
         return new ShieldIcon(-10, -31, 1, COLOR.WHITE_6);
-      case CardType.P:
+      case 4:
         return new PotionIcon(-9, -36);
       default:
         throw new Error();
@@ -106,7 +105,7 @@ export class ItemCard extends BaseCard {
   protected resetProps(): void {
     this.drT.text = `${this.duration}`;
     this.wT.text = `${this.weight}`;
-    if (this.type === CardType.P) {
+    if (this.type === 4) {
       if (!this.wIcon) {
         this.wIcon = new WarningIcon(6, -14);
         this.addChild(this.wIcon);
@@ -148,11 +147,11 @@ export class ItemCard extends BaseCard {
     const { isK, isW, isD, level } = GameManager.gI();
     const factor = level + 1;
     switch (this.type) {
-      case CardType.W:
+      case 2:
         return getWeaponLevelBuff(this.level, factor, isK);
-      case CardType.S:
+      case 3:
         return getShieldLevelBuff(this.level, factor, isD);
-      case CardType.P:
+      case 4:
         return getPotionLevelBuff(this.level, factor, isW);
       default:
         throw new Error();
@@ -161,10 +160,10 @@ export class ItemCard extends BaseCard {
 }
 
 const getItemWeight = (type: CardType, level: number) => {
-  if (type === CardType.P) return 0;
+  if (type === 4) return 0;
 
   const { cls } = GameManager.gI();
-  const baseWeight = BASE_WEIGHT_MAP[cls!][type as CardType.W | CardType.S];
+  const baseWeight = BASE_WEIGHT_MAP[cls!][type as 2 | 3];
   return baseWeight + level;
 };
 
@@ -184,13 +183,13 @@ const getWeaponLevelBuff = (
   } else if (level === 3) {
     return {
       attack,
-      attackDirection: AttackDirection.A,
+      attackDirection: "around",
       hitBack: 1 * factor,
     };
   } else {
     return {
       attack,
-      attackDirection: AttackDirection.C,
+      attackDirection: "cross",
       hitBack: 3 * factor,
     };
   }

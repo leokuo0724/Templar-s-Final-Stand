@@ -8,7 +8,6 @@ import { tween } from "../../../utils/tween-utils";
 import { Direction } from "../../../types/direction";
 import {
   AttackDirection,
-  AttackType,
   OptionalCharacterProps,
 } from "../../../types/character";
 import { COMMON_TEXT_CONFIG, FONT } from "../../../constants/text";
@@ -41,9 +40,9 @@ export abstract class CharacterCard extends BaseCard {
   public attack: number = 0;
   public hitRate: number = 0;
   public critical: number = 0;
-  public attackDirection: AttackDirection = AttackDirection.F;
+  public attackDirection: AttackDirection = "front";
   public hitBack: number = 0;
-  public attackType: string = AttackType.N;
+  public attackType: string = "normal";
 
   constructor({ type, x, y, belongs }: CharacterCardProps) {
     super({ type, x, y });
@@ -102,8 +101,8 @@ export abstract class CharacterCard extends BaseCard {
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
 
-    if ([Direction.R, Direction.L].includes(direction)) {
-      const xFactor = direction === Direction.R ? -1 : 1;
+    if ([3, 2].includes(direction)) {
+      const xFactor = direction === 3 ? -1 : 1;
       await tween(
         this,
         { targetX: this.x + 10 * xFactor, targetY: this.y },
@@ -115,7 +114,7 @@ export abstract class CharacterCard extends BaseCard {
         40
       );
     } else {
-      const yFactor = direction === Direction.D ? -1 : 1;
+      const yFactor = direction === 1 ? -1 : 1;
       await tween(
         this,
         { targetX: this.x, targetY: this.y + 10 * yFactor },
@@ -127,20 +126,20 @@ export abstract class CharacterCard extends BaseCard {
         40
       );
     }
-    if (this.type === CardType.T) emit(EVENT.TEMPLAR_ATTACK);
+    if (this.type === 0) emit(EVENT.TEMPLAR_ATTACK);
     zzfx(...attackSFX);
     await tween(this, { targetX: origX, targetY: origY }, 50, 400);
 
     const counterDirection = () => {
       switch (direction) {
-        case Direction.R:
-          return Direction.L;
-        case Direction.L:
-          return Direction.R;
-        case Direction.U:
-          return Direction.D;
-        case Direction.D:
-          return Direction.U;
+        case 3:
+          return 2;
+        case 2:
+          return 3;
+        case 0:
+          return 1;
+        case 1:
+          return 0;
       }
     };
     await Promise.all([
@@ -219,7 +218,7 @@ export abstract class CharacterCard extends BaseCard {
     }
     this.sT.text = `${this.shield}`;
     const { isD } = GameManager.gI();
-    if (this.type === CardType.T && isD) {
+    if (this.type === 0 && isD) {
       this.hitBack = this.shield;
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
     }
@@ -244,13 +243,13 @@ export abstract class CharacterCard extends BaseCard {
     this.hitRate = Math.max(Math.min(this.hitRate, 1), 0);
     this.critical += buff.critical || 0;
     this.critical = Math.max(Math.min(this.critical, 1), 0);
-    if (this.attackDirection !== AttackDirection.C || isDebuff) {
+    if (this.attackDirection !== "cross" || isDebuff) {
       this.attackDirection = buff.attackDirection || this.attackDirection;
     }
     this.attackType = buff.attackType || this.attackType;
     this.hitBack += buff.hitBack || 0;
 
-    if (this.type === CardType.T) {
+    if (this.type === 0) {
       emit(EVENT.UPDATE_TEMPLAR_INFO, this);
       if (!isDebuff) {
         const isBuff = checkIfBuff(buff);

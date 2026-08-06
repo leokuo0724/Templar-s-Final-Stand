@@ -13,7 +13,6 @@ import { drawPolygon } from "../../utils/draw-utils";
 import { tween } from "../../utils/tween-utils";
 import {
   GameManager,
-  GameState,
   TemplarClass,
 } from "../../managers/game-manager";
 import { EVENT } from "../../constants/event";
@@ -55,23 +54,23 @@ export class IntroDialog extends SpriteClass {
 
   onCls(cls: TemplarClass) {
     const map = {
-      [TemplarClass.K]: `I'm nothing fancy\n—just balanced and ready to fight!`,
-      [TemplarClass.W]: "I'm weak\nbut can attack all foes with potions!",
-      [TemplarClass.D]: "I get hit\nand hit back harder!",
+      ["Knight"]: `I'm nothing fancy\n—just balanced and ready to fight!`,
+      ["Wizard"]: "I'm weak\nbut can attack all foes with potions!",
+      ["Defender"]: "I get hit\nand hit back harder!",
     };
     this.paragraphs.push(`As a ${cls}\n` + map[cls]);
   }
 
   onClick(event: PointerEvent) {
     const gm = GameManager.gI();
-    if (gm.state !== GameState.INTRO) return;
+    if (gm.state !== 2) return;
     const canvas = getCanvas();
     const isClicked = detectCanvasClick(event, this);
     if (isClicked) {
       if (this.currI === this.paragraphs.length - 1) {
         if (this.clickCallback) {
           canvas.removeEventListener("pointerdown", this.clickCallback);
-          gm.state = GameState.IDLE;
+          gm.state = 3;
           emit(EVENT.GAME_START);
         }
       } else {
@@ -83,7 +82,7 @@ export class IntroDialog extends SpriteClass {
 
   render(): void {
     const gm = GameManager.gI();
-    if (gm.state !== GameState.INTRO) return;
+    if (gm.state !== 2) return;
     super.render();
   }
 }

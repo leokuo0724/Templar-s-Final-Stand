@@ -7,24 +7,22 @@ import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";
 import { negativeSFX, swipeSFX } from "../audios/sfx";
 
-export enum GameState {
-  PROLOGUE,
-  INIT,
-  INTRO,
-  IDLE,
-  SWIPING,
-  GAME_OVER,
-}
-export enum TemplarClass {
-  K = "Knight",
-  W = "Wizard",
-  D = "Defender",
-}
+export type GameState =
+  | 0
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5;
+export type TemplarClass =
+  | "Knight"
+  | "Wizard"
+  | "Defender";
 
 export class GameManager {
   private static instance: GameManager;
 
-  public state: GameState = GameState.PROLOGUE;
+  public state: GameState = 0;
   public move = 0;
   public get level() {
     return Math.floor(this.move / 5);
@@ -40,34 +38,34 @@ export class GameManager {
   public currentItems: ItemCard[] = [];
   public cls: TemplarClass | null = null;
   public get isW() {
-    return this.cls === TemplarClass.W;
+    return this.cls === "Wizard";
   }
   public get isK() {
-    return this.cls === TemplarClass.K;
+    return this.cls === "Knight";
   }
   public get isD() {
-    return this.cls === TemplarClass.D;
+    return this.cls === "Defender";
   }
   public speed = 1; // 1x speed
 
   private constructor() {
     new SwipeDetector({
-      onSwipeLeft: this.swipe.bind(this, Direction.L),
-      onSwipeRight: this.swipe.bind(this, Direction.R),
-      onSwipeUp: this.swipe.bind(this, Direction.U),
-      onSwipeDown: this.swipe.bind(this, Direction.D),
+      onSwipeLeft: this.swipe.bind(this, 2),
+      onSwipeRight: this.swipe.bind(this, 3),
+      onSwipeUp: this.swipe.bind(this, 0),
+      onSwipeDown: this.swipe.bind(this, 1),
     });
 
     window.addEventListener("keydown", (e) => {
-      if (["ArrowLeft", "a"].includes(e.key)) this.swipe(Direction.L);
-      if (["ArrowRight", "d"].includes(e.key)) this.swipe(Direction.R);
-      if (["ArrowUp", "w"].includes(e.key)) this.swipe(Direction.U);
-      if (["ArrowDown", "s"].includes(e.key)) this.swipe(Direction.D);
+      if (["ArrowLeft", "a"].includes(e.key)) this.swipe(2);
+      if (["ArrowRight", "d"].includes(e.key)) this.swipe(3);
+      if (["ArrowUp", "w"].includes(e.key)) this.swipe(0);
+      if (["ArrowDown", "s"].includes(e.key)) this.swipe(1);
     });
 
     on(EVENT.SWIPE_FINISH, () => {
-      if (this.state === GameState.GAME_OVER) return;
-      this.state = GameState.IDLE;
+      if (this.state === 5) return;
+      this.state = 3;
     });
   }
   static gI() {
@@ -81,7 +79,7 @@ export class GameManager {
   public setClass(cls: TemplarClass) {
     this.cls = cls;
     emit(EVENT.UPDATE_TEMPLAR_CLASS, cls);
-    this.state = GameState.INTRO;
+    this.state = 2;
   }
 
   public toggleBGM() {
@@ -100,9 +98,9 @@ export class GameManager {
   }
 
   private swipe(direction: Direction) {
-    if (this.state !== GameState.IDLE) return;
+    if (this.state !== 3) return;
     this.move++;
-    this.state = GameState.SWIPING;
+    this.state = 4;
     zzfx(...swipeSFX);
     emit(EVENT.SWIPE, direction);
   }
@@ -124,8 +122,8 @@ export class GameManager {
   }
 
   public gameOver() {
-    if (this.state === GameState.GAME_OVER) return;
-    this.state = GameState.GAME_OVER;
+    if (this.state === 5) return;
+    this.state = 5;
     this.music?.stop();
     zzfx(...negativeSFX);
     emit(EVENT.GAME_OVER);
