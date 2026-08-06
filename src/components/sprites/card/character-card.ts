@@ -102,7 +102,7 @@ export abstract class CharacterCard extends BaseCard {
     const origY = this.y;
     await tween(this.main, { targetX: -5, targetY: -10 }, 100, 700);
 
-    if ([Direction.R, Direction.L].includes(direction)) {
+    if (direction === Direction.R || direction === Direction.L) {
       const xFactor = direction === Direction.R ? -1 : 1;
       await tween(
         this,

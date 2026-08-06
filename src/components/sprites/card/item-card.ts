@@ -164,7 +164,8 @@ const getItemWeight = (type: CardType, level: number) => {
   if (type === CardType.P) return 0;
 
   const { cls } = GameManager.gI();
-  const baseWeight = BASE_WEIGHT_MAP[cls!][type as CardType.W | CardType.S];
+  const baseWeight =
+    BASE_WEIGHT_MAP[cls!][type as typeof CardType.W | typeof CardType.S];
   return baseWeight + level;
 };
 

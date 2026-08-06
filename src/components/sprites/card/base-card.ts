@@ -11,10 +11,11 @@ type CardProps = {
   y: number;
 };
 
-enum CardPart {
-  B, // Background
-  C, // Circle
-}
+const CardPart = {
+  B: 0, // Background
+  C: 1, // Circle
+} as const;
+type CardPart = (typeof CardPart)[keyof typeof CardPart];
 
 export abstract class BaseCard extends SpriteClass {
   public type: CardType;

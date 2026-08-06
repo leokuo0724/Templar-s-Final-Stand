@@ -88,14 +88,15 @@ export class EnemyCard extends CharacterCard {
   }
 }
 
-export enum EnemyCharacter {
-  W,
-  G,
-  CS,
-  S,
-  CB,
-  L,
-}
+export const EnemyCharacter = {
+  W: 0,
+  G: 1,
+  CS: 2,
+  S: 3,
+  CB: 4,
+  L: 5,
+} as const;
+export type EnemyCharacter = (typeof EnemyCharacter)[keyof typeof EnemyCharacter];
 
 let eliteCount = -1;
 const getEnemyBuffsAndDesc = (

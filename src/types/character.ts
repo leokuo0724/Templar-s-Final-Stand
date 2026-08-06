@@ -1,18 +1,20 @@
-export enum AttackDirection {
-  F = "front", // 1 grid
-  A = "around", // 4 grid
-  C = "cross", // 8 grid
-}
+export const AttackDirection = {
+  F: "front", // 1 grid
+  A: "around", // 4 grid
+  C: "cross", // 8 grid
+} as const;
+export type AttackDirection = (typeof AttackDirection)[keyof typeof AttackDirection];
 export const DIRECTION_TIER_MAP = {
   [AttackDirection.F]: 2,
   [AttackDirection.A]: 1,
   [AttackDirection.C]: 0,
 };
 
-export enum AttackType {
-  N = "normal",
-  P = "penetrate",
-}
+export const AttackType = {
+  N: "normal",
+  P: "penetrate",
+} as const;
+export type AttackType = (typeof AttackType)[keyof typeof AttackType];
 
 export type CharacterProps = {
   health: number;

@@ -7,19 +7,21 @@ import { bgm } from "../audios/bgm";
 import { SwipeDetector } from "../utils/swipe-detector";
 import { negativeSFX, swipeSFX } from "../audios/sfx";
 
-export enum GameState {
-  PROLOGUE,
-  INIT,
-  INTRO,
-  IDLE,
-  SWIPING,
-  GAME_OVER,
-}
-export enum TemplarClass {
-  K = "Knight",
-  W = "Wizard",
-  D = "Defender",
-}
+export const GameState = {
+  PROLOGUE: 0,
+  INIT: 1,
+  INTRO: 2,
+  IDLE: 3,
+  SWIPING: 4,
+  GAME_OVER: 5,
+} as const;
+export type GameState = (typeof GameState)[keyof typeof GameState];
+export const TemplarClass = {
+  K: "Knight",
+  W: "Wizard",
+  D: "Defender",
+} as const;
+export type TemplarClass = (typeof TemplarClass)[keyof typeof TemplarClass];
 
 export class GameManager {
   private static instance: GameManager;
